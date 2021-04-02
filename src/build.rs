@@ -1,10 +1,14 @@
+#![feature(drain_filter)]
+#![allow(warnings)]
 use fxhash::FxHashMap;
-use proc_macro2::TokenStream;
+use fxhash::FxHashSet;
+use proc_macro2::{Ident, Literal, TokenStream};
 use quote::{format_ident, quote};
 use serde::{Deserialize, Serialize};
 use serde_json::Value;
 
 pub type Map<K, V> = FxHashMap<K, V>;
+pub type Set<K> = FxHashSet<K>;
 
 #[derive(Clone, Debug, PartialEq, Eq, Serialize, Deserialize)]
 struct Parameter {
@@ -27,7 +31,7 @@ struct Enumerant {
     parameters: Vec<Parameter>,
 }
 
-#[derive(Default, Clone, Debug, PartialEq, Eq, Serialize, Deserialize)]
+#[derive(Clone, Debug, PartialEq, Eq, Serialize, Deserialize)]
 struct Operand {
     category: String,
     kind: String,
@@ -35,7 +39,7 @@ struct Operand {
     enumerants: Vec<Enumerant>,
 }
 
-#[derive(Default, Clone, Debug, PartialEq, Eq, Serialize, Deserialize)]
+#[derive(Clone, Debug, PartialEq, Eq, Serialize, Deserialize)]
 struct OperandRef {
     kind: String,
     #[serde(default)]
@@ -65,275 +69,683 @@ struct Grammar {
     operand_kinds: Vec<Operand>,
 }
 
-fn parse_instruction_set(
-    name: &str,
-    prefix: &str,
-    cut: usize,
-    insts: &[Instruction],
-) -> TokenStream {
-    let mut keys = vec![];
-    let mut values = vec![];
-    let mut idents = vec![];
-    let mut operands = vec![];
-    let mut reqs = vec![];
-    let mut map = Map::<u32, String>::default();
-    for inst in insts {
-        let opc = inst.opcode;
-        let key = &inst.opname.as_str()[cut..];
-        if let Some(_) = map.get(&opc) {
-            continue;
-        }
-        map.insert(opc, key.to_owned());
-        keys.push(key);
-        idents.push(format_ident!("{}{}", prefix, key));
-        values.push(quote! { #opc });
-
-        let mut ops = vec![];
-        let mut caps = vec![];
-
-        for cap in inst.capabilities.iter() {
-            let cap = format_ident!("{}", cap);
-            caps.push(quote! {
-              Capability::#cap
-            });
-        }
-
-        let vers = &inst.version;
-        let ext = &inst.extensions;
-        reqs.push(quote! {
-          Requirements {
-            extensions: &[#(#ext),*],
-            capabilities:  &[#(#caps),*],
-            version: #vers
-          }
-        });
-        for op in inst.operands.iter() {
-            let q = match op.quantifier.as_str() {
-                "*" => quote! { List },
-                "?" => quote! { Opt },
-                _ => quote! { None },
-            };
-            let op = format_ident!("{}", op.kind);
-
-            ops.push(quote! {
-              (OpKind::#op, Quantifier::#q)
-            });
-        }
-        operands.push(quote! { #(#ops),* })
+fn filter_kind(kind: &str, q: &str) -> TokenStream {
+    let mut str = kind.replace("LiteralString", "Sstr");
+    if str.starts_with("Literal") {
+        str = "u32".to_owned();
+    };
+    let t = format_ident!("{}", str);
+    let t = match kind {
+        "PairIdRefIdRef" => quote! { (ID, ID) },
+        "PairIdRefLiteralInteger" => quote! { (ID, u32) },
+        "PairLiteralIntegerIdRef" => quote! { (u32, ID) },
+        "IdRef" => quote! { ID },
+        "IdResult" => quote! { ResultID },
+        "IdResultType" => quote! { TypeID },
+        "IdScope" => quote! { ScopeID },
+        "IdMemorySemantics" => quote! { MemorySemanticsID },
+        _ => quote! { #t },
+    };
+    match q {
+        "?" => quote! { Option<#t> },
+        "*" => quote! { Vec<#t> },
+        _ => quote! { #t },
     }
+}
+
+impl Instruction {
+    pub fn id(&self, trim: bool) -> TokenStream {
+        let id = format_ident!(
+            "{}",
+            if trim {
+                &self.opname[2..]
+            } else {
+                self.opname.as_str()
+            }
+        );
+        quote! { #id }
+    }
+
+    pub fn get_args<'a>(&'a self) -> Box<Iterator<Item = TokenStream> + 'a> {
+        let re = self
+            .operands
+            .iter()
+            .map(|e| filter_kind(&e.kind, &e.quantifier));
+        Box::new(re)
+    }
+
+    pub fn write_match(&self, vars: &[Ident], trim: bool) -> TokenStream {
+        let id = self.id(trim);
+        let args = &vars[..self.operands.len()];
+        quote! {
+          #id(#(#args,)*) => {
+            #(#args.write_word(env, sink);)*
+          }
+        }
+    }
+
+    pub fn write_spec(&self, vars: &[Ident], trim: bool) -> TokenStream {
+        let id = self.id(trim);
+        let opc = Literal::u32_unsuffixed(self.opcode);
+        let args = &vars[..self.operands.len() - 2];
+        quote! {
+          #id(_,_,#(#args,)*) => {
+            #(#args.write_word(env, sink);)*
+          }
+        }
+    }
+
+    pub fn write_read(&self, vars: &[Ident], trim: bool) -> TokenStream {
+        let id = self.id(trim);
+        let opc = Literal::u32_unsuffixed(self.opcode);
+        let args = &vars[..self.operands.len()];
+        quote! {
+          #opc => {
+            #(let #args = Writer::read_word(chunk, env, idx); )*
+            #id(#(#args,)*)
+          }
+        }
+    }
+
+    pub fn write_read_spec(&self, vars: &[Ident], trim: bool) -> TokenStream {
+        let id = self.id(trim);
+        let opc = Literal::u32_unsuffixed(self.opcode);
+        let args = &vars[..self.operands.len() - 2];
+        quote! {
+          #opc => {
+            #(let #args = Writer::read_word(chunk, env, idx); )*
+            #id(ty, id, #(#args,)*)
+          }
+        }
+    }
+
+    pub fn write_as_enum(&self, trim: bool) -> TokenStream {
+        if self.opname.as_str() == "OpSpecConstantOp" {
+            return quote! {
+              SpecConstantOp(TypeID, ResultID, Box<Opcode>) = 52
+            };
+        }
+
+        let id = self.id(trim);
+        let args = self.get_args();
+        let opc = Literal::u32_unsuffixed(self.opcode);
+        quote! {  #id (#(#args,)*) = #opc }
+    }
+
+    pub fn write_test(&self, vars: &[Ident], trim: bool) -> TokenStream {
+        let id = self.id(trim);
+        let opc = Literal::u32_unsuffixed(self.opcode);
+        let args = &vars[..self.operands.len()];
+        quote! {
+          unsafe {
+            #(let #args = transmute_copy(&[0u8;size_of::<Self>()]); )*
+            let variant = #id(#(#args,)*);
+            let disc: u32 = transmute(discriminant(&variant));
+            assert_eq!(disc, #opc);
+          }
+        }
+    }
+}
+
+impl Enumerant {
+    pub fn id(&self) -> TokenStream {
+        let p = if self.enumerant.chars().nth(0).unwrap().is_digit(10) {
+            "_"
+        } else {
+            ""
+        };
+        let id = format_ident!("{}{}", p, self.enumerant);
+        quote! { #id }
+    }
+
+    pub fn get_args<'a>(&'a self) -> Box<Iterator<Item = TokenStream> + 'a> {
+        let re = self.parameters.iter().map(|p| filter_kind(&p.kind, ""));
+        Box::new(re)
+    }
+
+    pub fn value(&self) -> u32 {
+        match &self.value {
+            Value::String(s) => u32::from_str_radix(&s[2..], 16).expect(s),
+            Value::Number(n) => n.as_u64().unwrap() as u32,
+            _ => panic!(),
+        }
+    }
+
+    pub fn write_as_enum(&self) -> TokenStream {
+        let id = self.id();
+        let args = self.get_args();
+        let opc = Literal::u32_unsuffixed(self.value());
+        quote! {  #id (#(#args,)*) = #opc }
+    }
+
+    pub fn write_test(&self, vars: &[Ident]) -> TokenStream {
+        let id = self.id();
+        let opc = Literal::u32_unsuffixed(self.value());
+        let args = &vars[..self.parameters.len()];
+        quote! {
+          unsafe {
+            #(let #args = transmute_copy(&[0u8;size_of::<Self>()]); )*
+            let variant = #id(#(#args,)*);
+            let disc: u32 = transmute(discriminant(&variant));
+            assert_eq!(disc, #opc);
+          }
+        }
+    }
+
+    pub fn write_read(&self, vars: &[Ident]) -> TokenStream {
+        let id = self.id();
+        let opc = Literal::u32_unsuffixed(self.value());
+        let args = &vars[..self.parameters.len()];
+        quote! {
+          #opc => {
+            #(let #args = Writer::read_word(chunk, env, idx); )*
+            #id(#(#args,)*)
+          }
+        }
+    }
+
+    pub fn write_match(&self, vars: &[Ident]) -> TokenStream {
+        let id = self.id();
+        let args = &vars[..self.parameters.len()];
+        quote! {
+          #id(#(#args,)*) => {
+            #(#args.write_word(env, sink);)*
+          }
+        }
+    }
+}
+
+impl Operand {
+    pub fn id(&self) -> TokenStream {
+        let id = format_ident!("{}", self.kind);
+        quote! { #id }
+    }
+    pub fn write_enumerants(&mut self, vars: &[Ident]) -> TokenStream {
+        let mut opc = Set::default();
+        let dups: Vec<_> = self
+            .enumerants
+            .drain_filter(|i| !opc.insert(i.value()))
+            .collect();
+        let inst = self.enumerants.iter().map(|i| i.write_as_enum());
+        let id = self.id();
+
+        let reader = self.enumerants.iter().map(|e| e.write_read(&vars));
+
+        let matcher = self
+            .enumerants
+            .iter()
+            .filter(|i| !i.parameters.is_empty())
+            .map(|i| i.write_match(&vars));
+
+        quote! {
+          #[repr(u32)]
+          #[derive(Debug, Copy, Clone, Eq, PartialEq)]
+          pub enum #id {
+            #(#inst),*
+          }
+
+          impl #id {
+            pub fn opcode(&self) -> u32 {
+              unsafe { std::mem::transmute_copy(self) }
+            }
+          }
+
+          impl<Env: Environ> Writer<Env> for #id {
+            fn write_word(&self, env: &Env, sink: &mut Vec<u32>) {
+              use #id :: *;
+              sink.push(self.opcode());
+              match self {
+                #(#matcher,)*
+                _ => ()
+              }
+            }
+
+            fn read_word(chunk: &[u32], env: &mut Env, idx: &mut u32) -> Self {
+
+              use #id ::*;
+              *idx += 1;
+              match chunk[*idx as usize - 1] {
+                #(#reader,)*
+                _ => panic!()
+              }
+            }
+          }
+        }
+    }
+
+    pub fn write_test(&self, vars: &[Ident]) -> TokenStream {
+        let name = format_ident!("test_{}", self.kind);
+        let id = self.id();
+        let tester = self.enumerants.iter().map(|e| e.write_test(&vars));
+        quote! {
+          #[test]
+          pub fn #name() {
+            use #id ::*;
+            use std::mem::*;
+            #(#tester)*
+          }
+        }
+    }
+}
+
+fn write_ext(name: &str, src: &str) -> TokenStream {
+    let mut ext: Grammar = serde_json::from_str(&std::fs::read_to_string(src).unwrap()).unwrap();
+
+    let vars: Vec<_> = (0..30usize).map(|i| format_ident!("x{}", i)).collect();
+    let mut opc = Set::default();
+
+    let dups: Vec<_> = ext
+        .instructions
+        .drain_filter(|i| !opc.insert(i.opcode))
+        .collect();
+
+    let inst = ext.instructions.iter().map(|i| i.write_as_enum(false));
+    let matcher = ext.instructions.iter().map(|i| i.write_match(&vars, false));
+    let reader = ext.instructions.iter().map(|i| i.write_read(&vars,false));
 
     let name = format_ident!("{}", name);
 
     quote! {
+      pub use crate::*;
+
       #[repr(u32)]
-      #[derive(Debug, Copy, Clone, Eq, PartialEq, Hash)]
+      #[derive(Debug, Clone, Eq, PartialEq)]
       pub enum #name {
-        #(#idents = #values,)*
+        #(#inst),*
       }
 
       impl #name {
-
-        pub fn from_str(tok: &str)  -> Option<#name>  {
-          match tok {
-            #(#keys => Some(#name::#idents),)*
-            _ => None,
-          }
+        pub fn opcode(&self) -> u32 {
+          unsafe { std::mem::transmute_copy(self) }
         }
 
-        pub fn get_operands(self) -> &'static [(OpKind, Quantifier)] {
-          match self {
-            #(#name::#idents => &[#operands]),*
-          }
+        pub fn read_word<Env: Environ>(chunk: &[u32], env: &mut Env, idx: &mut u32) -> Self {
+          use #name::*;
+          let i = *idx as usize;
+          let mask = u16::MAX as u32;;
+          let len = (chunk[i] >> 16) & mask;
+          let opc = chunk[i] & mask;
+          let chunk = &chunk[..i + len as usize];
+          let mark = *idx;
+          *idx += 1;
+          let re = match opc {
+            #(#reader,)*
+            wtf => panic!("{}", wtf)
+          };
+          assert_eq!(*idx - mark, len);
+          re
         }
 
-        pub fn get_requirements(self) -> Requirements {
-          match self {
-            #(#name::#idents => #reqs),*
-          }
+        pub fn write_word<Env: Environ>(&self, env: &Env, sink: &mut Vec<u32>) {
+            use #name::*;
+            let mark = sink.len();
+            sink.push(self.opcode());
+            match self {
+              #(#matcher,)*
+            }
+            sink[mark] |= ((sink.len() - mark) as u32) << 16;
         }
       }
+
     }
 }
 
-const JSON_SOURCE: &str = "SPIRV-Headers/include/spirv/unified1";
-const CORE_GRAMMAR: &str = "spirv.core.grammar.json";
-const GLSL450: &str = "extinst.glsl.std.450.grammar.json";
-const OPENCL100: &str = "extinst.opencl.std.100.grammar.json";
-
 fn main() {
-    let grammar: Grammar = serde_json::from_str(
-        &std::fs::read_to_string(&format!("{}/{}", JSON_SOURCE, CORE_GRAMMAR)).unwrap(),
-    )
-    .unwrap();
+    let mut grammar: Grammar =
+        serde_json::from_str(&std::fs::read_to_string("src/spirv.core.grammar.json").unwrap())
+            .unwrap();
 
-    let glsl450: Grammar = serde_json::from_str(
-        &std::fs::read_to_string(&format!("{}/{}", JSON_SOURCE, GLSL450)).unwrap(),
-    )
-    .unwrap();
-    let opencl: Grammar = serde_json::from_str(
-        &std::fs::read_to_string(&format!("{}/{}", JSON_SOURCE, OPENCL100)).unwrap(),
-    )
-    .unwrap();
-    let insts = parse_instruction_set("Opcode", "", 2, &grammar.instructions);
-    let glsl = parse_instruction_set("GLSL450", "", 0, &glsl450.instructions);
-    let opencl = parse_instruction_set("OpenCL", "", 0, &opencl.instructions);
+    let specops_set = get_specops();
 
-    let mut st = quote! {
-      #insts
-      #glsl
-      #opencl
-      #[derive(Debug, Copy, Clone, Eq, PartialEq)]
-      pub enum Quantifier {
-        None, Opt, List
-      }
+    let mut opc = Set::default();
 
-      #[derive(Debug, Copy, Clone, Eq, PartialEq)]
-      pub struct Requirements {
-        pub extensions:   &'static [&'static str],
-        pub capabilities: &'static [Capability],
-        pub version:      &'static str,
-      }
+    let dups: Vec<_> = grammar
+        .instructions
+        .drain_filter(|i| !opc.insert(i.opcode))
+        .collect();
 
-    };
+    let vars: Vec<_> = (0..30usize).map(|i| format_ident!("x{}", i)).collect();
+    let inst = grammar.instructions.iter().map(|i| i.write_as_enum(true));
+    let filter0 = grammar
+        .instructions
+        .iter()
+        .filter(|i| i.opname.as_str() != "OpSpecConstantOp");
+    let filter1 = grammar
+        .instructions
+        .iter()
+        .filter(|i| specops_set.get(&i.opname.as_str()[2..]).is_some());
 
-    let mut operand_kinds = vec![];
-    let mut operand_kinds2 = vec![];
+    let matcher = filter0.clone().map(|i| i.write_match(&vars, true));
+    let spec_matcher = filter1.clone().map(|i| i.write_spec(&vars, true));
 
-    for kind in grammar.operand_kinds {
-        let name = format_ident!("{}", kind.kind);
-        let mut keys = vec![];
-        let mut values = vec![];
-        let mut idents = vec![];
-        let mut map = Map::<u32, String>::default();
-        let mut params = vec![];
-        let mut reqs = vec![];
-        let mut dupes = vec![];
-        for en in kind.enumerants {
-            if !kind.category.contains("Enum") && !en.parameters.is_empty() {
-                panic!();
+    let reader = filter0.clone().map(|i| i.write_read(&vars, true));
+    let specops = filter1.clone().map(|i| i.write_read_spec(&vars, true));
+
+    let ops = grammar
+        .operand_kinds
+        .iter_mut()
+        .filter(|i| i.category.contains("Enum"))
+        .map(|i| i.write_enumerants(&vars));
+
+    std::fs::write(
+        "src/opcode.rs",
+        quote! {
+          #![feature(arbitrary_enum_discriminant)]
+          pub type Sstr = &'static str;
+
+
+          #[repr(u32)]
+          #[derive(Debug, Clone, Eq, PartialEq)]
+          pub enum Opcode {
+            #(#inst),*
+          }
+
+          impl Opcode {
+            pub fn opcode(&self) -> u32 {
+              unsafe { std::mem::transmute_copy(self) }
             }
-            let val = match &en.value {
-                Value::String(s) => u32::from_str_radix(&s[2..], 16).expect(s),
-                Value::Number(n) => n.as_u64().unwrap() as u32,
-                _ => panic!(),
-            };
-            let key = en.enumerant.clone();
-            if let Some(op) = map.get(&val) {
-              let key = format_ident!("{}", key);
-              let val = format_ident!("{}", op);
-                dupes.push(quote! {
-                  const #key: #name = #name :: #val;
-                });
-                continue;
-            }
-            map.insert(val, key.to_owned());
-            idents.push(if (48..58).contains(&en.enumerant.as_bytes()[0]) {
-                format_ident!("_{}", en.enumerant)
-            } else {
-                format_ident!("{}", en.enumerant)
-            });
-            let param = en.parameters.iter().map(|c| format_ident!("{}", c.kind));
 
-            let mut caps = vec![];
-
-            for cap in en.capabilities.iter() {
-                let cap = format_ident!("{}", cap);
-                caps.push(quote! {
-                  Capability::#cap
-                });
-            }
-            let ext = &en.extensions;
-            let vers = en.version;
-            reqs.push(quote! {
-              Requirements {
-                extensions: &[#(#ext),*],
-                capabilities:  &[#(#caps),*],
-                version: #vers
+            fn read_as_spec_op<Env: Environ>(ty: TypeID, id: ResultID, chunk: &[u32], env: &mut Env, idx: &mut u32) -> Self {
+              use Opcode::*;
+              let i = *idx as usize;
+              let mask = u16::MAX as u32;;
+              let opc = chunk[i] & mask;
+              *idx += 1;
+              match opc {
+                #(#specops,)*
+                wtf => panic!("{}", wtf)
               }
-            });
+            }
 
-            keys.push(key);
-            values.push(val);
-            params.push(quote! { #(OpKind::#param),*});
+            pub fn read_word<Env: Environ>(chunk: &[u32], env: &mut Env, idx: &mut u32) -> Self {
+              use Opcode::*;
+              let i = *idx as usize;
+              let mask = u16::MAX as u32;;
+              let len = (chunk[i] >> 16) & mask;
+              let opc = chunk[i] & mask;
+              let chunk = &chunk[..i + len as usize];
+              let mark = *idx;
+              *idx += 1;
+              let re = match opc {
+                #(#reader,)*
+                52 => {
+                  let x0 = Writer::read_word(chunk, env, idx);
+                  let x1 = Writer::read_word(chunk, env, idx);
+                  let x2 = Opcode::read_as_spec_op(x0, x1, chunk, env, idx);
+                  SpecConstantOp(x0, x1, Box::new(x2))
+                }
+                wtf => panic!("{}", wtf)
+              };
+              assert_eq!(*idx - mark, len);
+              re
+            }
+
+            pub fn write_as_spec_op<Env: Environ>(&self, env: &Env, sink: &mut Vec<u32>) {
+              use Opcode::*;
+              let mark = sink.len();
+              sink.push(self.opcode());
+              match self {
+                #(#spec_matcher,)*
+                _ => panic!()
+              }
+            }
+
+            pub fn write_word<Env: Environ>(&self, env: &Env, sink: &mut Vec<u32>) {
+                use Opcode::*;
+                let mark = sink.len();
+                sink.push(self.opcode());
+                match self {
+                  #(#matcher,)*
+                  SpecConstantOp(x0, x1, x2) => {
+                    x0.write_word(env, sink);
+                    x1.write_word(env, sink);
+                    x2.write_as_spec_op(env, sink);
+                  }
+                }
+                sink[mark] |= ((sink.len() - mark) as u32) << 16;
+            }
+          }
+
+          #(#ops)*
+
+          pub trait Environ {
+            fn get_id_word(&self, id: ID) -> u32;
+            fn insert_id(&mut self, i: u32) -> u32;
+          }
+
+          pub trait Writer<Env: Environ> {
+            fn write_word(&self, env: &Env, sink: &mut Vec<u32>) {}
+            fn read_word(chunk: &[u32], env: &mut Env, idx: &mut u32) -> Self;
+          }
+
+          impl<Env: Environ, T: Writer<Env>> Writer<Env> for Option<T> {
+            fn write_word(&self, env: &Env, sink: &mut Vec<u32>) {
+              self.as_ref().map(|t| t.write_word(env, sink));
+            }
+
+            fn read_word(chunk: &[u32], env: &mut Env, idx: &mut u32) -> Self {
+              if *idx < chunk.len() as u32 {
+                Some(T::read_word(chunk, env, idx))
+              } else {
+                None
+              }
+            }
+          }
+
+          impl<Env: Environ, T: Writer<Env>, U: Writer<Env>> Writer<Env> for (T, U) {
+            fn write_word(&self, env: &Env, sink: &mut Vec<u32>) {
+              self.0.write_word(env, sink);
+              self.1.write_word(env, sink);
+            }
+
+            fn read_word(chunk: &[u32], env: &mut Env, idx: &mut u32) -> Self {
+              let t = T::read_word(chunk, env, idx);
+              let u = U::read_word(chunk, env, idx);
+              (t,u)
+            }
+
+          }
+
+          impl<Env: Environ, T: Writer<Env>> Writer<Env> for Vec<T> {
+            fn write_word(&self, env: &Env, sink: &mut Vec<u32>) {
+              self.iter().for_each(|t| t.write_word(env, sink));
+            }
+
+            fn read_word(chunk: &[u32], env: &mut Env, idx: &mut u32) -> Self {
+              let mut re = vec![];
+              while *idx < chunk.len() as u32 {
+                re.push(T::read_word(chunk, env, idx));
+              }
+              re
+            }
+          }
+
+          impl<Env: Environ> Writer<Env> for u32 {
+            fn write_word(&self, env: &Env, sink: &mut Vec<u32>) {
+              sink.push(*self);
+            }
+
+            fn read_word(chunk: &[u32], env: &mut Env, idx: &mut u32) -> Self {
+              *idx += 1;
+              chunk[*idx as usize - 1]
+            }
+          }
+
+          impl<Env: Environ> Writer<Env> for Sstr {
+            fn write_word(&self, env: &Env, sink: &mut Vec<u32>) {
+              let mark = sink.len();
+              let strlen = (self.len() >> 2) + 1;
+              sink.resize(mark + strlen, 0);
+              unsafe {
+                  std::ptr::copy_nonoverlapping(
+                      self.as_ptr(),
+                      sink.as_mut_ptr().offset(mark as isize) as *mut u8,
+                      self.len(),
+                  );
+              }
+            }
+
+            fn read_word(chunk: &[u32], env: &mut Env, idx: &mut u32) -> Self {
+
+              let chunk = &chunk[*idx as usize..];
+              let mut len = 0;
+              'outer: for u in chunk {
+                for u in u.to_le_bytes().iter() {
+                  if *u == 0 {
+                    break 'outer;
+                  }
+                  len += 1;
+                }
+              }
+              let offset = (len >> 2) + 1;
+              *idx += offset;
+              unsafe {
+                let s = std::slice::from_raw_parts((chunk.as_ptr() as * const u8), len as usize);
+                std::mem::transmute(std::str::from_utf8(s).unwrap())
+              }
+            }
+          }
+
+
+          impl<Env: Environ, T: From<ID> + Into<ID> + Copy> Writer<Env> for T {
+            fn write_word(&self, env: &Env, sink: &mut Vec<u32>) {
+              let word = env.get_id_word((*self).into());
+              sink.push(word);
+            }
+            fn read_word(chunk: &[u32], env: &mut Env, idx: &mut u32) -> Self {
+
+              let id = env.insert_id(chunk[*idx as usize]);
+              *idx += 1;
+              Self::from(ID::Int(id))
+            }
+          }
+          impl From<ID> for ResultID { fn from(id: ID) -> Self { Self(id) }}
+          impl From<ID> for TypeID { fn from(id: ID) -> Self { Self(id) }}
+          impl From<ID> for ScopeID { fn from(id: ID) -> Self { Self(id) }}
+          impl From<ID> for MemorySemanticsID { fn from(id: ID) -> Self { Self(id) }}
+
+          impl Into<ID> for ResultID { fn into(self) -> ID { self.0 }}
+          impl Into<ID> for TypeID { fn into(self) -> ID { self.0 }}
+          impl Into<ID> for ScopeID { fn into(self) -> ID { self.0 }}
+          impl Into<ID> for MemorySemanticsID { fn into(self) -> ID { self.0 }}
+
+          #[derive(Debug, Copy, Clone, Eq, PartialEq)]
+          pub enum ID{
+            Str(Sstr),
+            Int(u32),
+          }
+          #[derive(Debug, Copy, Clone, Eq, PartialEq)]  pub struct ScopeID(ID);
+          #[derive(Debug, Copy, Clone, Eq, PartialEq)]  pub struct MemorySemanticsID(ID);
+          #[derive(Debug, Copy, Clone, Eq, PartialEq)]  pub struct TypeID(ID);
+          #[derive(Debug, Copy, Clone, Eq, PartialEq)]  pub struct ResultID(ID);
+
         }
+        .to_string(),
+    )
+    .unwrap();
 
-        operand_kinds.push(format_ident!("{}", kind.kind));
-        st = match kind.category.as_str() {
-            "Id" | "Literal" | "Composite" => {
-                continue;
-            }
-            _ => quote! {
-              #st
-              #[repr(u32)]
-              #[derive(Debug, Copy, Clone, Eq, PartialEq, Hash)]
-              pub enum #name {
-                #(#idents = #values),*
-              }
+    let tester = grammar.instructions.iter().map(|i| i.write_test(&vars, true));
+    let tester2 = grammar.operand_kinds.iter().map(|i| i.write_test(&vars));
 
-              impl #name {
-                #(#dupes)*
-              }
+    let tests = quote! {
+      use crate::opcode::*;
+      #[test]
+      pub fn test() {
+        use Opcode::*;
+        use std::mem::*;
+        #(#tester)*
+      }
 
-              impl #name {
-                pub fn params(self) -> &'static [OpKind] {
-                  match self {
-                    #(#name :: #idents => &[#params]),*
-                  }
-                }
-
-                pub fn get_requirements(self) -> Requirements {
-                  match self {
-                    #(#name::#idents => #reqs),*
-                  }
-                }
-
-              }
-
-              impl EnumValue for #name {
-                fn from_str(tok: &str) -> Option<#name> {
-                  match tok {
-                    #(#keys => Some(#name::#idents),)*
-                    _ => None,
-                  }
-                }
-              }
-            },
-        };
-        operand_kinds2.push(format_ident!("{}", kind.kind));
+      #(#tester2)*
     }
+    .to_string();
 
-    let st = quote! {
-      #st
-      pub trait EnumValue: Sized {
-        pub fn from_str(tok: &str) -> Option<Self>;
-      }
+    std::fs::write("src/test.rs", &tests);
 
-      #[derive(Debug, Copy, Clone, Eq, PartialEq, Hash)]
-      pub enum OpKind {
-        #(#operand_kinds,)*
-      }
+    std::fs::write(
+        "src/glsl450.rs",
+        &write_ext("GLSL450", "src/extinst.glsl.std.450.grammar.json").to_string(),
+    );
 
-      impl OpKind {
-        pub fn from_str(self, s: &str) -> Option<u32> {
-          match self {
-            #(OpKind:: #operand_kinds2 => #operand_kinds2 ::from_str(s).map(|r| r as u32),)*
-            _ => None
-          }
-        }
+    std::fs::write(
+        "src/opencl100.rs",
+        &write_ext("OpenCL100", "src/extinst.opencl.std.100.grammar.json").to_string(),
+    );
 
-        pub fn get_params(self, val: u32) -> &'static [OpKind] {
-          match self {
-            #(OpKind:: #operand_kinds2 => unsafe { std::mem::transmute::<u32, #operand_kinds2>(val) }.params(),)*
-            _ => &[]
-          }
-        }
-      }
-    };
-
-    std::fs::write("src/opcode.rs", st.to_string()).unwrap();
     std::process::Command::new("rustfmt")
         .arg("src/opcode.rs")
+        .arg("src/test.rs")
+        .arg("src/glsl450.rs")
+        .arg("src/opencl100.rs")
         .output()
         .unwrap();
+
     println!("cargo:rerun-if-changed=src/build.rs");
+}
+
+pub fn get_specops() -> Set<&'static str> {
+    vec![
+        "SConvert",
+        "UConvert",
+        "FConvert",
+        "SNegate",
+        "Not",
+        "IAdd",
+        "ISub",
+        "IMul",
+        "UDiv",
+        "SDiv",
+        "UMod",
+        "SRem",
+        "SMod",
+        "ShiftRightLogical",
+        "ShiftRightArithmetic",
+        "ShiftLeftLogical",
+        "BitwiseOr",
+        "BitwiseXor",
+        "BitwiseAnd",
+        "VectorShuffle",
+        "CompositeExtract",
+        "CompositeInsert",
+        "LogicalOr",
+        "LogicalAnd",
+        "LogicalNot",
+        "LogicalEqual",
+        "LogicalNotEqual",
+        "Select",
+        "IEqual",
+        "INotEqual",
+        "ULessThan",
+        "SLessThan",
+        "UGreaterThan",
+        "SGreaterThan",
+        "ULessThanEqual",
+        "SLessThanEqual",
+        "UGreaterThanEqual",
+        "SGreaterThanEqual",
+        "QuantizeToF16",
+        "ConvertFToS",
+        "ConvertSToF",
+        "ConvertFToU",
+        "ConvertUToF",
+        "UConvert",
+        "ConvertPtrToU",
+        "ConvertUToPtr",
+        "GenericCastToPtr",
+        "PtrCastToGeneric",
+        "Bitcast",
+        "FNegate",
+        "FAdd",
+        "FSub",
+        "FMul",
+        "FDiv",
+        "FRem",
+        "FMod",
+        "AccessChain",
+        "InBoundsAccessChain",
+        "PtrAccessChain",
+        "InBoundsPtrAccessChain",
+    ]
+    .into_iter()
+    .collect()
 }
