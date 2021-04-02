@@ -1,4 +1,4 @@
-pub use crate::Opcode::*;
+pub use crate::*;
 #[repr(u32)]
 #[derive(Debug, Clone, Eq, PartialEq)]
 pub enum OpenCL100 {

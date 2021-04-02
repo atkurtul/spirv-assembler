@@ -2,6 +2,8 @@
 #![allow(warnings)]
 #![feature(arbitrary_enum_discriminant, core_intrinsics)]
 pub mod opcode;
+pub mod glsl450;
+pub mod opencl100;
 
 use std::{env::Args, fs::read};
 

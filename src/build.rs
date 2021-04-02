@@ -346,7 +346,7 @@ fn write_ext(name: &str, src: &str) -> TokenStream {
     let name = format_ident!("{}", name);
 
     quote! {
-      pub use crate::Opcode::*;
+      pub use crate::*;
 
       #[repr(u32)]
       #[derive(Debug, Clone, Eq, PartialEq)]
