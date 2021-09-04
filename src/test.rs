@@ -3153,6 +3153,69 @@ pub fn test() {
     }
     unsafe {
         let x0 = transmute_copy(&[0u8; size_of::<Self>()]);
+        let x1 = transmute_copy(&[0u8; size_of::<Self>()]);
+        let x2 = transmute_copy(&[0u8; size_of::<Self>()]);
+        let x3 = transmute_copy(&[0u8; size_of::<Self>()]);
+        let x4 = transmute_copy(&[0u8; size_of::<Self>()]);
+        let variant = SDotKHR(x0, x1, x2, x3, x4);
+        let disc: u32 = transmute(discriminant(&variant));
+        assert_eq!(disc, 4450);
+    }
+    unsafe {
+        let x0 = transmute_copy(&[0u8; size_of::<Self>()]);
+        let x1 = transmute_copy(&[0u8; size_of::<Self>()]);
+        let x2 = transmute_copy(&[0u8; size_of::<Self>()]);
+        let x3 = transmute_copy(&[0u8; size_of::<Self>()]);
+        let x4 = transmute_copy(&[0u8; size_of::<Self>()]);
+        let variant = UDotKHR(x0, x1, x2, x3, x4);
+        let disc: u32 = transmute(discriminant(&variant));
+        assert_eq!(disc, 4451);
+    }
+    unsafe {
+        let x0 = transmute_copy(&[0u8; size_of::<Self>()]);
+        let x1 = transmute_copy(&[0u8; size_of::<Self>()]);
+        let x2 = transmute_copy(&[0u8; size_of::<Self>()]);
+        let x3 = transmute_copy(&[0u8; size_of::<Self>()]);
+        let x4 = transmute_copy(&[0u8; size_of::<Self>()]);
+        let variant = SUDotKHR(x0, x1, x2, x3, x4);
+        let disc: u32 = transmute(discriminant(&variant));
+        assert_eq!(disc, 4452);
+    }
+    unsafe {
+        let x0 = transmute_copy(&[0u8; size_of::<Self>()]);
+        let x1 = transmute_copy(&[0u8; size_of::<Self>()]);
+        let x2 = transmute_copy(&[0u8; size_of::<Self>()]);
+        let x3 = transmute_copy(&[0u8; size_of::<Self>()]);
+        let x4 = transmute_copy(&[0u8; size_of::<Self>()]);
+        let x5 = transmute_copy(&[0u8; size_of::<Self>()]);
+        let variant = SDotAccSatKHR(x0, x1, x2, x3, x4, x5);
+        let disc: u32 = transmute(discriminant(&variant));
+        assert_eq!(disc, 4453);
+    }
+    unsafe {
+        let x0 = transmute_copy(&[0u8; size_of::<Self>()]);
+        let x1 = transmute_copy(&[0u8; size_of::<Self>()]);
+        let x2 = transmute_copy(&[0u8; size_of::<Self>()]);
+        let x3 = transmute_copy(&[0u8; size_of::<Self>()]);
+        let x4 = transmute_copy(&[0u8; size_of::<Self>()]);
+        let x5 = transmute_copy(&[0u8; size_of::<Self>()]);
+        let variant = UDotAccSatKHR(x0, x1, x2, x3, x4, x5);
+        let disc: u32 = transmute(discriminant(&variant));
+        assert_eq!(disc, 4454);
+    }
+    unsafe {
+        let x0 = transmute_copy(&[0u8; size_of::<Self>()]);
+        let x1 = transmute_copy(&[0u8; size_of::<Self>()]);
+        let x2 = transmute_copy(&[0u8; size_of::<Self>()]);
+        let x3 = transmute_copy(&[0u8; size_of::<Self>()]);
+        let x4 = transmute_copy(&[0u8; size_of::<Self>()]);
+        let x5 = transmute_copy(&[0u8; size_of::<Self>()]);
+        let variant = SUDotAccSatKHR(x0, x1, x2, x3, x4, x5);
+        let disc: u32 = transmute(discriminant(&variant));
+        assert_eq!(disc, 4455);
+    }
+    unsafe {
+        let x0 = transmute_copy(&[0u8; size_of::<Self>()]);
         let variant = TypeRayQueryKHR(x0);
         let disc: u32 = transmute(discriminant(&variant));
         assert_eq!(disc, 4472);
@@ -3374,6 +3437,40 @@ pub fn test() {
         let variant = TraceNV(x0, x1, x2, x3, x4, x5, x6, x7, x8, x9, x10);
         let disc: u32 = transmute(discriminant(&variant));
         assert_eq!(disc, 5337);
+    }
+    unsafe {
+        let x0 = transmute_copy(&[0u8; size_of::<Self>()]);
+        let x1 = transmute_copy(&[0u8; size_of::<Self>()]);
+        let x2 = transmute_copy(&[0u8; size_of::<Self>()]);
+        let x3 = transmute_copy(&[0u8; size_of::<Self>()]);
+        let x4 = transmute_copy(&[0u8; size_of::<Self>()]);
+        let x5 = transmute_copy(&[0u8; size_of::<Self>()]);
+        let x6 = transmute_copy(&[0u8; size_of::<Self>()]);
+        let x7 = transmute_copy(&[0u8; size_of::<Self>()]);
+        let x8 = transmute_copy(&[0u8; size_of::<Self>()]);
+        let x9 = transmute_copy(&[0u8; size_of::<Self>()]);
+        let x10 = transmute_copy(&[0u8; size_of::<Self>()]);
+        let x11 = transmute_copy(&[0u8; size_of::<Self>()]);
+        let variant = TraceMotionNV(x0, x1, x2, x3, x4, x5, x6, x7, x8, x9, x10, x11);
+        let disc: u32 = transmute(discriminant(&variant));
+        assert_eq!(disc, 5338);
+    }
+    unsafe {
+        let x0 = transmute_copy(&[0u8; size_of::<Self>()]);
+        let x1 = transmute_copy(&[0u8; size_of::<Self>()]);
+        let x2 = transmute_copy(&[0u8; size_of::<Self>()]);
+        let x3 = transmute_copy(&[0u8; size_of::<Self>()]);
+        let x4 = transmute_copy(&[0u8; size_of::<Self>()]);
+        let x5 = transmute_copy(&[0u8; size_of::<Self>()]);
+        let x6 = transmute_copy(&[0u8; size_of::<Self>()]);
+        let x7 = transmute_copy(&[0u8; size_of::<Self>()]);
+        let x8 = transmute_copy(&[0u8; size_of::<Self>()]);
+        let x9 = transmute_copy(&[0u8; size_of::<Self>()]);
+        let x10 = transmute_copy(&[0u8; size_of::<Self>()]);
+        let x11 = transmute_copy(&[0u8; size_of::<Self>()]);
+        let variant = TraceRayMotionNV(x0, x1, x2, x3, x4, x5, x6, x7, x8, x9, x10, x11);
+        let disc: u32 = transmute(discriminant(&variant));
+        assert_eq!(disc, 5339);
     }
     unsafe {
         let x0 = transmute_copy(&[0u8; size_of::<Self>()]);
@@ -3739,6 +3836,21 @@ pub fn test() {
         let variant = AtomicFMaxEXT(x0, x1, x2, x3, x4, x5);
         let disc: u32 = transmute(discriminant(&variant));
         assert_eq!(disc, 5615);
+    }
+    unsafe {
+        let x0 = transmute_copy(&[0u8; size_of::<Self>()]);
+        let variant = AssumeTrueKHR(x0);
+        let disc: u32 = transmute(discriminant(&variant));
+        assert_eq!(disc, 5630);
+    }
+    unsafe {
+        let x0 = transmute_copy(&[0u8; size_of::<Self>()]);
+        let x1 = transmute_copy(&[0u8; size_of::<Self>()]);
+        let x2 = transmute_copy(&[0u8; size_of::<Self>()]);
+        let x3 = transmute_copy(&[0u8; size_of::<Self>()]);
+        let variant = ExpectKHR(x0, x1, x2, x3);
+        let disc: u32 = transmute(discriminant(&variant));
+        assert_eq!(disc, 5631);
     }
     unsafe {
         let x0 = transmute_copy(&[0u8; size_of::<Self>()]);
@@ -4839,9 +4951,703 @@ pub fn test() {
     }
     unsafe {
         let x0 = transmute_copy(&[0u8; size_of::<Self>()]);
+        let x1 = transmute_copy(&[0u8; size_of::<Self>()]);
+        let x2 = transmute_copy(&[0u8; size_of::<Self>()]);
+        let x3 = transmute_copy(&[0u8; size_of::<Self>()]);
+        let x4 = transmute_copy(&[0u8; size_of::<Self>()]);
+        let x5 = transmute_copy(&[0u8; size_of::<Self>()]);
+        let x6 = transmute_copy(&[0u8; size_of::<Self>()]);
+        let x7 = transmute_copy(&[0u8; size_of::<Self>()]);
+        let x8 = transmute_copy(&[0u8; size_of::<Self>()]);
+        let variant = ArbitraryFloatSinCosPiINTEL(x0, x1, x2, x3, x4, x5, x6, x7, x8);
+        let disc: u32 = transmute(discriminant(&variant));
+        assert_eq!(disc, 5840);
+    }
+    unsafe {
+        let x0 = transmute_copy(&[0u8; size_of::<Self>()]);
+        let x1 = transmute_copy(&[0u8; size_of::<Self>()]);
+        let x2 = transmute_copy(&[0u8; size_of::<Self>()]);
+        let x3 = transmute_copy(&[0u8; size_of::<Self>()]);
+        let x4 = transmute_copy(&[0u8; size_of::<Self>()]);
+        let x5 = transmute_copy(&[0u8; size_of::<Self>()]);
+        let x6 = transmute_copy(&[0u8; size_of::<Self>()]);
+        let x7 = transmute_copy(&[0u8; size_of::<Self>()]);
+        let variant = ArbitraryFloatCastINTEL(x0, x1, x2, x3, x4, x5, x6, x7);
+        let disc: u32 = transmute(discriminant(&variant));
+        assert_eq!(disc, 5841);
+    }
+    unsafe {
+        let x0 = transmute_copy(&[0u8; size_of::<Self>()]);
+        let x1 = transmute_copy(&[0u8; size_of::<Self>()]);
+        let x2 = transmute_copy(&[0u8; size_of::<Self>()]);
+        let x3 = transmute_copy(&[0u8; size_of::<Self>()]);
+        let x4 = transmute_copy(&[0u8; size_of::<Self>()]);
+        let x5 = transmute_copy(&[0u8; size_of::<Self>()]);
+        let x6 = transmute_copy(&[0u8; size_of::<Self>()]);
+        let x7 = transmute_copy(&[0u8; size_of::<Self>()]);
+        let variant = ArbitraryFloatCastFromIntINTEL(x0, x1, x2, x3, x4, x5, x6, x7);
+        let disc: u32 = transmute(discriminant(&variant));
+        assert_eq!(disc, 5842);
+    }
+    unsafe {
+        let x0 = transmute_copy(&[0u8; size_of::<Self>()]);
+        let x1 = transmute_copy(&[0u8; size_of::<Self>()]);
+        let x2 = transmute_copy(&[0u8; size_of::<Self>()]);
+        let x3 = transmute_copy(&[0u8; size_of::<Self>()]);
+        let x4 = transmute_copy(&[0u8; size_of::<Self>()]);
+        let x5 = transmute_copy(&[0u8; size_of::<Self>()]);
+        let x6 = transmute_copy(&[0u8; size_of::<Self>()]);
+        let variant = ArbitraryFloatCastToIntINTEL(x0, x1, x2, x3, x4, x5, x6);
+        let disc: u32 = transmute(discriminant(&variant));
+        assert_eq!(disc, 5843);
+    }
+    unsafe {
+        let x0 = transmute_copy(&[0u8; size_of::<Self>()]);
+        let x1 = transmute_copy(&[0u8; size_of::<Self>()]);
+        let x2 = transmute_copy(&[0u8; size_of::<Self>()]);
+        let x3 = transmute_copy(&[0u8; size_of::<Self>()]);
+        let x4 = transmute_copy(&[0u8; size_of::<Self>()]);
+        let x5 = transmute_copy(&[0u8; size_of::<Self>()]);
+        let x6 = transmute_copy(&[0u8; size_of::<Self>()]);
+        let x7 = transmute_copy(&[0u8; size_of::<Self>()]);
+        let x8 = transmute_copy(&[0u8; size_of::<Self>()]);
+        let x9 = transmute_copy(&[0u8; size_of::<Self>()]);
+        let variant = ArbitraryFloatAddINTEL(x0, x1, x2, x3, x4, x5, x6, x7, x8, x9);
+        let disc: u32 = transmute(discriminant(&variant));
+        assert_eq!(disc, 5846);
+    }
+    unsafe {
+        let x0 = transmute_copy(&[0u8; size_of::<Self>()]);
+        let x1 = transmute_copy(&[0u8; size_of::<Self>()]);
+        let x2 = transmute_copy(&[0u8; size_of::<Self>()]);
+        let x3 = transmute_copy(&[0u8; size_of::<Self>()]);
+        let x4 = transmute_copy(&[0u8; size_of::<Self>()]);
+        let x5 = transmute_copy(&[0u8; size_of::<Self>()]);
+        let x6 = transmute_copy(&[0u8; size_of::<Self>()]);
+        let x7 = transmute_copy(&[0u8; size_of::<Self>()]);
+        let x8 = transmute_copy(&[0u8; size_of::<Self>()]);
+        let x9 = transmute_copy(&[0u8; size_of::<Self>()]);
+        let variant = ArbitraryFloatSubINTEL(x0, x1, x2, x3, x4, x5, x6, x7, x8, x9);
+        let disc: u32 = transmute(discriminant(&variant));
+        assert_eq!(disc, 5847);
+    }
+    unsafe {
+        let x0 = transmute_copy(&[0u8; size_of::<Self>()]);
+        let x1 = transmute_copy(&[0u8; size_of::<Self>()]);
+        let x2 = transmute_copy(&[0u8; size_of::<Self>()]);
+        let x3 = transmute_copy(&[0u8; size_of::<Self>()]);
+        let x4 = transmute_copy(&[0u8; size_of::<Self>()]);
+        let x5 = transmute_copy(&[0u8; size_of::<Self>()]);
+        let x6 = transmute_copy(&[0u8; size_of::<Self>()]);
+        let x7 = transmute_copy(&[0u8; size_of::<Self>()]);
+        let x8 = transmute_copy(&[0u8; size_of::<Self>()]);
+        let x9 = transmute_copy(&[0u8; size_of::<Self>()]);
+        let variant = ArbitraryFloatMulINTEL(x0, x1, x2, x3, x4, x5, x6, x7, x8, x9);
+        let disc: u32 = transmute(discriminant(&variant));
+        assert_eq!(disc, 5848);
+    }
+    unsafe {
+        let x0 = transmute_copy(&[0u8; size_of::<Self>()]);
+        let x1 = transmute_copy(&[0u8; size_of::<Self>()]);
+        let x2 = transmute_copy(&[0u8; size_of::<Self>()]);
+        let x3 = transmute_copy(&[0u8; size_of::<Self>()]);
+        let x4 = transmute_copy(&[0u8; size_of::<Self>()]);
+        let x5 = transmute_copy(&[0u8; size_of::<Self>()]);
+        let x6 = transmute_copy(&[0u8; size_of::<Self>()]);
+        let x7 = transmute_copy(&[0u8; size_of::<Self>()]);
+        let x8 = transmute_copy(&[0u8; size_of::<Self>()]);
+        let x9 = transmute_copy(&[0u8; size_of::<Self>()]);
+        let variant = ArbitraryFloatDivINTEL(x0, x1, x2, x3, x4, x5, x6, x7, x8, x9);
+        let disc: u32 = transmute(discriminant(&variant));
+        assert_eq!(disc, 5849);
+    }
+    unsafe {
+        let x0 = transmute_copy(&[0u8; size_of::<Self>()]);
+        let x1 = transmute_copy(&[0u8; size_of::<Self>()]);
+        let x2 = transmute_copy(&[0u8; size_of::<Self>()]);
+        let x3 = transmute_copy(&[0u8; size_of::<Self>()]);
+        let x4 = transmute_copy(&[0u8; size_of::<Self>()]);
+        let x5 = transmute_copy(&[0u8; size_of::<Self>()]);
+        let variant = ArbitraryFloatGTINTEL(x0, x1, x2, x3, x4, x5);
+        let disc: u32 = transmute(discriminant(&variant));
+        assert_eq!(disc, 5850);
+    }
+    unsafe {
+        let x0 = transmute_copy(&[0u8; size_of::<Self>()]);
+        let x1 = transmute_copy(&[0u8; size_of::<Self>()]);
+        let x2 = transmute_copy(&[0u8; size_of::<Self>()]);
+        let x3 = transmute_copy(&[0u8; size_of::<Self>()]);
+        let x4 = transmute_copy(&[0u8; size_of::<Self>()]);
+        let x5 = transmute_copy(&[0u8; size_of::<Self>()]);
+        let variant = ArbitraryFloatGEINTEL(x0, x1, x2, x3, x4, x5);
+        let disc: u32 = transmute(discriminant(&variant));
+        assert_eq!(disc, 5851);
+    }
+    unsafe {
+        let x0 = transmute_copy(&[0u8; size_of::<Self>()]);
+        let x1 = transmute_copy(&[0u8; size_of::<Self>()]);
+        let x2 = transmute_copy(&[0u8; size_of::<Self>()]);
+        let x3 = transmute_copy(&[0u8; size_of::<Self>()]);
+        let x4 = transmute_copy(&[0u8; size_of::<Self>()]);
+        let x5 = transmute_copy(&[0u8; size_of::<Self>()]);
+        let variant = ArbitraryFloatLTINTEL(x0, x1, x2, x3, x4, x5);
+        let disc: u32 = transmute(discriminant(&variant));
+        assert_eq!(disc, 5852);
+    }
+    unsafe {
+        let x0 = transmute_copy(&[0u8; size_of::<Self>()]);
+        let x1 = transmute_copy(&[0u8; size_of::<Self>()]);
+        let x2 = transmute_copy(&[0u8; size_of::<Self>()]);
+        let x3 = transmute_copy(&[0u8; size_of::<Self>()]);
+        let x4 = transmute_copy(&[0u8; size_of::<Self>()]);
+        let x5 = transmute_copy(&[0u8; size_of::<Self>()]);
+        let variant = ArbitraryFloatLEINTEL(x0, x1, x2, x3, x4, x5);
+        let disc: u32 = transmute(discriminant(&variant));
+        assert_eq!(disc, 5853);
+    }
+    unsafe {
+        let x0 = transmute_copy(&[0u8; size_of::<Self>()]);
+        let x1 = transmute_copy(&[0u8; size_of::<Self>()]);
+        let x2 = transmute_copy(&[0u8; size_of::<Self>()]);
+        let x3 = transmute_copy(&[0u8; size_of::<Self>()]);
+        let x4 = transmute_copy(&[0u8; size_of::<Self>()]);
+        let x5 = transmute_copy(&[0u8; size_of::<Self>()]);
+        let variant = ArbitraryFloatEQINTEL(x0, x1, x2, x3, x4, x5);
+        let disc: u32 = transmute(discriminant(&variant));
+        assert_eq!(disc, 5854);
+    }
+    unsafe {
+        let x0 = transmute_copy(&[0u8; size_of::<Self>()]);
+        let x1 = transmute_copy(&[0u8; size_of::<Self>()]);
+        let x2 = transmute_copy(&[0u8; size_of::<Self>()]);
+        let x3 = transmute_copy(&[0u8; size_of::<Self>()]);
+        let x4 = transmute_copy(&[0u8; size_of::<Self>()]);
+        let x5 = transmute_copy(&[0u8; size_of::<Self>()]);
+        let x6 = transmute_copy(&[0u8; size_of::<Self>()]);
+        let x7 = transmute_copy(&[0u8; size_of::<Self>()]);
+        let variant = ArbitraryFloatRecipINTEL(x0, x1, x2, x3, x4, x5, x6, x7);
+        let disc: u32 = transmute(discriminant(&variant));
+        assert_eq!(disc, 5855);
+    }
+    unsafe {
+        let x0 = transmute_copy(&[0u8; size_of::<Self>()]);
+        let x1 = transmute_copy(&[0u8; size_of::<Self>()]);
+        let x2 = transmute_copy(&[0u8; size_of::<Self>()]);
+        let x3 = transmute_copy(&[0u8; size_of::<Self>()]);
+        let x4 = transmute_copy(&[0u8; size_of::<Self>()]);
+        let x5 = transmute_copy(&[0u8; size_of::<Self>()]);
+        let x6 = transmute_copy(&[0u8; size_of::<Self>()]);
+        let x7 = transmute_copy(&[0u8; size_of::<Self>()]);
+        let variant = ArbitraryFloatRSqrtINTEL(x0, x1, x2, x3, x4, x5, x6, x7);
+        let disc: u32 = transmute(discriminant(&variant));
+        assert_eq!(disc, 5856);
+    }
+    unsafe {
+        let x0 = transmute_copy(&[0u8; size_of::<Self>()]);
+        let x1 = transmute_copy(&[0u8; size_of::<Self>()]);
+        let x2 = transmute_copy(&[0u8; size_of::<Self>()]);
+        let x3 = transmute_copy(&[0u8; size_of::<Self>()]);
+        let x4 = transmute_copy(&[0u8; size_of::<Self>()]);
+        let x5 = transmute_copy(&[0u8; size_of::<Self>()]);
+        let x6 = transmute_copy(&[0u8; size_of::<Self>()]);
+        let x7 = transmute_copy(&[0u8; size_of::<Self>()]);
+        let variant = ArbitraryFloatCbrtINTEL(x0, x1, x2, x3, x4, x5, x6, x7);
+        let disc: u32 = transmute(discriminant(&variant));
+        assert_eq!(disc, 5857);
+    }
+    unsafe {
+        let x0 = transmute_copy(&[0u8; size_of::<Self>()]);
+        let x1 = transmute_copy(&[0u8; size_of::<Self>()]);
+        let x2 = transmute_copy(&[0u8; size_of::<Self>()]);
+        let x3 = transmute_copy(&[0u8; size_of::<Self>()]);
+        let x4 = transmute_copy(&[0u8; size_of::<Self>()]);
+        let x5 = transmute_copy(&[0u8; size_of::<Self>()]);
+        let x6 = transmute_copy(&[0u8; size_of::<Self>()]);
+        let x7 = transmute_copy(&[0u8; size_of::<Self>()]);
+        let x8 = transmute_copy(&[0u8; size_of::<Self>()]);
+        let x9 = transmute_copy(&[0u8; size_of::<Self>()]);
+        let variant = ArbitraryFloatHypotINTEL(x0, x1, x2, x3, x4, x5, x6, x7, x8, x9);
+        let disc: u32 = transmute(discriminant(&variant));
+        assert_eq!(disc, 5858);
+    }
+    unsafe {
+        let x0 = transmute_copy(&[0u8; size_of::<Self>()]);
+        let x1 = transmute_copy(&[0u8; size_of::<Self>()]);
+        let x2 = transmute_copy(&[0u8; size_of::<Self>()]);
+        let x3 = transmute_copy(&[0u8; size_of::<Self>()]);
+        let x4 = transmute_copy(&[0u8; size_of::<Self>()]);
+        let x5 = transmute_copy(&[0u8; size_of::<Self>()]);
+        let x6 = transmute_copy(&[0u8; size_of::<Self>()]);
+        let x7 = transmute_copy(&[0u8; size_of::<Self>()]);
+        let variant = ArbitraryFloatSqrtINTEL(x0, x1, x2, x3, x4, x5, x6, x7);
+        let disc: u32 = transmute(discriminant(&variant));
+        assert_eq!(disc, 5859);
+    }
+    unsafe {
+        let x0 = transmute_copy(&[0u8; size_of::<Self>()]);
+        let x1 = transmute_copy(&[0u8; size_of::<Self>()]);
+        let x2 = transmute_copy(&[0u8; size_of::<Self>()]);
+        let x3 = transmute_copy(&[0u8; size_of::<Self>()]);
+        let x4 = transmute_copy(&[0u8; size_of::<Self>()]);
+        let x5 = transmute_copy(&[0u8; size_of::<Self>()]);
+        let x6 = transmute_copy(&[0u8; size_of::<Self>()]);
+        let x7 = transmute_copy(&[0u8; size_of::<Self>()]);
+        let variant = ArbitraryFloatLogINTEL(x0, x1, x2, x3, x4, x5, x6, x7);
+        let disc: u32 = transmute(discriminant(&variant));
+        assert_eq!(disc, 5860);
+    }
+    unsafe {
+        let x0 = transmute_copy(&[0u8; size_of::<Self>()]);
+        let x1 = transmute_copy(&[0u8; size_of::<Self>()]);
+        let x2 = transmute_copy(&[0u8; size_of::<Self>()]);
+        let x3 = transmute_copy(&[0u8; size_of::<Self>()]);
+        let x4 = transmute_copy(&[0u8; size_of::<Self>()]);
+        let x5 = transmute_copy(&[0u8; size_of::<Self>()]);
+        let x6 = transmute_copy(&[0u8; size_of::<Self>()]);
+        let x7 = transmute_copy(&[0u8; size_of::<Self>()]);
+        let variant = ArbitraryFloatLog2INTEL(x0, x1, x2, x3, x4, x5, x6, x7);
+        let disc: u32 = transmute(discriminant(&variant));
+        assert_eq!(disc, 5861);
+    }
+    unsafe {
+        let x0 = transmute_copy(&[0u8; size_of::<Self>()]);
+        let x1 = transmute_copy(&[0u8; size_of::<Self>()]);
+        let x2 = transmute_copy(&[0u8; size_of::<Self>()]);
+        let x3 = transmute_copy(&[0u8; size_of::<Self>()]);
+        let x4 = transmute_copy(&[0u8; size_of::<Self>()]);
+        let x5 = transmute_copy(&[0u8; size_of::<Self>()]);
+        let x6 = transmute_copy(&[0u8; size_of::<Self>()]);
+        let x7 = transmute_copy(&[0u8; size_of::<Self>()]);
+        let variant = ArbitraryFloatLog10INTEL(x0, x1, x2, x3, x4, x5, x6, x7);
+        let disc: u32 = transmute(discriminant(&variant));
+        assert_eq!(disc, 5862);
+    }
+    unsafe {
+        let x0 = transmute_copy(&[0u8; size_of::<Self>()]);
+        let x1 = transmute_copy(&[0u8; size_of::<Self>()]);
+        let x2 = transmute_copy(&[0u8; size_of::<Self>()]);
+        let x3 = transmute_copy(&[0u8; size_of::<Self>()]);
+        let x4 = transmute_copy(&[0u8; size_of::<Self>()]);
+        let x5 = transmute_copy(&[0u8; size_of::<Self>()]);
+        let x6 = transmute_copy(&[0u8; size_of::<Self>()]);
+        let x7 = transmute_copy(&[0u8; size_of::<Self>()]);
+        let variant = ArbitraryFloatLog1pINTEL(x0, x1, x2, x3, x4, x5, x6, x7);
+        let disc: u32 = transmute(discriminant(&variant));
+        assert_eq!(disc, 5863);
+    }
+    unsafe {
+        let x0 = transmute_copy(&[0u8; size_of::<Self>()]);
+        let x1 = transmute_copy(&[0u8; size_of::<Self>()]);
+        let x2 = transmute_copy(&[0u8; size_of::<Self>()]);
+        let x3 = transmute_copy(&[0u8; size_of::<Self>()]);
+        let x4 = transmute_copy(&[0u8; size_of::<Self>()]);
+        let x5 = transmute_copy(&[0u8; size_of::<Self>()]);
+        let x6 = transmute_copy(&[0u8; size_of::<Self>()]);
+        let x7 = transmute_copy(&[0u8; size_of::<Self>()]);
+        let variant = ArbitraryFloatExpINTEL(x0, x1, x2, x3, x4, x5, x6, x7);
+        let disc: u32 = transmute(discriminant(&variant));
+        assert_eq!(disc, 5864);
+    }
+    unsafe {
+        let x0 = transmute_copy(&[0u8; size_of::<Self>()]);
+        let x1 = transmute_copy(&[0u8; size_of::<Self>()]);
+        let x2 = transmute_copy(&[0u8; size_of::<Self>()]);
+        let x3 = transmute_copy(&[0u8; size_of::<Self>()]);
+        let x4 = transmute_copy(&[0u8; size_of::<Self>()]);
+        let x5 = transmute_copy(&[0u8; size_of::<Self>()]);
+        let x6 = transmute_copy(&[0u8; size_of::<Self>()]);
+        let x7 = transmute_copy(&[0u8; size_of::<Self>()]);
+        let variant = ArbitraryFloatExp2INTEL(x0, x1, x2, x3, x4, x5, x6, x7);
+        let disc: u32 = transmute(discriminant(&variant));
+        assert_eq!(disc, 5865);
+    }
+    unsafe {
+        let x0 = transmute_copy(&[0u8; size_of::<Self>()]);
+        let x1 = transmute_copy(&[0u8; size_of::<Self>()]);
+        let x2 = transmute_copy(&[0u8; size_of::<Self>()]);
+        let x3 = transmute_copy(&[0u8; size_of::<Self>()]);
+        let x4 = transmute_copy(&[0u8; size_of::<Self>()]);
+        let x5 = transmute_copy(&[0u8; size_of::<Self>()]);
+        let x6 = transmute_copy(&[0u8; size_of::<Self>()]);
+        let x7 = transmute_copy(&[0u8; size_of::<Self>()]);
+        let variant = ArbitraryFloatExp10INTEL(x0, x1, x2, x3, x4, x5, x6, x7);
+        let disc: u32 = transmute(discriminant(&variant));
+        assert_eq!(disc, 5866);
+    }
+    unsafe {
+        let x0 = transmute_copy(&[0u8; size_of::<Self>()]);
+        let x1 = transmute_copy(&[0u8; size_of::<Self>()]);
+        let x2 = transmute_copy(&[0u8; size_of::<Self>()]);
+        let x3 = transmute_copy(&[0u8; size_of::<Self>()]);
+        let x4 = transmute_copy(&[0u8; size_of::<Self>()]);
+        let x5 = transmute_copy(&[0u8; size_of::<Self>()]);
+        let x6 = transmute_copy(&[0u8; size_of::<Self>()]);
+        let x7 = transmute_copy(&[0u8; size_of::<Self>()]);
+        let variant = ArbitraryFloatExpm1INTEL(x0, x1, x2, x3, x4, x5, x6, x7);
+        let disc: u32 = transmute(discriminant(&variant));
+        assert_eq!(disc, 5867);
+    }
+    unsafe {
+        let x0 = transmute_copy(&[0u8; size_of::<Self>()]);
+        let x1 = transmute_copy(&[0u8; size_of::<Self>()]);
+        let x2 = transmute_copy(&[0u8; size_of::<Self>()]);
+        let x3 = transmute_copy(&[0u8; size_of::<Self>()]);
+        let x4 = transmute_copy(&[0u8; size_of::<Self>()]);
+        let x5 = transmute_copy(&[0u8; size_of::<Self>()]);
+        let x6 = transmute_copy(&[0u8; size_of::<Self>()]);
+        let x7 = transmute_copy(&[0u8; size_of::<Self>()]);
+        let variant = ArbitraryFloatSinINTEL(x0, x1, x2, x3, x4, x5, x6, x7);
+        let disc: u32 = transmute(discriminant(&variant));
+        assert_eq!(disc, 5868);
+    }
+    unsafe {
+        let x0 = transmute_copy(&[0u8; size_of::<Self>()]);
+        let x1 = transmute_copy(&[0u8; size_of::<Self>()]);
+        let x2 = transmute_copy(&[0u8; size_of::<Self>()]);
+        let x3 = transmute_copy(&[0u8; size_of::<Self>()]);
+        let x4 = transmute_copy(&[0u8; size_of::<Self>()]);
+        let x5 = transmute_copy(&[0u8; size_of::<Self>()]);
+        let x6 = transmute_copy(&[0u8; size_of::<Self>()]);
+        let x7 = transmute_copy(&[0u8; size_of::<Self>()]);
+        let variant = ArbitraryFloatCosINTEL(x0, x1, x2, x3, x4, x5, x6, x7);
+        let disc: u32 = transmute(discriminant(&variant));
+        assert_eq!(disc, 5869);
+    }
+    unsafe {
+        let x0 = transmute_copy(&[0u8; size_of::<Self>()]);
+        let x1 = transmute_copy(&[0u8; size_of::<Self>()]);
+        let x2 = transmute_copy(&[0u8; size_of::<Self>()]);
+        let x3 = transmute_copy(&[0u8; size_of::<Self>()]);
+        let x4 = transmute_copy(&[0u8; size_of::<Self>()]);
+        let x5 = transmute_copy(&[0u8; size_of::<Self>()]);
+        let x6 = transmute_copy(&[0u8; size_of::<Self>()]);
+        let x7 = transmute_copy(&[0u8; size_of::<Self>()]);
+        let variant = ArbitraryFloatSinCosINTEL(x0, x1, x2, x3, x4, x5, x6, x7);
+        let disc: u32 = transmute(discriminant(&variant));
+        assert_eq!(disc, 5870);
+    }
+    unsafe {
+        let x0 = transmute_copy(&[0u8; size_of::<Self>()]);
+        let x1 = transmute_copy(&[0u8; size_of::<Self>()]);
+        let x2 = transmute_copy(&[0u8; size_of::<Self>()]);
+        let x3 = transmute_copy(&[0u8; size_of::<Self>()]);
+        let x4 = transmute_copy(&[0u8; size_of::<Self>()]);
+        let x5 = transmute_copy(&[0u8; size_of::<Self>()]);
+        let x6 = transmute_copy(&[0u8; size_of::<Self>()]);
+        let x7 = transmute_copy(&[0u8; size_of::<Self>()]);
+        let variant = ArbitraryFloatSinPiINTEL(x0, x1, x2, x3, x4, x5, x6, x7);
+        let disc: u32 = transmute(discriminant(&variant));
+        assert_eq!(disc, 5871);
+    }
+    unsafe {
+        let x0 = transmute_copy(&[0u8; size_of::<Self>()]);
+        let x1 = transmute_copy(&[0u8; size_of::<Self>()]);
+        let x2 = transmute_copy(&[0u8; size_of::<Self>()]);
+        let x3 = transmute_copy(&[0u8; size_of::<Self>()]);
+        let x4 = transmute_copy(&[0u8; size_of::<Self>()]);
+        let x5 = transmute_copy(&[0u8; size_of::<Self>()]);
+        let x6 = transmute_copy(&[0u8; size_of::<Self>()]);
+        let x7 = transmute_copy(&[0u8; size_of::<Self>()]);
+        let variant = ArbitraryFloatCosPiINTEL(x0, x1, x2, x3, x4, x5, x6, x7);
+        let disc: u32 = transmute(discriminant(&variant));
+        assert_eq!(disc, 5872);
+    }
+    unsafe {
+        let x0 = transmute_copy(&[0u8; size_of::<Self>()]);
+        let x1 = transmute_copy(&[0u8; size_of::<Self>()]);
+        let x2 = transmute_copy(&[0u8; size_of::<Self>()]);
+        let x3 = transmute_copy(&[0u8; size_of::<Self>()]);
+        let x4 = transmute_copy(&[0u8; size_of::<Self>()]);
+        let x5 = transmute_copy(&[0u8; size_of::<Self>()]);
+        let x6 = transmute_copy(&[0u8; size_of::<Self>()]);
+        let x7 = transmute_copy(&[0u8; size_of::<Self>()]);
+        let variant = ArbitraryFloatASinINTEL(x0, x1, x2, x3, x4, x5, x6, x7);
+        let disc: u32 = transmute(discriminant(&variant));
+        assert_eq!(disc, 5873);
+    }
+    unsafe {
+        let x0 = transmute_copy(&[0u8; size_of::<Self>()]);
+        let x1 = transmute_copy(&[0u8; size_of::<Self>()]);
+        let x2 = transmute_copy(&[0u8; size_of::<Self>()]);
+        let x3 = transmute_copy(&[0u8; size_of::<Self>()]);
+        let x4 = transmute_copy(&[0u8; size_of::<Self>()]);
+        let x5 = transmute_copy(&[0u8; size_of::<Self>()]);
+        let x6 = transmute_copy(&[0u8; size_of::<Self>()]);
+        let x7 = transmute_copy(&[0u8; size_of::<Self>()]);
+        let variant = ArbitraryFloatASinPiINTEL(x0, x1, x2, x3, x4, x5, x6, x7);
+        let disc: u32 = transmute(discriminant(&variant));
+        assert_eq!(disc, 5874);
+    }
+    unsafe {
+        let x0 = transmute_copy(&[0u8; size_of::<Self>()]);
+        let x1 = transmute_copy(&[0u8; size_of::<Self>()]);
+        let x2 = transmute_copy(&[0u8; size_of::<Self>()]);
+        let x3 = transmute_copy(&[0u8; size_of::<Self>()]);
+        let x4 = transmute_copy(&[0u8; size_of::<Self>()]);
+        let x5 = transmute_copy(&[0u8; size_of::<Self>()]);
+        let x6 = transmute_copy(&[0u8; size_of::<Self>()]);
+        let x7 = transmute_copy(&[0u8; size_of::<Self>()]);
+        let variant = ArbitraryFloatACosINTEL(x0, x1, x2, x3, x4, x5, x6, x7);
+        let disc: u32 = transmute(discriminant(&variant));
+        assert_eq!(disc, 5875);
+    }
+    unsafe {
+        let x0 = transmute_copy(&[0u8; size_of::<Self>()]);
+        let x1 = transmute_copy(&[0u8; size_of::<Self>()]);
+        let x2 = transmute_copy(&[0u8; size_of::<Self>()]);
+        let x3 = transmute_copy(&[0u8; size_of::<Self>()]);
+        let x4 = transmute_copy(&[0u8; size_of::<Self>()]);
+        let x5 = transmute_copy(&[0u8; size_of::<Self>()]);
+        let x6 = transmute_copy(&[0u8; size_of::<Self>()]);
+        let x7 = transmute_copy(&[0u8; size_of::<Self>()]);
+        let variant = ArbitraryFloatACosPiINTEL(x0, x1, x2, x3, x4, x5, x6, x7);
+        let disc: u32 = transmute(discriminant(&variant));
+        assert_eq!(disc, 5876);
+    }
+    unsafe {
+        let x0 = transmute_copy(&[0u8; size_of::<Self>()]);
+        let x1 = transmute_copy(&[0u8; size_of::<Self>()]);
+        let x2 = transmute_copy(&[0u8; size_of::<Self>()]);
+        let x3 = transmute_copy(&[0u8; size_of::<Self>()]);
+        let x4 = transmute_copy(&[0u8; size_of::<Self>()]);
+        let x5 = transmute_copy(&[0u8; size_of::<Self>()]);
+        let x6 = transmute_copy(&[0u8; size_of::<Self>()]);
+        let x7 = transmute_copy(&[0u8; size_of::<Self>()]);
+        let variant = ArbitraryFloatATanINTEL(x0, x1, x2, x3, x4, x5, x6, x7);
+        let disc: u32 = transmute(discriminant(&variant));
+        assert_eq!(disc, 5877);
+    }
+    unsafe {
+        let x0 = transmute_copy(&[0u8; size_of::<Self>()]);
+        let x1 = transmute_copy(&[0u8; size_of::<Self>()]);
+        let x2 = transmute_copy(&[0u8; size_of::<Self>()]);
+        let x3 = transmute_copy(&[0u8; size_of::<Self>()]);
+        let x4 = transmute_copy(&[0u8; size_of::<Self>()]);
+        let x5 = transmute_copy(&[0u8; size_of::<Self>()]);
+        let x6 = transmute_copy(&[0u8; size_of::<Self>()]);
+        let x7 = transmute_copy(&[0u8; size_of::<Self>()]);
+        let variant = ArbitraryFloatATanPiINTEL(x0, x1, x2, x3, x4, x5, x6, x7);
+        let disc: u32 = transmute(discriminant(&variant));
+        assert_eq!(disc, 5878);
+    }
+    unsafe {
+        let x0 = transmute_copy(&[0u8; size_of::<Self>()]);
+        let x1 = transmute_copy(&[0u8; size_of::<Self>()]);
+        let x2 = transmute_copy(&[0u8; size_of::<Self>()]);
+        let x3 = transmute_copy(&[0u8; size_of::<Self>()]);
+        let x4 = transmute_copy(&[0u8; size_of::<Self>()]);
+        let x5 = transmute_copy(&[0u8; size_of::<Self>()]);
+        let x6 = transmute_copy(&[0u8; size_of::<Self>()]);
+        let x7 = transmute_copy(&[0u8; size_of::<Self>()]);
+        let x8 = transmute_copy(&[0u8; size_of::<Self>()]);
+        let x9 = transmute_copy(&[0u8; size_of::<Self>()]);
+        let variant = ArbitraryFloatATan2INTEL(x0, x1, x2, x3, x4, x5, x6, x7, x8, x9);
+        let disc: u32 = transmute(discriminant(&variant));
+        assert_eq!(disc, 5879);
+    }
+    unsafe {
+        let x0 = transmute_copy(&[0u8; size_of::<Self>()]);
+        let x1 = transmute_copy(&[0u8; size_of::<Self>()]);
+        let x2 = transmute_copy(&[0u8; size_of::<Self>()]);
+        let x3 = transmute_copy(&[0u8; size_of::<Self>()]);
+        let x4 = transmute_copy(&[0u8; size_of::<Self>()]);
+        let x5 = transmute_copy(&[0u8; size_of::<Self>()]);
+        let x6 = transmute_copy(&[0u8; size_of::<Self>()]);
+        let x7 = transmute_copy(&[0u8; size_of::<Self>()]);
+        let x8 = transmute_copy(&[0u8; size_of::<Self>()]);
+        let x9 = transmute_copy(&[0u8; size_of::<Self>()]);
+        let variant = ArbitraryFloatPowINTEL(x0, x1, x2, x3, x4, x5, x6, x7, x8, x9);
+        let disc: u32 = transmute(discriminant(&variant));
+        assert_eq!(disc, 5880);
+    }
+    unsafe {
+        let x0 = transmute_copy(&[0u8; size_of::<Self>()]);
+        let x1 = transmute_copy(&[0u8; size_of::<Self>()]);
+        let x2 = transmute_copy(&[0u8; size_of::<Self>()]);
+        let x3 = transmute_copy(&[0u8; size_of::<Self>()]);
+        let x4 = transmute_copy(&[0u8; size_of::<Self>()]);
+        let x5 = transmute_copy(&[0u8; size_of::<Self>()]);
+        let x6 = transmute_copy(&[0u8; size_of::<Self>()]);
+        let x7 = transmute_copy(&[0u8; size_of::<Self>()]);
+        let x8 = transmute_copy(&[0u8; size_of::<Self>()]);
+        let x9 = transmute_copy(&[0u8; size_of::<Self>()]);
+        let variant = ArbitraryFloatPowRINTEL(x0, x1, x2, x3, x4, x5, x6, x7, x8, x9);
+        let disc: u32 = transmute(discriminant(&variant));
+        assert_eq!(disc, 5881);
+    }
+    unsafe {
+        let x0 = transmute_copy(&[0u8; size_of::<Self>()]);
+        let x1 = transmute_copy(&[0u8; size_of::<Self>()]);
+        let x2 = transmute_copy(&[0u8; size_of::<Self>()]);
+        let x3 = transmute_copy(&[0u8; size_of::<Self>()]);
+        let x4 = transmute_copy(&[0u8; size_of::<Self>()]);
+        let x5 = transmute_copy(&[0u8; size_of::<Self>()]);
+        let x6 = transmute_copy(&[0u8; size_of::<Self>()]);
+        let x7 = transmute_copy(&[0u8; size_of::<Self>()]);
+        let x8 = transmute_copy(&[0u8; size_of::<Self>()]);
+        let variant = ArbitraryFloatPowNINTEL(x0, x1, x2, x3, x4, x5, x6, x7, x8);
+        let disc: u32 = transmute(discriminant(&variant));
+        assert_eq!(disc, 5882);
+    }
+    unsafe {
+        let x0 = transmute_copy(&[0u8; size_of::<Self>()]);
         let variant = LoopControlINTEL(x0);
         let disc: u32 = transmute(discriminant(&variant));
         assert_eq!(disc, 5887);
+    }
+    unsafe {
+        let x0 = transmute_copy(&[0u8; size_of::<Self>()]);
+        let x1 = transmute_copy(&[0u8; size_of::<Self>()]);
+        let x2 = transmute_copy(&[0u8; size_of::<Self>()]);
+        let x3 = transmute_copy(&[0u8; size_of::<Self>()]);
+        let x4 = transmute_copy(&[0u8; size_of::<Self>()]);
+        let x5 = transmute_copy(&[0u8; size_of::<Self>()]);
+        let x6 = transmute_copy(&[0u8; size_of::<Self>()]);
+        let x7 = transmute_copy(&[0u8; size_of::<Self>()]);
+        let x8 = transmute_copy(&[0u8; size_of::<Self>()]);
+        let variant = FixedSqrtINTEL(x0, x1, x2, x3, x4, x5, x6, x7, x8);
+        let disc: u32 = transmute(discriminant(&variant));
+        assert_eq!(disc, 5923);
+    }
+    unsafe {
+        let x0 = transmute_copy(&[0u8; size_of::<Self>()]);
+        let x1 = transmute_copy(&[0u8; size_of::<Self>()]);
+        let x2 = transmute_copy(&[0u8; size_of::<Self>()]);
+        let x3 = transmute_copy(&[0u8; size_of::<Self>()]);
+        let x4 = transmute_copy(&[0u8; size_of::<Self>()]);
+        let x5 = transmute_copy(&[0u8; size_of::<Self>()]);
+        let x6 = transmute_copy(&[0u8; size_of::<Self>()]);
+        let x7 = transmute_copy(&[0u8; size_of::<Self>()]);
+        let x8 = transmute_copy(&[0u8; size_of::<Self>()]);
+        let variant = FixedRecipINTEL(x0, x1, x2, x3, x4, x5, x6, x7, x8);
+        let disc: u32 = transmute(discriminant(&variant));
+        assert_eq!(disc, 5924);
+    }
+    unsafe {
+        let x0 = transmute_copy(&[0u8; size_of::<Self>()]);
+        let x1 = transmute_copy(&[0u8; size_of::<Self>()]);
+        let x2 = transmute_copy(&[0u8; size_of::<Self>()]);
+        let x3 = transmute_copy(&[0u8; size_of::<Self>()]);
+        let x4 = transmute_copy(&[0u8; size_of::<Self>()]);
+        let x5 = transmute_copy(&[0u8; size_of::<Self>()]);
+        let x6 = transmute_copy(&[0u8; size_of::<Self>()]);
+        let x7 = transmute_copy(&[0u8; size_of::<Self>()]);
+        let x8 = transmute_copy(&[0u8; size_of::<Self>()]);
+        let variant = FixedRsqrtINTEL(x0, x1, x2, x3, x4, x5, x6, x7, x8);
+        let disc: u32 = transmute(discriminant(&variant));
+        assert_eq!(disc, 5925);
+    }
+    unsafe {
+        let x0 = transmute_copy(&[0u8; size_of::<Self>()]);
+        let x1 = transmute_copy(&[0u8; size_of::<Self>()]);
+        let x2 = transmute_copy(&[0u8; size_of::<Self>()]);
+        let x3 = transmute_copy(&[0u8; size_of::<Self>()]);
+        let x4 = transmute_copy(&[0u8; size_of::<Self>()]);
+        let x5 = transmute_copy(&[0u8; size_of::<Self>()]);
+        let x6 = transmute_copy(&[0u8; size_of::<Self>()]);
+        let x7 = transmute_copy(&[0u8; size_of::<Self>()]);
+        let x8 = transmute_copy(&[0u8; size_of::<Self>()]);
+        let variant = FixedSinINTEL(x0, x1, x2, x3, x4, x5, x6, x7, x8);
+        let disc: u32 = transmute(discriminant(&variant));
+        assert_eq!(disc, 5926);
+    }
+    unsafe {
+        let x0 = transmute_copy(&[0u8; size_of::<Self>()]);
+        let x1 = transmute_copy(&[0u8; size_of::<Self>()]);
+        let x2 = transmute_copy(&[0u8; size_of::<Self>()]);
+        let x3 = transmute_copy(&[0u8; size_of::<Self>()]);
+        let x4 = transmute_copy(&[0u8; size_of::<Self>()]);
+        let x5 = transmute_copy(&[0u8; size_of::<Self>()]);
+        let x6 = transmute_copy(&[0u8; size_of::<Self>()]);
+        let x7 = transmute_copy(&[0u8; size_of::<Self>()]);
+        let x8 = transmute_copy(&[0u8; size_of::<Self>()]);
+        let variant = FixedCosINTEL(x0, x1, x2, x3, x4, x5, x6, x7, x8);
+        let disc: u32 = transmute(discriminant(&variant));
+        assert_eq!(disc, 5927);
+    }
+    unsafe {
+        let x0 = transmute_copy(&[0u8; size_of::<Self>()]);
+        let x1 = transmute_copy(&[0u8; size_of::<Self>()]);
+        let x2 = transmute_copy(&[0u8; size_of::<Self>()]);
+        let x3 = transmute_copy(&[0u8; size_of::<Self>()]);
+        let x4 = transmute_copy(&[0u8; size_of::<Self>()]);
+        let x5 = transmute_copy(&[0u8; size_of::<Self>()]);
+        let x6 = transmute_copy(&[0u8; size_of::<Self>()]);
+        let x7 = transmute_copy(&[0u8; size_of::<Self>()]);
+        let x8 = transmute_copy(&[0u8; size_of::<Self>()]);
+        let variant = FixedSinCosINTEL(x0, x1, x2, x3, x4, x5, x6, x7, x8);
+        let disc: u32 = transmute(discriminant(&variant));
+        assert_eq!(disc, 5928);
+    }
+    unsafe {
+        let x0 = transmute_copy(&[0u8; size_of::<Self>()]);
+        let x1 = transmute_copy(&[0u8; size_of::<Self>()]);
+        let x2 = transmute_copy(&[0u8; size_of::<Self>()]);
+        let x3 = transmute_copy(&[0u8; size_of::<Self>()]);
+        let x4 = transmute_copy(&[0u8; size_of::<Self>()]);
+        let x5 = transmute_copy(&[0u8; size_of::<Self>()]);
+        let x6 = transmute_copy(&[0u8; size_of::<Self>()]);
+        let x7 = transmute_copy(&[0u8; size_of::<Self>()]);
+        let x8 = transmute_copy(&[0u8; size_of::<Self>()]);
+        let variant = FixedSinPiINTEL(x0, x1, x2, x3, x4, x5, x6, x7, x8);
+        let disc: u32 = transmute(discriminant(&variant));
+        assert_eq!(disc, 5929);
+    }
+    unsafe {
+        let x0 = transmute_copy(&[0u8; size_of::<Self>()]);
+        let x1 = transmute_copy(&[0u8; size_of::<Self>()]);
+        let x2 = transmute_copy(&[0u8; size_of::<Self>()]);
+        let x3 = transmute_copy(&[0u8; size_of::<Self>()]);
+        let x4 = transmute_copy(&[0u8; size_of::<Self>()]);
+        let x5 = transmute_copy(&[0u8; size_of::<Self>()]);
+        let x6 = transmute_copy(&[0u8; size_of::<Self>()]);
+        let x7 = transmute_copy(&[0u8; size_of::<Self>()]);
+        let x8 = transmute_copy(&[0u8; size_of::<Self>()]);
+        let variant = FixedCosPiINTEL(x0, x1, x2, x3, x4, x5, x6, x7, x8);
+        let disc: u32 = transmute(discriminant(&variant));
+        assert_eq!(disc, 5930);
+    }
+    unsafe {
+        let x0 = transmute_copy(&[0u8; size_of::<Self>()]);
+        let x1 = transmute_copy(&[0u8; size_of::<Self>()]);
+        let x2 = transmute_copy(&[0u8; size_of::<Self>()]);
+        let x3 = transmute_copy(&[0u8; size_of::<Self>()]);
+        let x4 = transmute_copy(&[0u8; size_of::<Self>()]);
+        let x5 = transmute_copy(&[0u8; size_of::<Self>()]);
+        let x6 = transmute_copy(&[0u8; size_of::<Self>()]);
+        let x7 = transmute_copy(&[0u8; size_of::<Self>()]);
+        let x8 = transmute_copy(&[0u8; size_of::<Self>()]);
+        let variant = FixedSinCosPiINTEL(x0, x1, x2, x3, x4, x5, x6, x7, x8);
+        let disc: u32 = transmute(discriminant(&variant));
+        assert_eq!(disc, 5931);
+    }
+    unsafe {
+        let x0 = transmute_copy(&[0u8; size_of::<Self>()]);
+        let x1 = transmute_copy(&[0u8; size_of::<Self>()]);
+        let x2 = transmute_copy(&[0u8; size_of::<Self>()]);
+        let x3 = transmute_copy(&[0u8; size_of::<Self>()]);
+        let x4 = transmute_copy(&[0u8; size_of::<Self>()]);
+        let x5 = transmute_copy(&[0u8; size_of::<Self>()]);
+        let x6 = transmute_copy(&[0u8; size_of::<Self>()]);
+        let x7 = transmute_copy(&[0u8; size_of::<Self>()]);
+        let x8 = transmute_copy(&[0u8; size_of::<Self>()]);
+        let variant = FixedLogINTEL(x0, x1, x2, x3, x4, x5, x6, x7, x8);
+        let disc: u32 = transmute(discriminant(&variant));
+        assert_eq!(disc, 5932);
+    }
+    unsafe {
+        let x0 = transmute_copy(&[0u8; size_of::<Self>()]);
+        let x1 = transmute_copy(&[0u8; size_of::<Self>()]);
+        let x2 = transmute_copy(&[0u8; size_of::<Self>()]);
+        let x3 = transmute_copy(&[0u8; size_of::<Self>()]);
+        let x4 = transmute_copy(&[0u8; size_of::<Self>()]);
+        let x5 = transmute_copy(&[0u8; size_of::<Self>()]);
+        let x6 = transmute_copy(&[0u8; size_of::<Self>()]);
+        let x7 = transmute_copy(&[0u8; size_of::<Self>()]);
+        let x8 = transmute_copy(&[0u8; size_of::<Self>()]);
+        let variant = FixedExpINTEL(x0, x1, x2, x3, x4, x5, x6, x7, x8);
+        let disc: u32 = transmute(discriminant(&variant));
+        assert_eq!(disc, 5933);
     }
     unsafe {
         let x0 = transmute_copy(&[0u8; size_of::<Self>()]);
@@ -5048,7 +5854,8 @@ pub fn test() {
     }
     unsafe {
         let x0 = transmute_copy(&[0u8; size_of::<Self>()]);
-        let variant = TypeBufferSurfaceINTEL(x0);
+        let x1 = transmute_copy(&[0u8; size_of::<Self>()]);
+        let variant = TypeBufferSurfaceINTEL(x0, x1);
         let disc: u32 = transmute(discriminant(&variant));
         assert_eq!(disc, 6086);
     }
@@ -5365,6 +6172,11 @@ pub fn test_FunctionControl() {
         let disc: u32 = transmute(discriminant(&variant));
         assert_eq!(disc, 8);
     }
+    unsafe {
+        let variant = OptNoneINTEL();
+        let disc: u32 = transmute(discriminant(&variant));
+        assert_eq!(disc, 65536);
+    }
 }
 #[test]
 pub fn test_MemorySemantics() {
@@ -5622,6 +6434,11 @@ pub fn test_SourceLanguage() {
         let variant = HLSL();
         let disc: u32 = transmute(discriminant(&variant));
         assert_eq!(disc, 5);
+    }
+    unsafe {
+        let variant = CPP_for_OpenCL();
+        let disc: u32 = transmute(discriminant(&variant));
+        assert_eq!(disc, 6);
     }
 }
 #[test]
@@ -5960,9 +6777,16 @@ pub fn test_ExecutionMode() {
     }
     unsafe {
         let x0 = transmute_copy(&[0u8; size_of::<Self>()]);
-        let variant = LocalSizeHintId(x0);
+        let x1 = transmute_copy(&[0u8; size_of::<Self>()]);
+        let x2 = transmute_copy(&[0u8; size_of::<Self>()]);
+        let variant = LocalSizeHintId(x0, x1, x2);
         let disc: u32 = transmute(discriminant(&variant));
         assert_eq!(disc, 39);
+    }
+    unsafe {
+        let variant = SubgroupUniformControlFlowKHR();
+        let disc: u32 = transmute(discriminant(&variant));
+        assert_eq!(disc, 4421);
     }
     unsafe {
         let variant = PostDepthCoverage();
@@ -6778,6 +7602,51 @@ pub fn test_FPDenormMode() {
     }
 }
 #[test]
+pub fn test_QuantizationModes() {
+    use std::mem::*;
+    use QuantizationModes::*;
+    unsafe {
+        let variant = TRN();
+        let disc: u32 = transmute(discriminant(&variant));
+        assert_eq!(disc, 0);
+    }
+    unsafe {
+        let variant = TRN_ZERO();
+        let disc: u32 = transmute(discriminant(&variant));
+        assert_eq!(disc, 1);
+    }
+    unsafe {
+        let variant = RND();
+        let disc: u32 = transmute(discriminant(&variant));
+        assert_eq!(disc, 2);
+    }
+    unsafe {
+        let variant = RND_ZERO();
+        let disc: u32 = transmute(discriminant(&variant));
+        assert_eq!(disc, 3);
+    }
+    unsafe {
+        let variant = RND_INF();
+        let disc: u32 = transmute(discriminant(&variant));
+        assert_eq!(disc, 4);
+    }
+    unsafe {
+        let variant = RND_MIN_INF();
+        let disc: u32 = transmute(discriminant(&variant));
+        assert_eq!(disc, 5);
+    }
+    unsafe {
+        let variant = RND_CONV();
+        let disc: u32 = transmute(discriminant(&variant));
+        assert_eq!(disc, 6);
+    }
+    unsafe {
+        let variant = RND_CONV_ODD();
+        let disc: u32 = transmute(discriminant(&variant));
+        assert_eq!(disc, 7);
+    }
+}
+#[test]
 pub fn test_FPOperationMode() {
     use std::mem::*;
     use FPOperationMode::*;
@@ -6793,6 +7662,31 @@ pub fn test_FPOperationMode() {
     }
 }
 #[test]
+pub fn test_OverflowModes() {
+    use std::mem::*;
+    use OverflowModes::*;
+    unsafe {
+        let variant = WRAP();
+        let disc: u32 = transmute(discriminant(&variant));
+        assert_eq!(disc, 0);
+    }
+    unsafe {
+        let variant = SAT();
+        let disc: u32 = transmute(discriminant(&variant));
+        assert_eq!(disc, 1);
+    }
+    unsafe {
+        let variant = SAT_ZERO();
+        let disc: u32 = transmute(discriminant(&variant));
+        assert_eq!(disc, 2);
+    }
+    unsafe {
+        let variant = SAT_SYM();
+        let disc: u32 = transmute(discriminant(&variant));
+        assert_eq!(disc, 3);
+    }
+}
+#[test]
 pub fn test_LinkageType() {
     use std::mem::*;
     use LinkageType::*;
@@ -6805,6 +7699,11 @@ pub fn test_LinkageType() {
         let variant = Import();
         let disc: u32 = transmute(discriminant(&variant));
         assert_eq!(disc, 1);
+    }
+    unsafe {
+        let variant = LinkOnceODR();
+        let disc: u32 = transmute(discriminant(&variant));
+        assert_eq!(disc, 2);
     }
 }
 #[test]
@@ -7883,6 +8782,11 @@ pub fn test_BuiltIn() {
         assert_eq!(disc, 5333);
     }
     unsafe {
+        let variant = CurrentRayTimeNV();
+        let disc: u32 = transmute(discriminant(&variant));
+        assert_eq!(disc, 5334);
+    }
+    unsafe {
         let variant = IncomingRayFlagsNV();
         let disc: u32 = transmute(discriminant(&variant));
         assert_eq!(disc, 5351);
@@ -8673,6 +9577,11 @@ pub fn test_Capability() {
         assert_eq!(disc, 5340);
     }
     unsafe {
+        let variant = RayTracingMotionBlurNV();
+        let disc: u32 = transmute(discriminant(&variant));
+        assert_eq!(disc, 5341);
+    }
+    unsafe {
         let variant = VulkanMemoryModel();
         let disc: u32 = transmute(discriminant(&variant));
         assert_eq!(disc, 5345);
@@ -8803,6 +9712,11 @@ pub fn test_Capability() {
         assert_eq!(disc, 5619);
     }
     unsafe {
+        let variant = ExpectAssumeKHR();
+        let disc: u32 = transmute(discriminant(&variant));
+        assert_eq!(disc, 5629);
+    }
+    unsafe {
         let variant = SubgroupAvcMotionEstimationINTEL();
         let disc: u32 = transmute(discriminant(&variant));
         assert_eq!(disc, 5696);
@@ -8841,6 +9755,11 @@ pub fn test_Capability() {
         let variant = ArbitraryPrecisionIntegersINTEL();
         let disc: u32 = transmute(discriminant(&variant));
         assert_eq!(disc, 5844);
+    }
+    unsafe {
+        let variant = ArbitraryPrecisionFloatingPointINTEL();
+        let disc: u32 = transmute(discriminant(&variant));
+        assert_eq!(disc, 5845);
     }
     unsafe {
         let variant = UnstructuredLoopControlsINTEL();
@@ -8883,6 +9802,11 @@ pub fn test_Capability() {
         assert_eq!(disc, 5920);
     }
     unsafe {
+        let variant = ArbitraryPrecisionFixedPointINTEL();
+        let disc: u32 = transmute(discriminant(&variant));
+        assert_eq!(disc, 5922);
+    }
+    unsafe {
         let variant = USMStorageClassesINTEL();
         let disc: u32 = transmute(discriminant(&variant));
         assert_eq!(disc, 5935);
@@ -8903,6 +9827,31 @@ pub fn test_Capability() {
         assert_eq!(disc, 5948);
     }
     unsafe {
+        let variant = DotProductInputAllKHR();
+        let disc: u32 = transmute(discriminant(&variant));
+        assert_eq!(disc, 6016);
+    }
+    unsafe {
+        let variant = DotProductInput4x8BitKHR();
+        let disc: u32 = transmute(discriminant(&variant));
+        assert_eq!(disc, 6017);
+    }
+    unsafe {
+        let variant = DotProductInput4x8BitPackedKHR();
+        let disc: u32 = transmute(discriminant(&variant));
+        assert_eq!(disc, 6018);
+    }
+    unsafe {
+        let variant = DotProductKHR();
+        let disc: u32 = transmute(discriminant(&variant));
+        assert_eq!(disc, 6019);
+    }
+    unsafe {
+        let variant = BitInstructions();
+        let disc: u32 = transmute(discriminant(&variant));
+        assert_eq!(disc, 6025);
+    }
+    unsafe {
         let variant = AtomicFloat32AddEXT();
         let disc: u32 = transmute(discriminant(&variant));
         assert_eq!(disc, 6033);
@@ -8916,6 +9865,21 @@ pub fn test_Capability() {
         let variant = LongConstantCompositeINTEL();
         let disc: u32 = transmute(discriminant(&variant));
         assert_eq!(disc, 6089);
+    }
+    unsafe {
+        let variant = OptNoneINTEL();
+        let disc: u32 = transmute(discriminant(&variant));
+        assert_eq!(disc, 6094);
+    }
+    unsafe {
+        let variant = AtomicFloat16AddEXT();
+        let disc: u32 = transmute(discriminant(&variant));
+        assert_eq!(disc, 6095);
+    }
+    unsafe {
+        let variant = DebugInfoModuleINTEL();
+        let disc: u32 = transmute(discriminant(&variant));
+        assert_eq!(disc, 6114);
     }
 }
 #[test]
@@ -8966,6 +9930,16 @@ pub fn test_RayQueryCandidateIntersectionType() {
         let variant = RayQueryCandidateIntersectionAABBKHR();
         let disc: u32 = transmute(discriminant(&variant));
         assert_eq!(disc, 1);
+    }
+}
+#[test]
+pub fn test_PackedVectorFormat() {
+    use std::mem::*;
+    use PackedVectorFormat::*;
+    unsafe {
+        let variant = PackedVectorFormat4x8BitKHR();
+        let disc: u32 = transmute(discriminant(&variant));
+        assert_eq!(disc, 0);
     }
 }
 #[test]

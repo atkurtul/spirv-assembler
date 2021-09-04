@@ -1,12 +1,13 @@
 #![allow(non_camel_case_types, dead_code, non_upper_case_globals)]
 #![allow(warnings)]
 #![feature(arbitrary_enum_discriminant, core_intrinsics)]
-pub mod opcode;
 pub mod glsl450;
+pub mod opcode;
 pub mod opencl100;
 
-use std::{env::Args, fs::read};
+use std::{collections::BTreeMap, env::Args, fs::read};
 
+pub type Map<K, V> = BTreeMap<K, V>;
 pub use opcode::*;
 pub type Sstr = &'static str;
 
@@ -31,14 +32,14 @@ fn read_spirv(src: &str) -> Box<[u32]> {
 }
 
 impl Environ for Module {
-    fn get_id_word(&self, id: ID) -> u32 {
-        match id {
-            ID::Int(i) => i,
-            _ => 0,
-        }
+    fn insert_id(&mut self, id: ResultID) {
+        let re = self.instr.len();
+        self.ids.insert(id, re);
     }
-    fn insert_id(&mut self, id: u32) -> u32 {
-        id
+
+    fn insert_op(&mut self, opc: Opcode) -> Opcode {
+        self.instr.push(opc.clone());
+        opc
     }
 }
 
@@ -68,20 +69,25 @@ pub struct Module {
     pub src: Box<[u32]>,
     pub header: Header,
     pub instr: Vec<Opcode>,
+    pub ids: Map<ResultID, usize>,
 }
 
 impl Module {
     pub fn new(src: &str) -> Module {
         let src = read_spirv(src);
-        let header = Header::new(&src[..5]);
-        let mut instr = vec![];
-        let chunk = &src[5..];
-        let mut idx = 0;
+        Module::new_code(Header::new(&src[..5]), &src[5..])
+    }
+
+    pub fn new_code(header: Header, bin: &[u32]) -> Module {
         let mut module = Module::default();
-        while idx < chunk.len() as u32 {
-          let opc = Opcode::read_word(chunk, &mut module, &mut idx);
-          instr.push(opc);
+        module.header = header;
+
+        let mut idx = 0;
+
+        while idx < bin.len() {
+            Opcode::read_word(bin, &mut module, &mut idx);
         }
-        Module {src, header, instr}
+
+        module
     }
 }

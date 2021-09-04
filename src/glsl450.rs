@@ -88,13 +88,16 @@ impl GLSL450 {
     pub fn opcode(&self) -> u32 {
         unsafe { std::mem::transmute_copy(self) }
     }
-    pub fn read_word<Env: Environ>(chunk: &[u32], env: &mut Env, idx: &mut u32) -> Self {
+    pub fn read_word<Env: Environ + std::fmt::Debug>(
+        chunk: &[u32],
+        env: &mut Env,
+        idx: &mut usize,
+    ) -> Self {
         use GLSL450::*;
-        let i = *idx as usize;
-        let mask = u16::MAX as u32;
-        let len = (chunk[i] >> 16) & mask;
-        let opc = chunk[i] & mask;
-        let chunk = &chunk[..i + len as usize];
+        let mask = u16::MAX as usize;
+        let len = (chunk[*idx] >> 16) as usize & mask;
+        let opc = chunk[*idx] as usize & mask;
+        let chunk = &chunk[..*idx + len];
         let mark = *idx;
         *idx += 1;
         let re = match opc {

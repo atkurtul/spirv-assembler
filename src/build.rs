@@ -70,7 +70,7 @@ struct Grammar {
 }
 
 fn filter_kind(kind: &str, q: &str) -> TokenStream {
-    let mut str = kind.replace("LiteralString", "Sstr");
+    let mut str = kind.replace("LiteralString", "String");
     if str.starts_with("Literal") {
         str = "u32".to_owned();
     };
@@ -135,14 +135,36 @@ impl Instruction {
         }
     }
 
-    pub fn write_read(&self, vars: &[Ident], trim: bool) -> TokenStream {
+    pub fn write_read(&self, vars: &[Ident], trim: bool, insert: bool) -> TokenStream {
         let id = self.id(trim);
         let opc = Literal::u32_unsuffixed(self.opcode);
         let args = &vars[..self.operands.len()];
+
+        let returns = if !insert {
+            quote! { #id(#(#args,)*) }
+        } else {
+            quote! { env.insert_op(#id(#(#args,)*)) }
+        };
+
+        let produced_id = match &self.operands[..] {
+            [OperandRef { ref kind, .. }, ..] if kind == "IdResult" => {
+                quote! {
+                  env.insert_id(x0);
+                }
+            }
+            [_, OperandRef { ref kind, .. }, ..] if kind == "IdResult" => {
+                quote! {
+                  env.insert_id(x1);
+                }
+            }
+            _ => quote! {},
+        };
+
         quote! {
           #opc => {
             #(let #args = Writer::read_word(chunk, env, idx); )*
-            #id(#(#args,)*)
+            #produced_id
+            #returns
           }
         }
     }
@@ -279,7 +301,7 @@ impl Operand {
 
         quote! {
           #[repr(u32)]
-          #[derive(Debug, Copy, Clone, Eq, PartialEq)]
+          #[derive(Debug, Clone, Eq, PartialEq)]
           pub enum #id {
             #(#inst),*
           }
@@ -300,7 +322,7 @@ impl Operand {
               }
             }
 
-            fn read_word(chunk: &[u32], env: &mut Env, idx: &mut u32) -> Self {
+            fn read_word(chunk: &[u32], env: &mut Env, idx: &mut usize) -> Self {
 
               use #id ::*;
               *idx += 1;
@@ -341,7 +363,10 @@ fn write_ext(name: &str, src: &str) -> TokenStream {
 
     let inst = ext.instructions.iter().map(|i| i.write_as_enum(false));
     let matcher = ext.instructions.iter().map(|i| i.write_match(&vars, false));
-    let reader = ext.instructions.iter().map(|i| i.write_read(&vars,false));
+    let reader = ext
+        .instructions
+        .iter()
+        .map(|i| i.write_read(&vars, false, false));
 
     let name = format_ident!("{}", name);
 
@@ -359,13 +384,13 @@ fn write_ext(name: &str, src: &str) -> TokenStream {
           unsafe { std::mem::transmute_copy(self) }
         }
 
-        pub fn read_word<Env: Environ>(chunk: &[u32], env: &mut Env, idx: &mut u32) -> Self {
+        pub fn read_word<Env: Environ + std::fmt::Debug>(chunk: &[u32], env: &mut Env, idx: &mut usize) -> Self {
           use #name::*;
-          let i = *idx as usize;
-          let mask = u16::MAX as u32;;
-          let len = (chunk[i] >> 16) & mask;
-          let opc = chunk[i] & mask;
-          let chunk = &chunk[..i + len as usize];
+  
+          let mask = u16::MAX as usize;
+          let len = (chunk[*idx] >> 16) as usize & mask;
+          let opc = chunk[*idx] as usize & mask;
+          let chunk = &chunk[..*idx + len];
           let mark = *idx;
           *idx += 1;
           let re = match opc {
@@ -418,7 +443,7 @@ fn main() {
     let matcher = filter0.clone().map(|i| i.write_match(&vars, true));
     let spec_matcher = filter1.clone().map(|i| i.write_spec(&vars, true));
 
-    let reader = filter0.clone().map(|i| i.write_read(&vars, true));
+    let reader = filter0.clone().map(|i| i.write_read(&vars, true, true));
     let specops = filter1.clone().map(|i| i.write_read_spec(&vars, true));
 
     let ops = grammar
@@ -431,8 +456,6 @@ fn main() {
         "src/opcode.rs",
         quote! {
           #![feature(arbitrary_enum_discriminant)]
-          pub type Sstr = &'static str;
-
 
           #[repr(u32)]
           #[derive(Debug, Clone, Eq, PartialEq)]
@@ -445,7 +468,7 @@ fn main() {
               unsafe { std::mem::transmute_copy(self) }
             }
 
-            fn read_as_spec_op<Env: Environ>(ty: TypeID, id: ResultID, chunk: &[u32], env: &mut Env, idx: &mut u32) -> Self {
+            fn read_as_spec_op<Env: Environ>(ty: TypeID, id: ResultID, chunk: &[u32], env: &mut Env, idx: &mut usize) -> Self {
               use Opcode::*;
               let i = *idx as usize;
               let mask = u16::MAX as u32;;
@@ -457,13 +480,12 @@ fn main() {
               }
             }
 
-            pub fn read_word<Env: Environ>(chunk: &[u32], env: &mut Env, idx: &mut u32) -> Self {
+            pub fn read_word<Env: Environ + std::fmt::Debug>(chunk: &[u32], env: &mut Env, idx: &mut usize) -> Self {
               use Opcode::*;
-              let i = *idx as usize;
-              let mask = u16::MAX as u32;;
-              let len = (chunk[i] >> 16) & mask;
-              let opc = chunk[i] & mask;
-              let chunk = &chunk[..i + len as usize];
+              let mask = u16::MAX as usize;
+              let len = (chunk[*idx] >> 16) as usize & mask;
+              let opc = chunk[*idx] as usize & mask;
+              let chunk = &chunk[..*idx + len];
               let mark = *idx;
               *idx += 1;
               let re = match opc {
@@ -472,11 +494,11 @@ fn main() {
                   let x0 = Writer::read_word(chunk, env, idx);
                   let x1 = Writer::read_word(chunk, env, idx);
                   let x2 = Opcode::read_as_spec_op(x0, x1, chunk, env, idx);
-                  SpecConstantOp(x0, x1, Box::new(x2))
+                  env.insert_op(SpecConstantOp(x0, x1, Box::new(x2)))
                 }
                 wtf => panic!("{}", wtf)
               };
-              assert_eq!(*idx - mark, len);
+              assert_eq!(*idx - mark, len, "{:?}", env);
               re
             }
 
@@ -509,13 +531,13 @@ fn main() {
           #(#ops)*
 
           pub trait Environ {
-            fn get_id_word(&self, id: ID) -> u32;
-            fn insert_id(&mut self, i: u32) -> u32;
+            fn insert_id(&mut self, i: ResultID);
+            fn insert_op(&mut self, opc: Opcode) -> Opcode;
           }
 
           pub trait Writer<Env: Environ> {
             fn write_word(&self, env: &Env, sink: &mut Vec<u32>) {}
-            fn read_word(chunk: &[u32], env: &mut Env, idx: &mut u32) -> Self;
+            fn read_word(chunk: &[u32], env: &mut Env, idx: &mut usize) -> Self;
           }
 
           impl<Env: Environ, T: Writer<Env>> Writer<Env> for Option<T> {
@@ -523,8 +545,8 @@ fn main() {
               self.as_ref().map(|t| t.write_word(env, sink));
             }
 
-            fn read_word(chunk: &[u32], env: &mut Env, idx: &mut u32) -> Self {
-              if *idx < chunk.len() as u32 {
+            fn read_word(chunk: &[u32], env: &mut Env, idx: &mut usize) -> Self {
+              if *idx < chunk.len() {
                 Some(T::read_word(chunk, env, idx))
               } else {
                 None
@@ -538,7 +560,7 @@ fn main() {
               self.1.write_word(env, sink);
             }
 
-            fn read_word(chunk: &[u32], env: &mut Env, idx: &mut u32) -> Self {
+            fn read_word(chunk: &[u32], env: &mut Env, idx: &mut usize) -> Self {
               let t = T::read_word(chunk, env, idx);
               let u = U::read_word(chunk, env, idx);
               (t,u)
@@ -551,9 +573,9 @@ fn main() {
               self.iter().for_each(|t| t.write_word(env, sink));
             }
 
-            fn read_word(chunk: &[u32], env: &mut Env, idx: &mut u32) -> Self {
+            fn read_word(chunk: &[u32], env: &mut Env, idx: &mut usize) -> Self {
               let mut re = vec![];
-              while *idx < chunk.len() as u32 {
+              while *idx < chunk.len() {
                 re.push(T::read_word(chunk, env, idx));
               }
               re
@@ -565,13 +587,13 @@ fn main() {
               sink.push(*self);
             }
 
-            fn read_word(chunk: &[u32], env: &mut Env, idx: &mut u32) -> Self {
+            fn read_word(chunk: &[u32], env: &mut Env, idx: &mut usize) -> Self {
               *idx += 1;
               chunk[*idx as usize - 1]
             }
           }
 
-          impl<Env: Environ> Writer<Env> for Sstr {
+          impl<Env: Environ> Writer<Env> for String {
             fn write_word(&self, env: &Env, sink: &mut Vec<u32>) {
               let mark = sink.len();
               let strlen = (self.len() >> 2) + 1;
@@ -585,8 +607,7 @@ fn main() {
               }
             }
 
-            fn read_word(chunk: &[u32], env: &mut Env, idx: &mut u32) -> Self {
-
+            fn read_word(chunk: &[u32], env: &mut Env, idx: &mut usize) -> Self {
               let chunk = &chunk[*idx as usize..];
               let mut len = 0;
               'outer: for u in chunk {
@@ -601,7 +622,7 @@ fn main() {
               *idx += offset;
               unsafe {
                 let s = std::slice::from_raw_parts((chunk.as_ptr() as * const u8), len as usize);
-                std::mem::transmute(std::str::from_utf8(s).unwrap())
+                std::str::from_utf8(s).unwrap().to_owned()
               }
             }
           }
@@ -609,14 +630,13 @@ fn main() {
 
           impl<Env: Environ, T: From<ID> + Into<ID> + Copy> Writer<Env> for T {
             fn write_word(&self, env: &Env, sink: &mut Vec<u32>) {
-              let word = env.get_id_word((*self).into());
-              sink.push(word);
+              let word: ID = (*self).into();
+              sink.push(word.0);
             }
-            fn read_word(chunk: &[u32], env: &mut Env, idx: &mut u32) -> Self {
-
-              let id = env.insert_id(chunk[*idx as usize]);
+            fn read_word(chunk: &[u32], env: &mut Env, idx: &mut usize) -> Self {
+              let id = ID(chunk[*idx as usize]);
               *idx += 1;
-              Self::from(ID::Int(id))
+              Self::from(id)
             }
           }
           impl From<ID> for ResultID { fn from(id: ID) -> Self { Self(id) }}
@@ -629,22 +649,21 @@ fn main() {
           impl Into<ID> for ScopeID { fn into(self) -> ID { self.0 }}
           impl Into<ID> for MemorySemanticsID { fn into(self) -> ID { self.0 }}
 
-          #[derive(Debug, Copy, Clone, Eq, PartialEq)]
-          pub enum ID{
-            Str(Sstr),
-            Int(u32),
-          }
-          #[derive(Debug, Copy, Clone, Eq, PartialEq)]  pub struct ScopeID(ID);
-          #[derive(Debug, Copy, Clone, Eq, PartialEq)]  pub struct MemorySemanticsID(ID);
-          #[derive(Debug, Copy, Clone, Eq, PartialEq)]  pub struct TypeID(ID);
-          #[derive(Debug, Copy, Clone, Eq, PartialEq)]  pub struct ResultID(ID);
+          #[derive(Debug, Copy, Clone, Eq, PartialEq, Hash, Default, Ord, PartialOrd)]  pub struct ID(u32);
+          #[derive(Debug, Copy, Clone, Eq, PartialEq, Hash, Default, Ord, PartialOrd)]  pub struct ScopeID(ID);
+          #[derive(Debug, Copy, Clone, Eq, PartialEq, Hash, Default, Ord, PartialOrd)]  pub struct MemorySemanticsID(ID);
+          #[derive(Debug, Copy, Clone, Eq, PartialEq, Hash, Default, Ord, PartialOrd)]  pub struct TypeID(ID);
+          #[derive(Debug, Copy, Clone, Eq, PartialEq, Hash, Default, Ord, PartialOrd)]  pub struct ResultID(ID);
 
         }
         .to_string(),
     )
     .unwrap();
 
-    let tester = grammar.instructions.iter().map(|i| i.write_test(&vars, true));
+    let tester = grammar
+        .instructions
+        .iter()
+        .map(|i| i.write_test(&vars, true));
     let tester2 = grammar.operand_kinds.iter().map(|i| i.write_test(&vars));
 
     let tests = quote! {

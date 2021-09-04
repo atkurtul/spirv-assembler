@@ -1,22 +1,21 @@
 #![feature(arbitrary_enum_discriminant)]
-pub type Sstr = &'static str;
 #[repr(u32)]
 #[derive(Debug, Clone, Eq, PartialEq)]
 pub enum Opcode {
     Nop() = 0,
     Undef(TypeID, ResultID) = 1,
-    SourceContinued(Sstr) = 2,
-    Source(SourceLanguage, u32, Option<ID>, Option<Sstr>) = 3,
-    SourceExtension(Sstr) = 4,
-    Name(ID, Sstr) = 5,
-    MemberName(ID, u32, Sstr) = 6,
-    String(ResultID, Sstr) = 7,
+    SourceContinued(String) = 2,
+    Source(SourceLanguage, u32, Option<ID>, Option<String>) = 3,
+    SourceExtension(String) = 4,
+    Name(ID, String) = 5,
+    MemberName(ID, u32, String) = 6,
+    String(ResultID, String) = 7,
     Line(ID, u32, u32) = 8,
-    Extension(Sstr) = 10,
-    ExtInstImport(ResultID, Sstr) = 11,
+    Extension(String) = 10,
+    ExtInstImport(ResultID, String) = 11,
     ExtInst(TypeID, ResultID, ID, u32, Vec<ID>) = 12,
     MemoryModel(AddressingModel, MemoryModel) = 14,
-    EntryPoint(ExecutionModel, ID, Sstr, Vec<ID>) = 15,
+    EntryPoint(ExecutionModel, ID, String, Vec<ID>) = 15,
     ExecutionMode(ID, ExecutionMode) = 16,
     Capability(Capability) = 17,
     TypeVoid(ResultID) = 19,
@@ -41,7 +40,7 @@ pub enum Opcode {
     TypeArray(ResultID, ID, ID) = 28,
     TypeRuntimeArray(ResultID, ID) = 29,
     TypeStruct(ResultID, Vec<ID>) = 30,
-    TypeOpaque(ResultID, Sstr) = 31,
+    TypeOpaque(ResultID, String) = 31,
     TypePointer(ResultID, StorageClass, ID) = 32,
     TypeFunction(ResultID, ID, Vec<ID>) = 33,
     TypeEvent(ResultID) = 34,
@@ -354,7 +353,7 @@ pub enum Opcode {
     TypeNamedBarrier(ResultID) = 327,
     NamedBarrierInitialize(TypeID, ResultID, ID) = 328,
     MemoryNamedBarrier(ID, ScopeID, MemorySemanticsID) = 329,
-    ModuleProcessed(Sstr) = 330,
+    ModuleProcessed(String) = 330,
     ExecutionModeId(ID, ExecutionMode) = 331,
     DecorateId(ID, Decoration) = 332,
     GroupNonUniformElect(TypeID, ResultID, ScopeID) = 333,
@@ -407,6 +406,12 @@ pub enum Opcode {
     ConvertUToAccelerationStructureKHR(TypeID, ResultID, ID) = 4447,
     IgnoreIntersectionKHR() = 4448,
     TerminateRayKHR() = 4449,
+    SDotKHR(TypeID, ResultID, ID, ID, Option<PackedVectorFormat>) = 4450,
+    UDotKHR(TypeID, ResultID, ID, ID, Option<PackedVectorFormat>) = 4451,
+    SUDotKHR(TypeID, ResultID, ID, ID, Option<PackedVectorFormat>) = 4452,
+    SDotAccSatKHR(TypeID, ResultID, ID, ID, ID, Option<PackedVectorFormat>) = 4453,
+    UDotAccSatKHR(TypeID, ResultID, ID, ID, ID, Option<PackedVectorFormat>) = 4454,
+    SUDotAccSatKHR(TypeID, ResultID, ID, ID, ID, Option<PackedVectorFormat>) = 4455,
     TypeRayQueryKHR(ResultID) = 4472,
     RayQueryInitializeKHR(ID, ID, ID, ID, ID, ID, ID, ID) = 4473,
     RayQueryTerminateKHR(ID) = 4474,
@@ -432,6 +437,8 @@ pub enum Opcode {
     IgnoreIntersectionNV() = 5335,
     TerminateRayNV() = 5336,
     TraceNV(ID, ID, ID, ID, ID, ID, ID, ID, ID, ID, ID) = 5337,
+    TraceMotionNV(ID, ID, ID, ID, ID, ID, ID, ID, ID, ID, ID, ID) = 5338,
+    TraceRayMotionNV(ID, ID, ID, ID, ID, ID, ID, ID, ID, ID, ID, ID) = 5339,
     TypeAccelerationStructureNV(ResultID) = 5341,
     ExecuteCallableNV(ID, ID) = 5344,
     TypeCooperativeMatrixNV(ResultID, ID, ScopeID, ID, ID) = 5358,
@@ -469,11 +476,13 @@ pub enum Opcode {
     UMul32x16INTEL(TypeID, ResultID, ID, ID) = 5598,
     ConstFunctionPointerINTEL(TypeID, ResultID, ID) = 5600,
     FunctionPointerCallINTEL(TypeID, ResultID, Vec<ID>) = 5601,
-    AsmTargetINTEL(TypeID, ResultID, Sstr) = 5609,
-    AsmINTEL(TypeID, ResultID, ID, ID, Sstr, Sstr) = 5610,
+    AsmTargetINTEL(TypeID, ResultID, String) = 5609,
+    AsmINTEL(TypeID, ResultID, ID, ID, String, String) = 5610,
     AsmCallINTEL(TypeID, ResultID, ID, Vec<ID>) = 5611,
     AtomicFMinEXT(TypeID, ResultID, ID, ScopeID, MemorySemanticsID, ID) = 5614,
     AtomicFMaxEXT(TypeID, ResultID, ID, ScopeID, MemorySemanticsID, ID) = 5615,
+    AssumeTrueKHR(ID) = 5630,
+    ExpectKHR(TypeID, ResultID, ID, ID) = 5631,
     DecorateString(ID, Decoration) = 5632,
     MemberDecorateString(ID, u32, Decoration) = 5633,
     VmeImageINTEL(TypeID, ResultID, ID, ID) = 5699,
@@ -634,7 +643,59 @@ pub enum Opcode {
     VariableLengthArrayINTEL(TypeID, ResultID, ID) = 5818,
     SaveMemoryINTEL(TypeID, ResultID) = 5819,
     RestoreMemoryINTEL(ID) = 5820,
+    ArbitraryFloatSinCosPiINTEL(TypeID, ResultID, ID, u32, u32, u32, u32, u32, u32) = 5840,
+    ArbitraryFloatCastINTEL(TypeID, ResultID, ID, u32, u32, u32, u32, u32) = 5841,
+    ArbitraryFloatCastFromIntINTEL(TypeID, ResultID, ID, u32, u32, u32, u32, u32) = 5842,
+    ArbitraryFloatCastToIntINTEL(TypeID, ResultID, ID, u32, u32, u32, u32) = 5843,
+    ArbitraryFloatAddINTEL(TypeID, ResultID, ID, u32, ID, u32, u32, u32, u32, u32) = 5846,
+    ArbitraryFloatSubINTEL(TypeID, ResultID, ID, u32, ID, u32, u32, u32, u32, u32) = 5847,
+    ArbitraryFloatMulINTEL(TypeID, ResultID, ID, u32, ID, u32, u32, u32, u32, u32) = 5848,
+    ArbitraryFloatDivINTEL(TypeID, ResultID, ID, u32, ID, u32, u32, u32, u32, u32) = 5849,
+    ArbitraryFloatGTINTEL(TypeID, ResultID, ID, u32, ID, u32) = 5850,
+    ArbitraryFloatGEINTEL(TypeID, ResultID, ID, u32, ID, u32) = 5851,
+    ArbitraryFloatLTINTEL(TypeID, ResultID, ID, u32, ID, u32) = 5852,
+    ArbitraryFloatLEINTEL(TypeID, ResultID, ID, u32, ID, u32) = 5853,
+    ArbitraryFloatEQINTEL(TypeID, ResultID, ID, u32, ID, u32) = 5854,
+    ArbitraryFloatRecipINTEL(TypeID, ResultID, ID, u32, u32, u32, u32, u32) = 5855,
+    ArbitraryFloatRSqrtINTEL(TypeID, ResultID, ID, u32, u32, u32, u32, u32) = 5856,
+    ArbitraryFloatCbrtINTEL(TypeID, ResultID, ID, u32, u32, u32, u32, u32) = 5857,
+    ArbitraryFloatHypotINTEL(TypeID, ResultID, ID, u32, ID, u32, u32, u32, u32, u32) = 5858,
+    ArbitraryFloatSqrtINTEL(TypeID, ResultID, ID, u32, u32, u32, u32, u32) = 5859,
+    ArbitraryFloatLogINTEL(TypeID, ResultID, ID, u32, u32, u32, u32, u32) = 5860,
+    ArbitraryFloatLog2INTEL(TypeID, ResultID, ID, u32, u32, u32, u32, u32) = 5861,
+    ArbitraryFloatLog10INTEL(TypeID, ResultID, ID, u32, u32, u32, u32, u32) = 5862,
+    ArbitraryFloatLog1pINTEL(TypeID, ResultID, ID, u32, u32, u32, u32, u32) = 5863,
+    ArbitraryFloatExpINTEL(TypeID, ResultID, ID, u32, u32, u32, u32, u32) = 5864,
+    ArbitraryFloatExp2INTEL(TypeID, ResultID, ID, u32, u32, u32, u32, u32) = 5865,
+    ArbitraryFloatExp10INTEL(TypeID, ResultID, ID, u32, u32, u32, u32, u32) = 5866,
+    ArbitraryFloatExpm1INTEL(TypeID, ResultID, ID, u32, u32, u32, u32, u32) = 5867,
+    ArbitraryFloatSinINTEL(TypeID, ResultID, ID, u32, u32, u32, u32, u32) = 5868,
+    ArbitraryFloatCosINTEL(TypeID, ResultID, ID, u32, u32, u32, u32, u32) = 5869,
+    ArbitraryFloatSinCosINTEL(TypeID, ResultID, ID, u32, u32, u32, u32, u32) = 5870,
+    ArbitraryFloatSinPiINTEL(TypeID, ResultID, ID, u32, u32, u32, u32, u32) = 5871,
+    ArbitraryFloatCosPiINTEL(TypeID, ResultID, ID, u32, u32, u32, u32, u32) = 5872,
+    ArbitraryFloatASinINTEL(TypeID, ResultID, ID, u32, u32, u32, u32, u32) = 5873,
+    ArbitraryFloatASinPiINTEL(TypeID, ResultID, ID, u32, u32, u32, u32, u32) = 5874,
+    ArbitraryFloatACosINTEL(TypeID, ResultID, ID, u32, u32, u32, u32, u32) = 5875,
+    ArbitraryFloatACosPiINTEL(TypeID, ResultID, ID, u32, u32, u32, u32, u32) = 5876,
+    ArbitraryFloatATanINTEL(TypeID, ResultID, ID, u32, u32, u32, u32, u32) = 5877,
+    ArbitraryFloatATanPiINTEL(TypeID, ResultID, ID, u32, u32, u32, u32, u32) = 5878,
+    ArbitraryFloatATan2INTEL(TypeID, ResultID, ID, u32, ID, u32, u32, u32, u32, u32) = 5879,
+    ArbitraryFloatPowINTEL(TypeID, ResultID, ID, u32, ID, u32, u32, u32, u32, u32) = 5880,
+    ArbitraryFloatPowRINTEL(TypeID, ResultID, ID, u32, ID, u32, u32, u32, u32, u32) = 5881,
+    ArbitraryFloatPowNINTEL(TypeID, ResultID, ID, u32, ID, u32, u32, u32, u32) = 5882,
     LoopControlINTEL(Vec<u32>) = 5887,
+    FixedSqrtINTEL(TypeID, ResultID, ID, ID, u32, u32, u32, u32, u32) = 5923,
+    FixedRecipINTEL(TypeID, ResultID, ID, ID, u32, u32, u32, u32, u32) = 5924,
+    FixedRsqrtINTEL(TypeID, ResultID, ID, ID, u32, u32, u32, u32, u32) = 5925,
+    FixedSinINTEL(TypeID, ResultID, ID, ID, u32, u32, u32, u32, u32) = 5926,
+    FixedCosINTEL(TypeID, ResultID, ID, ID, u32, u32, u32, u32, u32) = 5927,
+    FixedSinCosINTEL(TypeID, ResultID, ID, ID, u32, u32, u32, u32, u32) = 5928,
+    FixedSinPiINTEL(TypeID, ResultID, ID, ID, u32, u32, u32, u32, u32) = 5929,
+    FixedCosPiINTEL(TypeID, ResultID, ID, ID, u32, u32, u32, u32, u32) = 5930,
+    FixedSinCosPiINTEL(TypeID, ResultID, ID, ID, u32, u32, u32, u32, u32) = 5931,
+    FixedLogINTEL(TypeID, ResultID, ID, ID, u32, u32, u32, u32, u32) = 5932,
+    FixedExpINTEL(TypeID, ResultID, ID, ID, u32, u32, u32, u32, u32) = 5933,
     PtrCastToCrossWorkgroupINTEL(TypeID, ResultID, ID) = 5934,
     CrossWorkgroupCastToPtrINTEL(TypeID, ResultID, ID) = 5938,
     ReadPipeBlockingINTEL(TypeID, ResultID, ID, ID) = 5946,
@@ -659,7 +720,7 @@ pub enum Opcode {
     RayQueryGetIntersectionObjectToWorldKHR(TypeID, ResultID, ID, ID) = 6031,
     RayQueryGetIntersectionWorldToObjectKHR(TypeID, ResultID, ID, ID) = 6032,
     AtomicFAddEXT(TypeID, ResultID, ID, ScopeID, MemorySemanticsID, ID) = 6035,
-    TypeBufferSurfaceINTEL(ResultID) = 6086,
+    TypeBufferSurfaceINTEL(ResultID, AccessQualifier) = 6086,
     TypeStructContinuedINTEL(Vec<ID>) = 6090,
     ConstantCompositeContinuedINTEL(Vec<ID>) = 6091,
     SpecConstantCompositeContinuedINTEL(Vec<ID>) = 6092,
@@ -673,7 +734,7 @@ impl Opcode {
         id: ResultID,
         chunk: &[u32],
         env: &mut Env,
-        idx: &mut u32,
+        idx: &mut usize,
     ) -> Self {
         use Opcode::*;
         let i = *idx as usize;
@@ -967,67 +1028,73 @@ impl Opcode {
             wtf => panic!("{}", wtf),
         }
     }
-    pub fn read_word<Env: Environ>(chunk: &[u32], env: &mut Env, idx: &mut u32) -> Self {
+    pub fn read_word<Env: Environ + std::fmt::Debug>(
+        chunk: &[u32],
+        env: &mut Env,
+        idx: &mut usize,
+    ) -> Self {
         use Opcode::*;
-        let i = *idx as usize;
-        let mask = u16::MAX as u32;
-        let len = (chunk[i] >> 16) & mask;
-        let opc = chunk[i] & mask;
-        let chunk = &chunk[..i + len as usize];
+        let mask = u16::MAX as usize;
+        let len = (chunk[*idx] >> 16) as usize & mask;
+        let opc = chunk[*idx] as usize & mask;
+        let chunk = &chunk[..*idx + len];
         let mark = *idx;
         *idx += 1;
         let re = match opc {
-            0 => Nop(),
+            0 => env.insert_op(Nop()),
             1 => {
                 let x0 = Writer::read_word(chunk, env, idx);
                 let x1 = Writer::read_word(chunk, env, idx);
-                Undef(x0, x1)
+                env.insert_id(x1);
+                env.insert_op(Undef(x0, x1))
             }
             2 => {
                 let x0 = Writer::read_word(chunk, env, idx);
-                SourceContinued(x0)
+                env.insert_op(SourceContinued(x0))
             }
             3 => {
                 let x0 = Writer::read_word(chunk, env, idx);
                 let x1 = Writer::read_word(chunk, env, idx);
                 let x2 = Writer::read_word(chunk, env, idx);
                 let x3 = Writer::read_word(chunk, env, idx);
-                Source(x0, x1, x2, x3)
+                env.insert_op(Source(x0, x1, x2, x3))
             }
             4 => {
                 let x0 = Writer::read_word(chunk, env, idx);
-                SourceExtension(x0)
+                env.insert_op(SourceExtension(x0))
             }
             5 => {
                 let x0 = Writer::read_word(chunk, env, idx);
                 let x1 = Writer::read_word(chunk, env, idx);
-                Name(x0, x1)
+                env.insert_op(Name(x0, x1))
             }
             6 => {
                 let x0 = Writer::read_word(chunk, env, idx);
                 let x1 = Writer::read_word(chunk, env, idx);
                 let x2 = Writer::read_word(chunk, env, idx);
-                MemberName(x0, x1, x2)
+                env.insert_op(MemberName(x0, x1, x2))
             }
             7 => {
                 let x0 = Writer::read_word(chunk, env, idx);
                 let x1 = Writer::read_word(chunk, env, idx);
-                String(x0, x1)
+                env.insert_id(x0);
+                env.insert_op(String(x0, x1))
             }
             8 => {
                 let x0 = Writer::read_word(chunk, env, idx);
                 let x1 = Writer::read_word(chunk, env, idx);
                 let x2 = Writer::read_word(chunk, env, idx);
-                Line(x0, x1, x2)
+                env.insert_op(Line(x0, x1, x2))
             }
             10 => {
                 let x0 = Writer::read_word(chunk, env, idx);
-                Extension(x0)
+                env.insert_op(Extension(x0))
             }
             11 => {
                 let x0 = Writer::read_word(chunk, env, idx);
                 let x1 = Writer::read_word(chunk, env, idx);
-                ExtInstImport(x0, x1)
+                env.insert_id(x0);
+                env.insert_op(ExtInstImport(x0, x1))
             }
             12 => {
                 let x0 = Writer::read_word(chunk, env, idx);
@@ -1035,59 +1102,66 @@ impl Opcode {
                 let x2 = Writer::read_word(chunk, env, idx);
                 let x3 = Writer::read_word(chunk, env, idx);
                 let x4 = Writer::read_word(chunk, env, idx);
-                ExtInst(x0, x1, x2, x3, x4)
+                env.insert_id(x1);
+                env.insert_op(ExtInst(x0, x1, x2, x3, x4))
             }
             14 => {
                 let x0 = Writer::read_word(chunk, env, idx);
                 let x1 = Writer::read_word(chunk, env, idx);
-                MemoryModel(x0, x1)
+                env.insert_op(MemoryModel(x0, x1))
             }
             15 => {
                 let x0 = Writer::read_word(chunk, env, idx);
                 let x1 = Writer::read_word(chunk, env, idx);
                 let x2 = Writer::read_word(chunk, env, idx);
                 let x3 = Writer::read_word(chunk, env, idx);
-                EntryPoint(x0, x1, x2, x3)
+                env.insert_op(EntryPoint(x0, x1, x2, x3))
             }
             16 => {
                 let x0 = Writer::read_word(chunk, env, idx);
                 let x1 = Writer::read_word(chunk, env, idx);
-                ExecutionMode(x0, x1)
+                env.insert_op(ExecutionMode(x0, x1))
             }
             17 => {
                 let x0 = Writer::read_word(chunk, env, idx);
-                Capability(x0)
+                env.insert_op(Capability(x0))
             }
             19 => {
                 let x0 = Writer::read_word(chunk, env, idx);
-                TypeVoid(x0)
+                env.insert_id(x0);
+                env.insert_op(TypeVoid(x0))
             }
             20 => {
                 let x0 = Writer::read_word(chunk, env, idx);
-                TypeBool(x0)
+                env.insert_id(x0);
+                env.insert_op(TypeBool(x0))
             }
             21 => {
                 let x0 = Writer::read_word(chunk, env, idx);
                 let x1 = Writer::read_word(chunk, env, idx);
                 let x2 = Writer::read_word(chunk, env, idx);
-                TypeInt(x0, x1, x2)
+                env.insert_id(x0);
+                env.insert_op(TypeInt(x0, x1, x2))
             }
             22 => {
                 let x0 = Writer::read_word(chunk, env, idx);
                 let x1 = Writer::read_word(chunk, env, idx);
-                TypeFloat(x0, x1)
+                env.insert_id(x0);
+                env.insert_op(TypeFloat(x0, x1))
             }
             23 => {
                 let x0 = Writer::read_word(chunk, env, idx);
                 let x1 = Writer::read_word(chunk, env, idx);
                 let x2 = Writer::read_word(chunk, env, idx);
-                TypeVector(x0, x1, x2)
+                env.insert_id(x0);
+                env.insert_op(TypeVector(x0, x1, x2))
             }
             24 => {
                 let x0 = Writer::read_word(chunk, env, idx);
                 let x1 = Writer::read_word(chunk, env, idx);
                 let x2 = Writer::read_word(chunk, env, idx);
-                TypeMatrix(x0, x1, x2)
+                env.insert_id(x0);
+                env.insert_op(TypeMatrix(x0, x1, x2))
             }
             25 => {
                 let x0 = Writer::read_word(chunk, env, idx);
@@ -1099,97 +1173,115 @@ impl Opcode {
                 let x6 = Writer::read_word(chunk, env, idx);
                 let x7 = Writer::read_word(chunk, env, idx);
                 let x8 = Writer::read_word(chunk, env, idx);
-                TypeImage(x0, x1, x2, x3, x4, x5, x6, x7, x8)
+                env.insert_id(x0);
+                env.insert_op(TypeImage(x0, x1, x2, x3, x4, x5, x6, x7, x8))
             }
             26 => {
                 let x0 = Writer::read_word(chunk, env, idx);
-                TypeSampler(x0)
+                env.insert_id(x0);
+                env.insert_op(TypeSampler(x0))
             }
             27 => {
                 let x0 = Writer::read_word(chunk, env, idx);
                 let x1 = Writer::read_word(chunk, env, idx);
-                TypeSampledImage(x0, x1)
+                env.insert_id(x0);
+                env.insert_op(TypeSampledImage(x0, x1))
             }
             28 => {
                 let x0 = Writer::read_word(chunk, env, idx);
                 let x1 = Writer::read_word(chunk, env, idx);
                 let x2 = Writer::read_word(chunk, env, idx);
-                TypeArray(x0, x1, x2)
+                env.insert_id(x0);
+                env.insert_op(TypeArray(x0, x1, x2))
             }
             29 => {
                 let x0 = Writer::read_word(chunk, env, idx);
                 let x1 = Writer::read_word(chunk, env, idx);
-                TypeRuntimeArray(x0, x1)
+                env.insert_id(x0);
+                env.insert_op(TypeRuntimeArray(x0, x1))
             }
             30 => {
                 let x0 = Writer::read_word(chunk, env, idx);
                 let x1 = Writer::read_word(chunk, env, idx);
-                TypeStruct(x0, x1)
+                env.insert_id(x0);
+                env.insert_op(TypeStruct(x0, x1))
             }
             31 => {
                 let x0 = Writer::read_word(chunk, env, idx);
                 let x1 = Writer::read_word(chunk, env, idx);
-                TypeOpaque(x0, x1)
+                env.insert_id(x0);
+                env.insert_op(TypeOpaque(x0, x1))
             }
             32 => {
                 let x0 = Writer::read_word(chunk, env, idx);
                 let x1 = Writer::read_word(chunk, env, idx);
                 let x2 = Writer::read_word(chunk, env, idx);
-                TypePointer(x0, x1, x2)
+                env.insert_id(x0);
+                env.insert_op(TypePointer(x0, x1, x2))
             }
             33 => {
                 let x0 = Writer::read_word(chunk, env, idx);
                 let x1 = Writer::read_word(chunk, env, idx);
                 let x2 = Writer::read_word(chunk, env, idx);
-                TypeFunction(x0, x1, x2)
+                env.insert_id(x0);
+                env.insert_op(TypeFunction(x0, x1, x2))
             }
             34 => {
                 let x0 = Writer::read_word(chunk, env, idx);
-                TypeEvent(x0)
+                env.insert_id(x0);
+                env.insert_op(TypeEvent(x0))
             }
             35 => {
                 let x0 = Writer::read_word(chunk, env, idx);
-                TypeDeviceEvent(x0)
+                env.insert_id(x0);
+                env.insert_op(TypeDeviceEvent(x0))
             }
             36 => {
                 let x0 = Writer::read_word(chunk, env, idx);
-                TypeReserveId(x0)
+                env.insert_id(x0);
+                env.insert_op(TypeReserveId(x0))
             }
             37 => {
                 let x0 = Writer::read_word(chunk, env, idx);
-                TypeQueue(x0)
+                env.insert_id(x0);
+                env.insert_op(TypeQueue(x0))
             }
             38 => {
                 let x0 = Writer::read_word(chunk, env, idx);
                 let x1 = Writer::read_word(chunk, env, idx);
-                TypePipe(x0, x1)
+                env.insert_id(x0);
+                env.insert_op(TypePipe(x0, x1))
             }
             39 => {
                 let x0 = Writer::read_word(chunk, env, idx);
                 let x1 = Writer::read_word(chunk, env, idx);
-                TypeForwardPointer(x0, x1)
+                env.insert_op(TypeForwardPointer(x0, x1))
             }
             41 => {
                 let x0 = Writer::read_word(chunk, env, idx);
                 let x1 = Writer::read_word(chunk, env, idx);
-                ConstantTrue(x0, x1)
+                env.insert_id(x1);
+                env.insert_op(ConstantTrue(x0, x1))
             }
             42 => {
                 let x0 = Writer::read_word(chunk, env, idx);
                 let x1 = Writer::read_word(chunk, env, idx);
-                ConstantFalse(x0, x1)
+                env.insert_id(x1);
+                env.insert_op(ConstantFalse(x0, x1))
             }
             43 => {
                 let x0 = Writer::read_word(chunk, env, idx);
                 let x1 = Writer::read_word(chunk, env, idx);
                 let x2 = Writer::read_word(chunk, env, idx);
-                Constant(x0, x1, x2)
+                env.insert_id(x1);
+                env.insert_op(Constant(x0, x1, x2))
             }
             44 => {
                 let x0 = Writer::read_word(chunk, env, idx);
                 let x1 = Writer::read_word(chunk, env, idx);
                 let x2 = Writer::read_word(chunk, env, idx);
-                ConstantComposite(x0, x1, x2)
+                env.insert_id(x1);
+                env.insert_op(ConstantComposite(x0, x1, x2))
             }
             45 => {
                 let x0 = Writer::read_word(chunk, env, idx);
@@ -1197,61 +1289,71 @@ impl Opcode {
                 let x2 = Writer::read_word(chunk, env, idx);
                 let x3 = Writer::read_word(chunk, env, idx);
                 let x4 = Writer::read_word(chunk, env, idx);
-                ConstantSampler(x0, x1, x2, x3, x4)
+                env.insert_id(x1);
+                env.insert_op(ConstantSampler(x0, x1, x2, x3, x4))
             }
             46 => {
                 let x0 = Writer::read_word(chunk, env, idx);
                 let x1 = Writer::read_word(chunk, env, idx);
-                ConstantNull(x0, x1)
+                env.insert_id(x1);
+                env.insert_op(ConstantNull(x0, x1))
             }
             48 => {
                 let x0 = Writer::read_word(chunk, env, idx);
                 let x1 = Writer::read_word(chunk, env, idx);
-                SpecConstantTrue(x0, x1)
+                env.insert_id(x1);
+                env.insert_op(SpecConstantTrue(x0, x1))
             }
             49 => {
                 let x0 = Writer::read_word(chunk, env, idx);
                 let x1 = Writer::read_word(chunk, env, idx);
-                SpecConstantFalse(x0, x1)
+                env.insert_id(x1);
+                env.insert_op(SpecConstantFalse(x0, x1))
             }
             50 => {
                 let x0 = Writer::read_word(chunk, env, idx);
                 let x1 = Writer::read_word(chunk, env, idx);
                 let x2 = Writer::read_word(chunk, env, idx);
-                SpecConstant(x0, x1, x2)
+                env.insert_id(x1);
+                env.insert_op(SpecConstant(x0, x1, x2))
             }
             51 => {
                 let x0 = Writer::read_word(chunk, env, idx);
                 let x1 = Writer::read_word(chunk, env, idx);
                 let x2 = Writer::read_word(chunk, env, idx);
-                SpecConstantComposite(x0, x1, x2)
+                env.insert_id(x1);
+                env.insert_op(SpecConstantComposite(x0, x1, x2))
             }
             54 => {
                 let x0 = Writer::read_word(chunk, env, idx);
                 let x1 = Writer::read_word(chunk, env, idx);
                 let x2 = Writer::read_word(chunk, env, idx);
                 let x3 = Writer::read_word(chunk, env, idx);
-                Function(x0, x1, x2, x3)
+                env.insert_id(x1);
+                env.insert_op(Function(x0, x1, x2, x3))
             }
             55 => {
                 let x0 = Writer::read_word(chunk, env, idx);
                 let x1 = Writer::read_word(chunk, env, idx);
-                FunctionParameter(x0, x1)
+                env.insert_id(x1);
+                env.insert_op(FunctionParameter(x0, x1))
             }
-            56 => FunctionEnd(),
+            56 => env.insert_op(FunctionEnd()),
             57 => {
                 let x0 = Writer::read_word(chunk, env, idx);
                 let x1 = Writer::read_word(chunk, env, idx);
                 let x2 = Writer::read_word(chunk, env, idx);
                 let x3 = Writer::read_word(chunk, env, idx);
-                FunctionCall(x0, x1, x2, x3)
+                env.insert_id(x1);
+                env.insert_op(FunctionCall(x0, x1, x2, x3))
             }
             59 => {
                 let x0 = Writer::read_word(chunk, env, idx);
                 let x1 = Writer::read_word(chunk, env, idx);
                 let x2 = Writer::read_word(chunk, env, idx);
                 let x3 = Writer::read_word(chunk, env, idx);
-                Variable(x0, x1, x2, x3)
+                env.insert_id(x1);
+                env.insert_op(Variable(x0, x1, x2, x3))
             }
             60 => {
                 let x0 = Writer::read_word(chunk, env, idx);
@@ -1259,27 +1361,29 @@ impl Opcode {
                 let x2 = Writer::read_word(chunk, env, idx);
                 let x3 = Writer::read_word(chunk, env, idx);
                 let x4 = Writer::read_word(chunk, env, idx);
-                ImageTexelPointer(x0, x1, x2, x3, x4)
+                env.insert_id(x1);
+                env.insert_op(ImageTexelPointer(x0, x1, x2, x3, x4))
             }
             61 => {
                 let x0 = Writer::read_word(chunk, env, idx);
                 let x1 = Writer::read_word(chunk, env, idx);
                 let x2 = Writer::read_word(chunk, env, idx);
                 let x3 = Writer::read_word(chunk, env, idx);
-                Load(x0, x1, x2, x3)
+                env.insert_id(x1);
+                env.insert_op(Load(x0, x1, x2, x3))
             }
             62 => {
                 let x0 = Writer::read_word(chunk, env, idx);
                 let x1 = Writer::read_word(chunk, env, idx);
                 let x2 = Writer::read_word(chunk, env, idx);
-                Store(x0, x1, x2)
+                env.insert_op(Store(x0, x1, x2))
             }
             63 => {
                 let x0 = Writer::read_word(chunk, env, idx);
                 let x1 = Writer::read_word(chunk, env, idx);
                 let x2 = Writer::read_word(chunk, env, idx);
                 let x3 = Writer::read_word(chunk, env, idx);
-                CopyMemory(x0, x1, x2, x3)
+                env.insert_op(CopyMemory(x0, x1, x2, x3))
             }
             64 => {
                 let x0 = Writer::read_word(chunk, env, idx);
@@ -1287,21 +1391,23 @@ impl Opcode {
                 let x2 = Writer::read_word(chunk, env, idx);
                 let x3 = Writer::read_word(chunk, env, idx);
                 let x4 = Writer::read_word(chunk, env, idx);
-                CopyMemorySized(x0, x1, x2, x3, x4)
+                env.insert_op(CopyMemorySized(x0, x1, x2, x3, x4))
             }
             65 => {
                 let x0 = Writer::read_word(chunk, env, idx);
                 let x1 = Writer::read_word(chunk, env, idx);
                 let x2 = Writer::read_word(chunk, env, idx);
                 let x3 = Writer::read_word(chunk, env, idx);
-                AccessChain(x0, x1, x2, x3)
+                env.insert_id(x1);
+                env.insert_op(AccessChain(x0, x1, x2, x3))
             }
             66 => {
                 let x0 = Writer::read_word(chunk, env, idx);
                 let x1 = Writer::read_word(chunk, env, idx);
                 let x2 = Writer::read_word(chunk, env, idx);
                 let x3 = Writer::read_word(chunk, env, idx);
-                InBoundsAccessChain(x0, x1, x2, x3)
+                env.insert_id(x1);
+                env.insert_op(InBoundsAccessChain(x0, x1, x2, x3))
             }
             67 => {
                 let x0 = Writer::read_word(chunk, env, idx);
@@ -1309,20 +1415,23 @@ impl Opcode {
                 let x2 = Writer::read_word(chunk, env, idx);
                 let x3 = Writer::read_word(chunk, env, idx);
                 let x4 = Writer::read_word(chunk, env, idx);
-                PtrAccessChain(x0, x1, x2, x3, x4)
+                env.insert_id(x1);
+                env.insert_op(PtrAccessChain(x0, x1, x2, x3, x4))
             }
             68 => {
                 let x0 = Writer::read_word(chunk, env, idx);
                 let x1 = Writer::read_word(chunk, env, idx);
                 let x2 = Writer::read_word(chunk, env, idx);
                 let x3 = Writer::read_word(chunk, env, idx);
-                ArrayLength(x0, x1, x2, x3)
+                env.insert_id(x1);
+                env.insert_op(ArrayLength(x0, x1, x2, x3))
             }
             69 => {
                 let x0 = Writer::read_word(chunk, env, idx);
                 let x1 = Writer::read_word(chunk, env, idx);
                 let x2 = Writer::read_word(chunk, env, idx);
-                GenericPtrMemSemantics(x0, x1, x2)
+                env.insert_id(x1);
+                env.insert_op(GenericPtrMemSemantics(x0, x1, x2))
             }
             70 => {
                 let x0 = Writer::read_word(chunk, env, idx);
@@ -1330,39 +1439,42 @@ impl Opcode {
                 let x2 = Writer::read_word(chunk, env, idx);
                 let x3 = Writer::read_word(chunk, env, idx);
                 let x4 = Writer::read_word(chunk, env, idx);
-                InBoundsPtrAccessChain(x0, x1, x2, x3, x4)
+                env.insert_id(x1);
+                env.insert_op(InBoundsPtrAccessChain(x0, x1, x2, x3, x4))
             }
             71 => {
                 let x0 = Writer::read_word(chunk, env, idx);
                 let x1 = Writer::read_word(chunk, env, idx);
-                Decorate(x0, x1)
+                env.insert_op(Decorate(x0, x1))
             }
             72 => {
                 let x0 = Writer::read_word(chunk, env, idx);
                 let x1 = Writer::read_word(chunk, env, idx);
                 let x2 = Writer::read_word(chunk, env, idx);
-                MemberDecorate(x0, x1, x2)
+                env.insert_op(MemberDecorate(x0, x1, x2))
             }
             73 => {
                 let x0 = Writer::read_word(chunk, env, idx);
-                DecorationGroup(x0)
+                env.insert_id(x0);
+                env.insert_op(DecorationGroup(x0))
             }
             74 => {
                 let x0 = Writer::read_word(chunk, env, idx);
                 let x1 = Writer::read_word(chunk, env, idx);
-                GroupDecorate(x0, x1)
+                env.insert_op(GroupDecorate(x0, x1))
             }
             75 => {
                 let x0 = Writer::read_word(chunk, env, idx);
                 let x1 = Writer::read_word(chunk, env, idx);
-                GroupMemberDecorate(x0, x1)
+                env.insert_op(GroupMemberDecorate(x0, x1))
             }
             77 => {
                 let x0 = Writer::read_word(chunk, env, idx);
                 let x1 = Writer::read_word(chunk, env, idx);
                 let x2 = Writer::read_word(chunk, env, idx);
                 let x3 = Writer::read_word(chunk, env, idx);
-                VectorExtractDynamic(x0, x1, x2, x3)
+                env.insert_id(x1);
+                env.insert_op(VectorExtractDynamic(x0, x1, x2, x3))
             }
             78 => {
                 let x0 = Writer::read_word(chunk, env, idx);
@@ -1370,7 +1482,8 @@ impl Opcode {
                 let x2 = Writer::read_word(chunk, env, idx);
                 let x3 = Writer::read_word(chunk, env, idx);
                 let x4 = Writer::read_word(chunk, env, idx);
-                VectorInsertDynamic(x0, x1, x2, x3, x4)
+                env.insert_id(x1);
+                env.insert_op(VectorInsertDynamic(x0, x1, x2, x3, x4))
             }
             79 => {
                 let x0 = Writer::read_word(chunk, env, idx);
@@ -1378,20 +1491,23 @@ impl Opcode {
                 let x2 = Writer::read_word(chunk, env, idx);
                 let x3 = Writer::read_word(chunk, env, idx);
                 let x4 = Writer::read_word(chunk, env, idx);
-                VectorShuffle(x0, x1, x2, x3, x4)
+                env.insert_id(x1);
+                env.insert_op(VectorShuffle(x0, x1, x2, x3, x4))
             }
             80 => {
                 let x0 = Writer::read_word(chunk, env, idx);
                 let x1 = Writer::read_word(chunk, env, idx);
                 let x2 = Writer::read_word(chunk, env, idx);
-                CompositeConstruct(x0, x1, x2)
+                env.insert_id(x1);
+                env.insert_op(CompositeConstruct(x0, x1, x2))
             }
             81 => {
                 let x0 = Writer::read_word(chunk, env, idx);
                 let x1 = Writer::read_word(chunk, env, idx);
                 let x2 = Writer::read_word(chunk, env, idx);
                 let x3 = Writer::read_word(chunk, env, idx);
-                CompositeExtract(x0, x1, x2, x3)
+                env.insert_id(x1);
+                env.insert_op(CompositeExtract(x0, x1, x2, x3))
             }
             82 => {
                 let x0 = Writer::read_word(chunk, env, idx);
@@ -1399,26 +1515,30 @@ impl Opcode {
                 let x2 = Writer::read_word(chunk, env, idx);
                 let x3 = Writer::read_word(chunk, env, idx);
                 let x4 = Writer::read_word(chunk, env, idx);
-                CompositeInsert(x0, x1, x2, x3, x4)
+                env.insert_id(x1);
+                env.insert_op(CompositeInsert(x0, x1, x2, x3, x4))
             }
             83 => {
                 let x0 = Writer::read_word(chunk, env, idx);
                 let x1 = Writer::read_word(chunk, env, idx);
                 let x2 = Writer::read_word(chunk, env, idx);
-                CopyObject(x0, x1, x2)
+                env.insert_id(x1);
+                env.insert_op(CopyObject(x0, x1, x2))
             }
             84 => {
                 let x0 = Writer::read_word(chunk, env, idx);
                 let x1 = Writer::read_word(chunk, env, idx);
                 let x2 = Writer::read_word(chunk, env, idx);
-                Transpose(x0, x1, x2)
+                env.insert_id(x1);
+                env.insert_op(Transpose(x0, x1, x2))
             }
             86 => {
                 let x0 = Writer::read_word(chunk, env, idx);
                 let x1 = Writer::read_word(chunk, env, idx);
                 let x2 = Writer::read_word(chunk, env, idx);
                 let x3 = Writer::read_word(chunk, env, idx);
-                SampledImage(x0, x1, x2, x3)
+                env.insert_id(x1);
+                env.insert_op(SampledImage(x0, x1, x2, x3))
             }
             87 => {
                 let x0 = Writer::read_word(chunk, env, idx);
@@ -1426,7 +1546,8 @@ impl Opcode {
                 let x2 = Writer::read_word(chunk, env, idx);
                 let x3 = Writer::read_word(chunk, env, idx);
                 let x4 = Writer::read_word(chunk, env, idx);
-                ImageSampleImplicitLod(x0, x1, x2, x3, x4)
+                env.insert_id(x1);
+                env.insert_op(ImageSampleImplicitLod(x0, x1, x2, x3, x4))
             }
             88 => {
                 let x0 = Writer::read_word(chunk, env, idx);
@@ -1434,7 +1555,8 @@ impl Opcode {
                 let x2 = Writer::read_word(chunk, env, idx);
                 let x3 = Writer::read_word(chunk, env, idx);
                 let x4 = Writer::read_word(chunk, env, idx);
-                ImageSampleExplicitLod(x0, x1, x2, x3, x4)
+                env.insert_id(x1);
+                env.insert_op(ImageSampleExplicitLod(x0, x1, x2, x3, x4))
             }
             89 => {
                 let x0 = Writer::read_word(chunk, env, idx);
@@ -1443,7 +1565,8 @@ impl Opcode {
                 let x3 = Writer::read_word(chunk, env, idx);
                 let x4 = Writer::read_word(chunk, env, idx);
                 let x5 = Writer::read_word(chunk, env, idx);
-                ImageSampleDrefImplicitLod(x0, x1, x2, x3, x4, x5)
+                env.insert_id(x1);
+                env.insert_op(ImageSampleDrefImplicitLod(x0, x1, x2, x3, x4, x5))
             }
             90 => {
                 let x0 = Writer::read_word(chunk, env, idx);
@@ -1452,7 +1575,8 @@ impl Opcode {
                 let x3 = Writer::read_word(chunk, env, idx);
                 let x4 = Writer::read_word(chunk, env, idx);
                 let x5 = Writer::read_word(chunk, env, idx);
-                ImageSampleDrefExplicitLod(x0, x1, x2, x3, x4, x5)
+                env.insert_id(x1);
+                env.insert_op(ImageSampleDrefExplicitLod(x0, x1, x2, x3, x4, x5))
             }
             91 => {
                 let x0 = Writer::read_word(chunk, env, idx);
@@ -1460,7 +1584,8 @@ impl Opcode {
                 let x2 = Writer::read_word(chunk, env, idx);
                 let x3 = Writer::read_word(chunk, env, idx);
                 let x4 = Writer::read_word(chunk, env, idx);
-                ImageSampleProjImplicitLod(x0, x1, x2, x3, x4)
+                env.insert_id(x1);
+                env.insert_op(ImageSampleProjImplicitLod(x0, x1, x2, x3, x4))
             }
             92 => {
                 let x0 = Writer::read_word(chunk, env, idx);
@@ -1468,7 +1593,8 @@ impl Opcode {
                 let x2 = Writer::read_word(chunk, env, idx);
                 let x3 = Writer::read_word(chunk, env, idx);
                 let x4 = Writer::read_word(chunk, env, idx);
-                ImageSampleProjExplicitLod(x0, x1, x2, x3, x4)
+                env.insert_id(x1);
+                env.insert_op(ImageSampleProjExplicitLod(x0, x1, x2, x3, x4))
             }
             93 => {
                 let x0 = Writer::read_word(chunk, env, idx);
@@ -1477,7 +1603,8 @@ impl Opcode {
                 let x3 = Writer::read_word(chunk, env, idx);
                 let x4 = Writer::read_word(chunk, env, idx);
                 let x5 = Writer::read_word(chunk, env, idx);
-                ImageSampleProjDrefImplicitLod(x0, x1, x2, x3, x4, x5)
+                env.insert_id(x1);
+                env.insert_op(ImageSampleProjDrefImplicitLod(x0, x1, x2, x3, x4, x5))
             }
             94 => {
                 let x0 = Writer::read_word(chunk, env, idx);
@@ -1486,7 +1613,8 @@ impl Opcode {
                 let x3 = Writer::read_word(chunk, env, idx);
                 let x4 = Writer::read_word(chunk, env, idx);
                 let x5 = Writer::read_word(chunk, env, idx);
-                ImageSampleProjDrefExplicitLod(x0, x1, x2, x3, x4, x5)
+                env.insert_id(x1);
+                env.insert_op(ImageSampleProjDrefExplicitLod(x0, x1, x2, x3, x4, x5))
             }
             95 => {
                 let x0 = Writer::read_word(chunk, env, idx);
@@ -1494,7 +1622,8 @@ impl Opcode {
                 let x2 = Writer::read_word(chunk, env, idx);
                 let x3 = Writer::read_word(chunk, env, idx);
                 let x4 = Writer::read_word(chunk, env, idx);
-                ImageFetch(x0, x1, x2, x3, x4)
+                env.insert_id(x1);
+                env.insert_op(ImageFetch(x0, x1, x2, x3, x4))
             }
             96 => {
                 let x0 = Writer::read_word(chunk, env, idx);
@@ -1503,7 +1632,8 @@ impl Opcode {
                 let x3 = Writer::read_word(chunk, env, idx);
                 let x4 = Writer::read_word(chunk, env, idx);
                 let x5 = Writer::read_word(chunk, env, idx);
-                ImageGather(x0, x1, x2, x3, x4, x5)
+                env.insert_id(x1);
+                env.insert_op(ImageGather(x0, x1, x2, x3, x4, x5))
             }
             97 => {
                 let x0 = Writer::read_word(chunk, env, idx);
@@ -1512,7 +1642,8 @@ impl Opcode {
                 let x3 = Writer::read_word(chunk, env, idx);
                 let x4 = Writer::read_word(chunk, env, idx);
                 let x5 = Writer::read_word(chunk, env, idx);
-                ImageDrefGather(x0, x1, x2, x3, x4, x5)
+                env.insert_id(x1);
+                env.insert_op(ImageDrefGather(x0, x1, x2, x3, x4, x5))
             }
             98 => {
                 let x0 = Writer::read_word(chunk, env, idx);
@@ -1520,445 +1651,512 @@ impl Opcode {
                 let x2 = Writer::read_word(chunk, env, idx);
                 let x3 = Writer::read_word(chunk, env, idx);
                 let x4 = Writer::read_word(chunk, env, idx);
-                ImageRead(x0, x1, x2, x3, x4)
+                env.insert_id(x1);
+                env.insert_op(ImageRead(x0, x1, x2, x3, x4))
             }
             99 => {
                 let x0 = Writer::read_word(chunk, env, idx);
                 let x1 = Writer::read_word(chunk, env, idx);
                 let x2 = Writer::read_word(chunk, env, idx);
                 let x3 = Writer::read_word(chunk, env, idx);
-                ImageWrite(x0, x1, x2, x3)
+                env.insert_op(ImageWrite(x0, x1, x2, x3))
             }
             100 => {
                 let x0 = Writer::read_word(chunk, env, idx);
                 let x1 = Writer::read_word(chunk, env, idx);
                 let x2 = Writer::read_word(chunk, env, idx);
-                Image(x0, x1, x2)
+                env.insert_id(x1);
+                env.insert_op(Image(x0, x1, x2))
             }
             101 => {
                 let x0 = Writer::read_word(chunk, env, idx);
                 let x1 = Writer::read_word(chunk, env, idx);
                 let x2 = Writer::read_word(chunk, env, idx);
-                ImageQueryFormat(x0, x1, x2)
+                env.insert_id(x1);
+                env.insert_op(ImageQueryFormat(x0, x1, x2))
             }
             102 => {
                 let x0 = Writer::read_word(chunk, env, idx);
                 let x1 = Writer::read_word(chunk, env, idx);
                 let x2 = Writer::read_word(chunk, env, idx);
-                ImageQueryOrder(x0, x1, x2)
+                env.insert_id(x1);
+                env.insert_op(ImageQueryOrder(x0, x1, x2))
             }
             103 => {
                 let x0 = Writer::read_word(chunk, env, idx);
                 let x1 = Writer::read_word(chunk, env, idx);
                 let x2 = Writer::read_word(chunk, env, idx);
                 let x3 = Writer::read_word(chunk, env, idx);
-                ImageQuerySizeLod(x0, x1, x2, x3)
+                env.insert_id(x1);
+                env.insert_op(ImageQuerySizeLod(x0, x1, x2, x3))
             }
             104 => {
                 let x0 = Writer::read_word(chunk, env, idx);
                 let x1 = Writer::read_word(chunk, env, idx);
                 let x2 = Writer::read_word(chunk, env, idx);
-                ImageQuerySize(x0, x1, x2)
+                env.insert_id(x1);
+                env.insert_op(ImageQuerySize(x0, x1, x2))
             }
             105 => {
                 let x0 = Writer::read_word(chunk, env, idx);
                 let x1 = Writer::read_word(chunk, env, idx);
                 let x2 = Writer::read_word(chunk, env, idx);
                 let x3 = Writer::read_word(chunk, env, idx);
-                ImageQueryLod(x0, x1, x2, x3)
+                env.insert_id(x1);
+                env.insert_op(ImageQueryLod(x0, x1, x2, x3))
             }
             106 => {
                 let x0 = Writer::read_word(chunk, env, idx);
                 let x1 = Writer::read_word(chunk, env, idx);
                 let x2 = Writer::read_word(chunk, env, idx);
-                ImageQueryLevels(x0, x1, x2)
+                env.insert_id(x1);
+                env.insert_op(ImageQueryLevels(x0, x1, x2))
             }
             107 => {
                 let x0 = Writer::read_word(chunk, env, idx);
                 let x1 = Writer::read_word(chunk, env, idx);
                 let x2 = Writer::read_word(chunk, env, idx);
-                ImageQuerySamples(x0, x1, x2)
+                env.insert_id(x1);
+                env.insert_op(ImageQuerySamples(x0, x1, x2))
             }
             109 => {
                 let x0 = Writer::read_word(chunk, env, idx);
                 let x1 = Writer::read_word(chunk, env, idx);
                 let x2 = Writer::read_word(chunk, env, idx);
-                ConvertFToU(x0, x1, x2)
+                env.insert_id(x1);
+                env.insert_op(ConvertFToU(x0, x1, x2))
             }
             110 => {
                 let x0 = Writer::read_word(chunk, env, idx);
                 let x1 = Writer::read_word(chunk, env, idx);
                 let x2 = Writer::read_word(chunk, env, idx);
-                ConvertFToS(x0, x1, x2)
+                env.insert_id(x1);
+                env.insert_op(ConvertFToS(x0, x1, x2))
             }
             111 => {
                 let x0 = Writer::read_word(chunk, env, idx);
                 let x1 = Writer::read_word(chunk, env, idx);
                 let x2 = Writer::read_word(chunk, env, idx);
-                ConvertSToF(x0, x1, x2)
+                env.insert_id(x1);
+                env.insert_op(ConvertSToF(x0, x1, x2))
             }
             112 => {
                 let x0 = Writer::read_word(chunk, env, idx);
                 let x1 = Writer::read_word(chunk, env, idx);
                 let x2 = Writer::read_word(chunk, env, idx);
-                ConvertUToF(x0, x1, x2)
+                env.insert_id(x1);
+                env.insert_op(ConvertUToF(x0, x1, x2))
             }
             113 => {
                 let x0 = Writer::read_word(chunk, env, idx);
                 let x1 = Writer::read_word(chunk, env, idx);
                 let x2 = Writer::read_word(chunk, env, idx);
-                UConvert(x0, x1, x2)
+                env.insert_id(x1);
+                env.insert_op(UConvert(x0, x1, x2))
             }
             114 => {
                 let x0 = Writer::read_word(chunk, env, idx);
                 let x1 = Writer::read_word(chunk, env, idx);
                 let x2 = Writer::read_word(chunk, env, idx);
-                SConvert(x0, x1, x2)
+                env.insert_id(x1);
+                env.insert_op(SConvert(x0, x1, x2))
             }
             115 => {
                 let x0 = Writer::read_word(chunk, env, idx);
                 let x1 = Writer::read_word(chunk, env, idx);
                 let x2 = Writer::read_word(chunk, env, idx);
-                FConvert(x0, x1, x2)
+                env.insert_id(x1);
+                env.insert_op(FConvert(x0, x1, x2))
             }
             116 => {
                 let x0 = Writer::read_word(chunk, env, idx);
                 let x1 = Writer::read_word(chunk, env, idx);
                 let x2 = Writer::read_word(chunk, env, idx);
-                QuantizeToF16(x0, x1, x2)
+                env.insert_id(x1);
+                env.insert_op(QuantizeToF16(x0, x1, x2))
             }
             117 => {
                 let x0 = Writer::read_word(chunk, env, idx);
                 let x1 = Writer::read_word(chunk, env, idx);
                 let x2 = Writer::read_word(chunk, env, idx);
-                ConvertPtrToU(x0, x1, x2)
+                env.insert_id(x1);
+                env.insert_op(ConvertPtrToU(x0, x1, x2))
             }
             118 => {
                 let x0 = Writer::read_word(chunk, env, idx);
                 let x1 = Writer::read_word(chunk, env, idx);
                 let x2 = Writer::read_word(chunk, env, idx);
-                SatConvertSToU(x0, x1, x2)
+                env.insert_id(x1);
+                env.insert_op(SatConvertSToU(x0, x1, x2))
             }
             119 => {
                 let x0 = Writer::read_word(chunk, env, idx);
                 let x1 = Writer::read_word(chunk, env, idx);
                 let x2 = Writer::read_word(chunk, env, idx);
-                SatConvertUToS(x0, x1, x2)
+                env.insert_id(x1);
+                env.insert_op(SatConvertUToS(x0, x1, x2))
             }
             120 => {
                 let x0 = Writer::read_word(chunk, env, idx);
                 let x1 = Writer::read_word(chunk, env, idx);
                 let x2 = Writer::read_word(chunk, env, idx);
-                ConvertUToPtr(x0, x1, x2)
+                env.insert_id(x1);
+                env.insert_op(ConvertUToPtr(x0, x1, x2))
             }
             121 => {
                 let x0 = Writer::read_word(chunk, env, idx);
                 let x1 = Writer::read_word(chunk, env, idx);
                 let x2 = Writer::read_word(chunk, env, idx);
-                PtrCastToGeneric(x0, x1, x2)
+                env.insert_id(x1);
+                env.insert_op(PtrCastToGeneric(x0, x1, x2))
             }
             122 => {
                 let x0 = Writer::read_word(chunk, env, idx);
                 let x1 = Writer::read_word(chunk, env, idx);
                 let x2 = Writer::read_word(chunk, env, idx);
-                GenericCastToPtr(x0, x1, x2)
+                env.insert_id(x1);
+                env.insert_op(GenericCastToPtr(x0, x1, x2))
             }
             123 => {
                 let x0 = Writer::read_word(chunk, env, idx);
                 let x1 = Writer::read_word(chunk, env, idx);
                 let x2 = Writer::read_word(chunk, env, idx);
                 let x3 = Writer::read_word(chunk, env, idx);
-                GenericCastToPtrExplicit(x0, x1, x2, x3)
+                env.insert_id(x1);
+                env.insert_op(GenericCastToPtrExplicit(x0, x1, x2, x3))
             }
             124 => {
                 let x0 = Writer::read_word(chunk, env, idx);
                 let x1 = Writer::read_word(chunk, env, idx);
                 let x2 = Writer::read_word(chunk, env, idx);
-                Bitcast(x0, x1, x2)
+                env.insert_id(x1);
+                env.insert_op(Bitcast(x0, x1, x2))
             }
             126 => {
                 let x0 = Writer::read_word(chunk, env, idx);
                 let x1 = Writer::read_word(chunk, env, idx);
                 let x2 = Writer::read_word(chunk, env, idx);
-                SNegate(x0, x1, x2)
+                env.insert_id(x1);
+                env.insert_op(SNegate(x0, x1, x2))
             }
             127 => {
                 let x0 = Writer::read_word(chunk, env, idx);
                 let x1 = Writer::read_word(chunk, env, idx);
                 let x2 = Writer::read_word(chunk, env, idx);
-                FNegate(x0, x1, x2)
+                env.insert_id(x1);
+                env.insert_op(FNegate(x0, x1, x2))
             }
             128 => {
                 let x0 = Writer::read_word(chunk, env, idx);
                 let x1 = Writer::read_word(chunk, env, idx);
                 let x2 = Writer::read_word(chunk, env, idx);
                 let x3 = Writer::read_word(chunk, env, idx);
-                IAdd(x0, x1, x2, x3)
+                env.insert_id(x1);
+                env.insert_op(IAdd(x0, x1, x2, x3))
             }
             129 => {
                 let x0 = Writer::read_word(chunk, env, idx);
                 let x1 = Writer::read_word(chunk, env, idx);
                 let x2 = Writer::read_word(chunk, env, idx);
                 let x3 = Writer::read_word(chunk, env, idx);
-                FAdd(x0, x1, x2, x3)
+                env.insert_id(x1);
+                env.insert_op(FAdd(x0, x1, x2, x3))
             }
             130 => {
                 let x0 = Writer::read_word(chunk, env, idx);
                 let x1 = Writer::read_word(chunk, env, idx);
                 let x2 = Writer::read_word(chunk, env, idx);
                 let x3 = Writer::read_word(chunk, env, idx);
-                ISub(x0, x1, x2, x3)
+                env.insert_id(x1);
+                env.insert_op(ISub(x0, x1, x2, x3))
             }
             131 => {
                 let x0 = Writer::read_word(chunk, env, idx);
                 let x1 = Writer::read_word(chunk, env, idx);
                 let x2 = Writer::read_word(chunk, env, idx);
                 let x3 = Writer::read_word(chunk, env, idx);
-                FSub(x0, x1, x2, x3)
+                env.insert_id(x1);
+                env.insert_op(FSub(x0, x1, x2, x3))
             }
             132 => {
                 let x0 = Writer::read_word(chunk, env, idx);
                 let x1 = Writer::read_word(chunk, env, idx);
                 let x2 = Writer::read_word(chunk, env, idx);
                 let x3 = Writer::read_word(chunk, env, idx);
-                IMul(x0, x1, x2, x3)
+                env.insert_id(x1);
+                env.insert_op(IMul(x0, x1, x2, x3))
             }
             133 => {
                 let x0 = Writer::read_word(chunk, env, idx);
                 let x1 = Writer::read_word(chunk, env, idx);
                 let x2 = Writer::read_word(chunk, env, idx);
                 let x3 = Writer::read_word(chunk, env, idx);
-                FMul(x0, x1, x2, x3)
+                env.insert_id(x1);
+                env.insert_op(FMul(x0, x1, x2, x3))
             }
             134 => {
                 let x0 = Writer::read_word(chunk, env, idx);
                 let x1 = Writer::read_word(chunk, env, idx);
                 let x2 = Writer::read_word(chunk, env, idx);
                 let x3 = Writer::read_word(chunk, env, idx);
-                UDiv(x0, x1, x2, x3)
+                env.insert_id(x1);
+                env.insert_op(UDiv(x0, x1, x2, x3))
             }
             135 => {
                 let x0 = Writer::read_word(chunk, env, idx);
                 let x1 = Writer::read_word(chunk, env, idx);
                 let x2 = Writer::read_word(chunk, env, idx);
                 let x3 = Writer::read_word(chunk, env, idx);
-                SDiv(x0, x1, x2, x3)
+                env.insert_id(x1);
+                env.insert_op(SDiv(x0, x1, x2, x3))
             }
             136 => {
                 let x0 = Writer::read_word(chunk, env, idx);
                 let x1 = Writer::read_word(chunk, env, idx);
                 let x2 = Writer::read_word(chunk, env, idx);
                 let x3 = Writer::read_word(chunk, env, idx);
-                FDiv(x0, x1, x2, x3)
+                env.insert_id(x1);
+                env.insert_op(FDiv(x0, x1, x2, x3))
             }
             137 => {
                 let x0 = Writer::read_word(chunk, env, idx);
                 let x1 = Writer::read_word(chunk, env, idx);
                 let x2 = Writer::read_word(chunk, env, idx);
                 let x3 = Writer::read_word(chunk, env, idx);
-                UMod(x0, x1, x2, x3)
+                env.insert_id(x1);
+                env.insert_op(UMod(x0, x1, x2, x3))
             }
             138 => {
                 let x0 = Writer::read_word(chunk, env, idx);
                 let x1 = Writer::read_word(chunk, env, idx);
                 let x2 = Writer::read_word(chunk, env, idx);
                 let x3 = Writer::read_word(chunk, env, idx);
-                SRem(x0, x1, x2, x3)
+                env.insert_id(x1);
+                env.insert_op(SRem(x0, x1, x2, x3))
             }
             139 => {
                 let x0 = Writer::read_word(chunk, env, idx);
                 let x1 = Writer::read_word(chunk, env, idx);
                 let x2 = Writer::read_word(chunk, env, idx);
                 let x3 = Writer::read_word(chunk, env, idx);
-                SMod(x0, x1, x2, x3)
+                env.insert_id(x1);
+                env.insert_op(SMod(x0, x1, x2, x3))
             }
             140 => {
                 let x0 = Writer::read_word(chunk, env, idx);
                 let x1 = Writer::read_word(chunk, env, idx);
                 let x2 = Writer::read_word(chunk, env, idx);
                 let x3 = Writer::read_word(chunk, env, idx);
-                FRem(x0, x1, x2, x3)
+                env.insert_id(x1);
+                env.insert_op(FRem(x0, x1, x2, x3))
             }
             141 => {
                 let x0 = Writer::read_word(chunk, env, idx);
                 let x1 = Writer::read_word(chunk, env, idx);
                 let x2 = Writer::read_word(chunk, env, idx);
                 let x3 = Writer::read_word(chunk, env, idx);
-                FMod(x0, x1, x2, x3)
+                env.insert_id(x1);
+                env.insert_op(FMod(x0, x1, x2, x3))
             }
             142 => {
                 let x0 = Writer::read_word(chunk, env, idx);
                 let x1 = Writer::read_word(chunk, env, idx);
                 let x2 = Writer::read_word(chunk, env, idx);
                 let x3 = Writer::read_word(chunk, env, idx);
-                VectorTimesScalar(x0, x1, x2, x3)
+                env.insert_id(x1);
+                env.insert_op(VectorTimesScalar(x0, x1, x2, x3))
             }
             143 => {
                 let x0 = Writer::read_word(chunk, env, idx);
                 let x1 = Writer::read_word(chunk, env, idx);
                 let x2 = Writer::read_word(chunk, env, idx);
                 let x3 = Writer::read_word(chunk, env, idx);
-                MatrixTimesScalar(x0, x1, x2, x3)
+                env.insert_id(x1);
+                env.insert_op(MatrixTimesScalar(x0, x1, x2, x3))
             }
             144 => {
                 let x0 = Writer::read_word(chunk, env, idx);
                 let x1 = Writer::read_word(chunk, env, idx);
                 let x2 = Writer::read_word(chunk, env, idx);
                 let x3 = Writer::read_word(chunk, env, idx);
-                VectorTimesMatrix(x0, x1, x2, x3)
+                env.insert_id(x1);
+                env.insert_op(VectorTimesMatrix(x0, x1, x2, x3))
             }
             145 => {
                 let x0 = Writer::read_word(chunk, env, idx);
                 let x1 = Writer::read_word(chunk, env, idx);
                 let x2 = Writer::read_word(chunk, env, idx);
                 let x3 = Writer::read_word(chunk, env, idx);
-                MatrixTimesVector(x0, x1, x2, x3)
+                env.insert_id(x1);
+                env.insert_op(MatrixTimesVector(x0, x1, x2, x3))
             }
             146 => {
                 let x0 = Writer::read_word(chunk, env, idx);
                 let x1 = Writer::read_word(chunk, env, idx);
                 let x2 = Writer::read_word(chunk, env, idx);
                 let x3 = Writer::read_word(chunk, env, idx);
-                MatrixTimesMatrix(x0, x1, x2, x3)
+                env.insert_id(x1);
+                env.insert_op(MatrixTimesMatrix(x0, x1, x2, x3))
             }
             147 => {
                 let x0 = Writer::read_word(chunk, env, idx);
                 let x1 = Writer::read_word(chunk, env, idx);
                 let x2 = Writer::read_word(chunk, env, idx);
                 let x3 = Writer::read_word(chunk, env, idx);
-                OuterProduct(x0, x1, x2, x3)
+                env.insert_id(x1);
+                env.insert_op(OuterProduct(x0, x1, x2, x3))
             }
             148 => {
                 let x0 = Writer::read_word(chunk, env, idx);
                 let x1 = Writer::read_word(chunk, env, idx);
                 let x2 = Writer::read_word(chunk, env, idx);
                 let x3 = Writer::read_word(chunk, env, idx);
-                Dot(x0, x1, x2, x3)
+                env.insert_id(x1);
+                env.insert_op(Dot(x0, x1, x2, x3))
             }
             149 => {
                 let x0 = Writer::read_word(chunk, env, idx);
                 let x1 = Writer::read_word(chunk, env, idx);
                 let x2 = Writer::read_word(chunk, env, idx);
                 let x3 = Writer::read_word(chunk, env, idx);
-                IAddCarry(x0, x1, x2, x3)
+                env.insert_id(x1);
+                env.insert_op(IAddCarry(x0, x1, x2, x3))
             }
             150 => {
                 let x0 = Writer::read_word(chunk, env, idx);
                 let x1 = Writer::read_word(chunk, env, idx);
                 let x2 = Writer::read_word(chunk, env, idx);
                 let x3 = Writer::read_word(chunk, env, idx);
-                ISubBorrow(x0, x1, x2, x3)
+                env.insert_id(x1);
+                env.insert_op(ISubBorrow(x0, x1, x2, x3))
             }
             151 => {
                 let x0 = Writer::read_word(chunk, env, idx);
                 let x1 = Writer::read_word(chunk, env, idx);
                 let x2 = Writer::read_word(chunk, env, idx);
                 let x3 = Writer::read_word(chunk, env, idx);
-                UMulExtended(x0, x1, x2, x3)
+                env.insert_id(x1);
+                env.insert_op(UMulExtended(x0, x1, x2, x3))
             }
             152 => {
                 let x0 = Writer::read_word(chunk, env, idx);
                 let x1 = Writer::read_word(chunk, env, idx);
                 let x2 = Writer::read_word(chunk, env, idx);
                 let x3 = Writer::read_word(chunk, env, idx);
-                SMulExtended(x0, x1, x2, x3)
+                env.insert_id(x1);
+                env.insert_op(SMulExtended(x0, x1, x2, x3))
             }
             154 => {
                 let x0 = Writer::read_word(chunk, env, idx);
                 let x1 = Writer::read_word(chunk, env, idx);
                 let x2 = Writer::read_word(chunk, env, idx);
-                Any(x0, x1, x2)
+                env.insert_id(x1);
+                env.insert_op(Any(x0, x1, x2))
             }
             155 => {
                 let x0 = Writer::read_word(chunk, env, idx);
                 let x1 = Writer::read_word(chunk, env, idx);
                 let x2 = Writer::read_word(chunk, env, idx);
-                All(x0, x1, x2)
+                env.insert_id(x1);
+                env.insert_op(All(x0, x1, x2))
             }
             156 => {
                 let x0 = Writer::read_word(chunk, env, idx);
                 let x1 = Writer::read_word(chunk, env, idx);
                 let x2 = Writer::read_word(chunk, env, idx);
-                IsNan(x0, x1, x2)
+                env.insert_id(x1);
+                env.insert_op(IsNan(x0, x1, x2))
             }
             157 => {
                 let x0 = Writer::read_word(chunk, env, idx);
                 let x1 = Writer::read_word(chunk, env, idx);
                 let x2 = Writer::read_word(chunk, env, idx);
-                IsInf(x0, x1, x2)
+                env.insert_id(x1);
+                env.insert_op(IsInf(x0, x1, x2))
             }
             158 => {
                 let x0 = Writer::read_word(chunk, env, idx);
                 let x1 = Writer::read_word(chunk, env, idx);
                 let x2 = Writer::read_word(chunk, env, idx);
-                IsFinite(x0, x1, x2)
+                env.insert_id(x1);
+                env.insert_op(IsFinite(x0, x1, x2))
             }
             159 => {
                 let x0 = Writer::read_word(chunk, env, idx);
                 let x1 = Writer::read_word(chunk, env, idx);
                 let x2 = Writer::read_word(chunk, env, idx);
-                IsNormal(x0, x1, x2)
+                env.insert_id(x1);
+                env.insert_op(IsNormal(x0, x1, x2))
             }
             160 => {
                 let x0 = Writer::read_word(chunk, env, idx);
                 let x1 = Writer::read_word(chunk, env, idx);
                 let x2 = Writer::read_word(chunk, env, idx);
-                SignBitSet(x0, x1, x2)
+                env.insert_id(x1);
+                env.insert_op(SignBitSet(x0, x1, x2))
             }
             161 => {
                 let x0 = Writer::read_word(chunk, env, idx);
                 let x1 = Writer::read_word(chunk, env, idx);
                 let x2 = Writer::read_word(chunk, env, idx);
                 let x3 = Writer::read_word(chunk, env, idx);
-                LessOrGreater(x0, x1, x2, x3)
+                env.insert_id(x1);
+                env.insert_op(LessOrGreater(x0, x1, x2, x3))
             }
             162 => {
                 let x0 = Writer::read_word(chunk, env, idx);
                 let x1 = Writer::read_word(chunk, env, idx);
                 let x2 = Writer::read_word(chunk, env, idx);
                 let x3 = Writer::read_word(chunk, env, idx);
-                Ordered(x0, x1, x2, x3)
+                env.insert_id(x1);
+                env.insert_op(Ordered(x0, x1, x2, x3))
             }
             163 => {
                 let x0 = Writer::read_word(chunk, env, idx);
                 let x1 = Writer::read_word(chunk, env, idx);
                 let x2 = Writer::read_word(chunk, env, idx);
                 let x3 = Writer::read_word(chunk, env, idx);
-                Unordered(x0, x1, x2, x3)
+                env.insert_id(x1);
+                env.insert_op(Unordered(x0, x1, x2, x3))
             }
             164 => {
                 let x0 = Writer::read_word(chunk, env, idx);
                 let x1 = Writer::read_word(chunk, env, idx);
                 let x2 = Writer::read_word(chunk, env, idx);
                 let x3 = Writer::read_word(chunk, env, idx);
-                LogicalEqual(x0, x1, x2, x3)
+                env.insert_id(x1);
+                env.insert_op(LogicalEqual(x0, x1, x2, x3))
             }
             165 => {
                 let x0 = Writer::read_word(chunk, env, idx);
                 let x1 = Writer::read_word(chunk, env, idx);
                 let x2 = Writer::read_word(chunk, env, idx);
                 let x3 = Writer::read_word(chunk, env, idx);
-                LogicalNotEqual(x0, x1, x2, x3)
+                env.insert_id(x1);
+                env.insert_op(LogicalNotEqual(x0, x1, x2, x3))
             }
             166 => {
                 let x0 = Writer::read_word(chunk, env, idx);
                 let x1 = Writer::read_word(chunk, env, idx);
                 let x2 = Writer::read_word(chunk, env, idx);
                 let x3 = Writer::read_word(chunk, env, idx);
-                LogicalOr(x0, x1, x2, x3)
+                env.insert_id(x1);
+                env.insert_op(LogicalOr(x0, x1, x2, x3))
             }
             167 => {
                 let x0 = Writer::read_word(chunk, env, idx);
                 let x1 = Writer::read_word(chunk, env, idx);
                 let x2 = Writer::read_word(chunk, env, idx);
                 let x3 = Writer::read_word(chunk, env, idx);
-                LogicalAnd(x0, x1, x2, x3)
+                env.insert_id(x1);
+                env.insert_op(LogicalAnd(x0, x1, x2, x3))
             }
             168 => {
                 let x0 = Writer::read_word(chunk, env, idx);
                 let x1 = Writer::read_word(chunk, env, idx);
                 let x2 = Writer::read_word(chunk, env, idx);
-                LogicalNot(x0, x1, x2)
+                env.insert_id(x1);
+                env.insert_op(LogicalNot(x0, x1, x2))
             }
             169 => {
                 let x0 = Writer::read_word(chunk, env, idx);
@@ -1966,209 +2164,239 @@ impl Opcode {
                 let x2 = Writer::read_word(chunk, env, idx);
                 let x3 = Writer::read_word(chunk, env, idx);
                 let x4 = Writer::read_word(chunk, env, idx);
-                Select(x0, x1, x2, x3, x4)
+                env.insert_id(x1);
+                env.insert_op(Select(x0, x1, x2, x3, x4))
             }
             170 => {
                 let x0 = Writer::read_word(chunk, env, idx);
                 let x1 = Writer::read_word(chunk, env, idx);
                 let x2 = Writer::read_word(chunk, env, idx);
                 let x3 = Writer::read_word(chunk, env, idx);
-                IEqual(x0, x1, x2, x3)
+                env.insert_id(x1);
+                env.insert_op(IEqual(x0, x1, x2, x3))
             }
             171 => {
                 let x0 = Writer::read_word(chunk, env, idx);
                 let x1 = Writer::read_word(chunk, env, idx);
                 let x2 = Writer::read_word(chunk, env, idx);
                 let x3 = Writer::read_word(chunk, env, idx);
-                INotEqual(x0, x1, x2, x3)
+                env.insert_id(x1);
+                env.insert_op(INotEqual(x0, x1, x2, x3))
             }
             172 => {
                 let x0 = Writer::read_word(chunk, env, idx);
                 let x1 = Writer::read_word(chunk, env, idx);
                 let x2 = Writer::read_word(chunk, env, idx);
                 let x3 = Writer::read_word(chunk, env, idx);
-                UGreaterThan(x0, x1, x2, x3)
+                env.insert_id(x1);
+                env.insert_op(UGreaterThan(x0, x1, x2, x3))
             }
             173 => {
                 let x0 = Writer::read_word(chunk, env, idx);
                 let x1 = Writer::read_word(chunk, env, idx);
                 let x2 = Writer::read_word(chunk, env, idx);
                 let x3 = Writer::read_word(chunk, env, idx);
-                SGreaterThan(x0, x1, x2, x3)
+                env.insert_id(x1);
+                env.insert_op(SGreaterThan(x0, x1, x2, x3))
             }
             174 => {
                 let x0 = Writer::read_word(chunk, env, idx);
                 let x1 = Writer::read_word(chunk, env, idx);
                 let x2 = Writer::read_word(chunk, env, idx);
                 let x3 = Writer::read_word(chunk, env, idx);
-                UGreaterThanEqual(x0, x1, x2, x3)
+                env.insert_id(x1);
+                env.insert_op(UGreaterThanEqual(x0, x1, x2, x3))
             }
             175 => {
                 let x0 = Writer::read_word(chunk, env, idx);
                 let x1 = Writer::read_word(chunk, env, idx);
                 let x2 = Writer::read_word(chunk, env, idx);
                 let x3 = Writer::read_word(chunk, env, idx);
-                SGreaterThanEqual(x0, x1, x2, x3)
+                env.insert_id(x1);
+                env.insert_op(SGreaterThanEqual(x0, x1, x2, x3))
             }
             176 => {
                 let x0 = Writer::read_word(chunk, env, idx);
                 let x1 = Writer::read_word(chunk, env, idx);
                 let x2 = Writer::read_word(chunk, env, idx);
                 let x3 = Writer::read_word(chunk, env, idx);
-                ULessThan(x0, x1, x2, x3)
+                env.insert_id(x1);
+                env.insert_op(ULessThan(x0, x1, x2, x3))
             }
             177 => {
                 let x0 = Writer::read_word(chunk, env, idx);
                 let x1 = Writer::read_word(chunk, env, idx);
                 let x2 = Writer::read_word(chunk, env, idx);
                 let x3 = Writer::read_word(chunk, env, idx);
-                SLessThan(x0, x1, x2, x3)
+                env.insert_id(x1);
+                env.insert_op(SLessThan(x0, x1, x2, x3))
             }
             178 => {
                 let x0 = Writer::read_word(chunk, env, idx);
                 let x1 = Writer::read_word(chunk, env, idx);
                 let x2 = Writer::read_word(chunk, env, idx);
                 let x3 = Writer::read_word(chunk, env, idx);
-                ULessThanEqual(x0, x1, x2, x3)
+                env.insert_id(x1);
+                env.insert_op(ULessThanEqual(x0, x1, x2, x3))
             }
             179 => {
                 let x0 = Writer::read_word(chunk, env, idx);
                 let x1 = Writer::read_word(chunk, env, idx);
                 let x2 = Writer::read_word(chunk, env, idx);
                 let x3 = Writer::read_word(chunk, env, idx);
-                SLessThanEqual(x0, x1, x2, x3)
+                env.insert_id(x1);
+                env.insert_op(SLessThanEqual(x0, x1, x2, x3))
             }
             180 => {
                 let x0 = Writer::read_word(chunk, env, idx);
                 let x1 = Writer::read_word(chunk, env, idx);
                 let x2 = Writer::read_word(chunk, env, idx);
                 let x3 = Writer::read_word(chunk, env, idx);
-                FOrdEqual(x0, x1, x2, x3)
+                env.insert_id(x1);
+                env.insert_op(FOrdEqual(x0, x1, x2, x3))
             }
             181 => {
                 let x0 = Writer::read_word(chunk, env, idx);
                 let x1 = Writer::read_word(chunk, env, idx);
                 let x2 = Writer::read_word(chunk, env, idx);
                 let x3 = Writer::read_word(chunk, env, idx);
-                FUnordEqual(x0, x1, x2, x3)
+                env.insert_id(x1);
+                env.insert_op(FUnordEqual(x0, x1, x2, x3))
             }
             182 => {
                 let x0 = Writer::read_word(chunk, env, idx);
                 let x1 = Writer::read_word(chunk, env, idx);
                 let x2 = Writer::read_word(chunk, env, idx);
                 let x3 = Writer::read_word(chunk, env, idx);
-                FOrdNotEqual(x0, x1, x2, x3)
+                env.insert_id(x1);
+                env.insert_op(FOrdNotEqual(x0, x1, x2, x3))
             }
             183 => {
                 let x0 = Writer::read_word(chunk, env, idx);
                 let x1 = Writer::read_word(chunk, env, idx);
                 let x2 = Writer::read_word(chunk, env, idx);
                 let x3 = Writer::read_word(chunk, env, idx);
-                FUnordNotEqual(x0, x1, x2, x3)
+                env.insert_id(x1);
+                env.insert_op(FUnordNotEqual(x0, x1, x2, x3))
             }
             184 => {
                 let x0 = Writer::read_word(chunk, env, idx);
                 let x1 = Writer::read_word(chunk, env, idx);
                 let x2 = Writer::read_word(chunk, env, idx);
                 let x3 = Writer::read_word(chunk, env, idx);
-                FOrdLessThan(x0, x1, x2, x3)
+                env.insert_id(x1);
+                env.insert_op(FOrdLessThan(x0, x1, x2, x3))
             }
             185 => {
                 let x0 = Writer::read_word(chunk, env, idx);
                 let x1 = Writer::read_word(chunk, env, idx);
                 let x2 = Writer::read_word(chunk, env, idx);
                 let x3 = Writer::read_word(chunk, env, idx);
-                FUnordLessThan(x0, x1, x2, x3)
+                env.insert_id(x1);
+                env.insert_op(FUnordLessThan(x0, x1, x2, x3))
             }
             186 => {
                 let x0 = Writer::read_word(chunk, env, idx);
                 let x1 = Writer::read_word(chunk, env, idx);
                 let x2 = Writer::read_word(chunk, env, idx);
                 let x3 = Writer::read_word(chunk, env, idx);
-                FOrdGreaterThan(x0, x1, x2, x3)
+                env.insert_id(x1);
+                env.insert_op(FOrdGreaterThan(x0, x1, x2, x3))
             }
             187 => {
                 let x0 = Writer::read_word(chunk, env, idx);
                 let x1 = Writer::read_word(chunk, env, idx);
                 let x2 = Writer::read_word(chunk, env, idx);
                 let x3 = Writer::read_word(chunk, env, idx);
-                FUnordGreaterThan(x0, x1, x2, x3)
+                env.insert_id(x1);
+                env.insert_op(FUnordGreaterThan(x0, x1, x2, x3))
             }
             188 => {
                 let x0 = Writer::read_word(chunk, env, idx);
                 let x1 = Writer::read_word(chunk, env, idx);
                 let x2 = Writer::read_word(chunk, env, idx);
                 let x3 = Writer::read_word(chunk, env, idx);
-                FOrdLessThanEqual(x0, x1, x2, x3)
+                env.insert_id(x1);
+                env.insert_op(FOrdLessThanEqual(x0, x1, x2, x3))
             }
             189 => {
                 let x0 = Writer::read_word(chunk, env, idx);
                 let x1 = Writer::read_word(chunk, env, idx);
                 let x2 = Writer::read_word(chunk, env, idx);
                 let x3 = Writer::read_word(chunk, env, idx);
-                FUnordLessThanEqual(x0, x1, x2, x3)
+                env.insert_id(x1);
+                env.insert_op(FUnordLessThanEqual(x0, x1, x2, x3))
             }
             190 => {
                 let x0 = Writer::read_word(chunk, env, idx);
                 let x1 = Writer::read_word(chunk, env, idx);
                 let x2 = Writer::read_word(chunk, env, idx);
                 let x3 = Writer::read_word(chunk, env, idx);
-                FOrdGreaterThanEqual(x0, x1, x2, x3)
+                env.insert_id(x1);
+                env.insert_op(FOrdGreaterThanEqual(x0, x1, x2, x3))
             }
             191 => {
                 let x0 = Writer::read_word(chunk, env, idx);
                 let x1 = Writer::read_word(chunk, env, idx);
                 let x2 = Writer::read_word(chunk, env, idx);
                 let x3 = Writer::read_word(chunk, env, idx);
-                FUnordGreaterThanEqual(x0, x1, x2, x3)
+                env.insert_id(x1);
+                env.insert_op(FUnordGreaterThanEqual(x0, x1, x2, x3))
             }
             194 => {
                 let x0 = Writer::read_word(chunk, env, idx);
                 let x1 = Writer::read_word(chunk, env, idx);
                 let x2 = Writer::read_word(chunk, env, idx);
                 let x3 = Writer::read_word(chunk, env, idx);
-                ShiftRightLogical(x0, x1, x2, x3)
+                env.insert_id(x1);
+                env.insert_op(ShiftRightLogical(x0, x1, x2, x3))
             }
             195 => {
                 let x0 = Writer::read_word(chunk, env, idx);
                 let x1 = Writer::read_word(chunk, env, idx);
                 let x2 = Writer::read_word(chunk, env, idx);
                 let x3 = Writer::read_word(chunk, env, idx);
-                ShiftRightArithmetic(x0, x1, x2, x3)
+                env.insert_id(x1);
+                env.insert_op(ShiftRightArithmetic(x0, x1, x2, x3))
             }
             196 => {
                 let x0 = Writer::read_word(chunk, env, idx);
                 let x1 = Writer::read_word(chunk, env, idx);
                 let x2 = Writer::read_word(chunk, env, idx);
                 let x3 = Writer::read_word(chunk, env, idx);
-                ShiftLeftLogical(x0, x1, x2, x3)
+                env.insert_id(x1);
+                env.insert_op(ShiftLeftLogical(x0, x1, x2, x3))
             }
             197 => {
                 let x0 = Writer::read_word(chunk, env, idx);
                 let x1 = Writer::read_word(chunk, env, idx);
                 let x2 = Writer::read_word(chunk, env, idx);
                 let x3 = Writer::read_word(chunk, env, idx);
-                BitwiseOr(x0, x1, x2, x3)
+                env.insert_id(x1);
+                env.insert_op(BitwiseOr(x0, x1, x2, x3))
             }
             198 => {
                 let x0 = Writer::read_word(chunk, env, idx);
                 let x1 = Writer::read_word(chunk, env, idx);
                 let x2 = Writer::read_word(chunk, env, idx);
                 let x3 = Writer::read_word(chunk, env, idx);
-                BitwiseXor(x0, x1, x2, x3)
+                env.insert_id(x1);
+                env.insert_op(BitwiseXor(x0, x1, x2, x3))
             }
             199 => {
                 let x0 = Writer::read_word(chunk, env, idx);
                 let x1 = Writer::read_word(chunk, env, idx);
                 let x2 = Writer::read_word(chunk, env, idx);
                 let x3 = Writer::read_word(chunk, env, idx);
-                BitwiseAnd(x0, x1, x2, x3)
+                env.insert_id(x1);
+                env.insert_op(BitwiseAnd(x0, x1, x2, x3))
             }
             200 => {
                 let x0 = Writer::read_word(chunk, env, idx);
                 let x1 = Writer::read_word(chunk, env, idx);
                 let x2 = Writer::read_word(chunk, env, idx);
-                Not(x0, x1, x2)
+                env.insert_id(x1);
+                env.insert_op(Not(x0, x1, x2))
             }
             201 => {
                 let x0 = Writer::read_word(chunk, env, idx);
@@ -2177,7 +2405,8 @@ impl Opcode {
                 let x3 = Writer::read_word(chunk, env, idx);
                 let x4 = Writer::read_word(chunk, env, idx);
                 let x5 = Writer::read_word(chunk, env, idx);
-                BitFieldInsert(x0, x1, x2, x3, x4, x5)
+                env.insert_id(x1);
+                env.insert_op(BitFieldInsert(x0, x1, x2, x3, x4, x5))
             }
             202 => {
                 let x0 = Writer::read_word(chunk, env, idx);
@@ -2185,7 +2414,8 @@ impl Opcode {
                 let x2 = Writer::read_word(chunk, env, idx);
                 let x3 = Writer::read_word(chunk, env, idx);
                 let x4 = Writer::read_word(chunk, env, idx);
-                BitFieldSExtract(x0, x1, x2, x3, x4)
+                env.insert_id(x1);
+                env.insert_op(BitFieldSExtract(x0, x1, x2, x3, x4))
             }
             203 => {
                 let x0 = Writer::read_word(chunk, env, idx);
@@ -2193,94 +2423,106 @@ impl Opcode {
                 let x2 = Writer::read_word(chunk, env, idx);
                 let x3 = Writer::read_word(chunk, env, idx);
                 let x4 = Writer::read_word(chunk, env, idx);
-                BitFieldUExtract(x0, x1, x2, x3, x4)
+                env.insert_id(x1);
+                env.insert_op(BitFieldUExtract(x0, x1, x2, x3, x4))
             }
             204 => {
                 let x0 = Writer::read_word(chunk, env, idx);
                 let x1 = Writer::read_word(chunk, env, idx);
                 let x2 = Writer::read_word(chunk, env, idx);
-                BitReverse(x0, x1, x2)
+                env.insert_id(x1);
+                env.insert_op(BitReverse(x0, x1, x2))
             }
             205 => {
                 let x0 = Writer::read_word(chunk, env, idx);
                 let x1 = Writer::read_word(chunk, env, idx);
                 let x2 = Writer::read_word(chunk, env, idx);
-                BitCount(x0, x1, x2)
+                env.insert_id(x1);
+                env.insert_op(BitCount(x0, x1, x2))
             }
             207 => {
                 let x0 = Writer::read_word(chunk, env, idx);
                 let x1 = Writer::read_word(chunk, env, idx);
                 let x2 = Writer::read_word(chunk, env, idx);
-                DPdx(x0, x1, x2)
+                env.insert_id(x1);
+                env.insert_op(DPdx(x0, x1, x2))
             }
             208 => {
                 let x0 = Writer::read_word(chunk, env, idx);
                 let x1 = Writer::read_word(chunk, env, idx);
                 let x2 = Writer::read_word(chunk, env, idx);
-                DPdy(x0, x1, x2)
+                env.insert_id(x1);
+                env.insert_op(DPdy(x0, x1, x2))
             }
             209 => {
                 let x0 = Writer::read_word(chunk, env, idx);
                 let x1 = Writer::read_word(chunk, env, idx);
                 let x2 = Writer::read_word(chunk, env, idx);
-                Fwidth(x0, x1, x2)
+                env.insert_id(x1);
+                env.insert_op(Fwidth(x0, x1, x2))
             }
             210 => {
                 let x0 = Writer::read_word(chunk, env, idx);
                 let x1 = Writer::read_word(chunk, env, idx);
                 let x2 = Writer::read_word(chunk, env, idx);
-                DPdxFine(x0, x1, x2)
+                env.insert_id(x1);
+                env.insert_op(DPdxFine(x0, x1, x2))
             }
             211 => {
                 let x0 = Writer::read_word(chunk, env, idx);
                 let x1 = Writer::read_word(chunk, env, idx);
                 let x2 = Writer::read_word(chunk, env, idx);
-                DPdyFine(x0, x1, x2)
+                env.insert_id(x1);
+                env.insert_op(DPdyFine(x0, x1, x2))
             }
             212 => {
                 let x0 = Writer::read_word(chunk, env, idx);
                 let x1 = Writer::read_word(chunk, env, idx);
                 let x2 = Writer::read_word(chunk, env, idx);
-                FwidthFine(x0, x1, x2)
+                env.insert_id(x1);
+                env.insert_op(FwidthFine(x0, x1, x2))
             }
             213 => {
                 let x0 = Writer::read_word(chunk, env, idx);
                 let x1 = Writer::read_word(chunk, env, idx);
                 let x2 = Writer::read_word(chunk, env, idx);
-                DPdxCoarse(x0, x1, x2)
+                env.insert_id(x1);
+                env.insert_op(DPdxCoarse(x0, x1, x2))
             }
             214 => {
                 let x0 = Writer::read_word(chunk, env, idx);
                 let x1 = Writer::read_word(chunk, env, idx);
                 let x2 = Writer::read_word(chunk, env, idx);
-                DPdyCoarse(x0, x1, x2)
+                env.insert_id(x1);
+                env.insert_op(DPdyCoarse(x0, x1, x2))
             }
             215 => {
                 let x0 = Writer::read_word(chunk, env, idx);
                 let x1 = Writer::read_word(chunk, env, idx);
                 let x2 = Writer::read_word(chunk, env, idx);
-                FwidthCoarse(x0, x1, x2)
+                env.insert_id(x1);
+                env.insert_op(FwidthCoarse(x0, x1, x2))
             }
-            218 => EmitVertex(),
-            219 => EndPrimitive(),
+            218 => env.insert_op(EmitVertex()),
+            219 => env.insert_op(EndPrimitive()),
             220 => {
                 let x0 = Writer::read_word(chunk, env, idx);
-                EmitStreamVertex(x0)
+                env.insert_op(EmitStreamVertex(x0))
             }
             221 => {
                 let x0 = Writer::read_word(chunk, env, idx);
-                EndStreamPrimitive(x0)
+                env.insert_op(EndStreamPrimitive(x0))
             }
             224 => {
                 let x0 = Writer::read_word(chunk, env, idx);
                 let x1 = Writer::read_word(chunk, env, idx);
                 let x2 = Writer::read_word(chunk, env, idx);
-                ControlBarrier(x0, x1, x2)
+                env.insert_op(ControlBarrier(x0, x1, x2))
             }
             225 => {
                 let x0 = Writer::read_word(chunk, env, idx);
                 let x1 = Writer::read_word(chunk, env, idx);
-                MemoryBarrier(x0, x1)
+                env.insert_op(MemoryBarrier(x0, x1))
             }
             227 => {
                 let x0 = Writer::read_word(chunk, env, idx);
@@ -2288,14 +2530,15 @@ impl Opcode {
                 let x2 = Writer::read_word(chunk, env, idx);
                 let x3 = Writer::read_word(chunk, env, idx);
                 let x4 = Writer::read_word(chunk, env, idx);
-                AtomicLoad(x0, x1, x2, x3, x4)
+                env.insert_id(x1);
+                env.insert_op(AtomicLoad(x0, x1, x2, x3, x4))
             }
             228 => {
                 let x0 = Writer::read_word(chunk, env, idx);
                 let x1 = Writer::read_word(chunk, env, idx);
                 let x2 = Writer::read_word(chunk, env, idx);
                 let x3 = Writer::read_word(chunk, env, idx);
-                AtomicStore(x0, x1, x2, x3)
+                env.insert_op(AtomicStore(x0, x1, x2, x3))
             }
             229 => {
                 let x0 = Writer::read_word(chunk, env, idx);
@@ -2304,7 +2547,8 @@ impl Opcode {
                 let x3 = Writer::read_word(chunk, env, idx);
                 let x4 = Writer::read_word(chunk, env, idx);
                 let x5 = Writer::read_word(chunk, env, idx);
-                AtomicExchange(x0, x1, x2, x3, x4, x5)
+                env.insert_id(x1);
+                env.insert_op(AtomicExchange(x0, x1, x2, x3, x4, x5))
             }
             230 => {
                 let x0 = Writer::read_word(chunk, env, idx);
@@ -2315,7 +2559,8 @@ impl Opcode {
                 let x5 = Writer::read_word(chunk, env, idx);
                 let x6 = Writer::read_word(chunk, env, idx);
                 let x7 = Writer::read_word(chunk, env, idx);
-                AtomicCompareExchange(x0, x1, x2, x3, x4, x5, x6, x7)
+                env.insert_id(x1);
+                env.insert_op(AtomicCompareExchange(x0, x1, x2, x3, x4, x5, x6, x7))
             }
             231 => {
                 let x0 = Writer::read_word(chunk, env, idx);
@@ -2326,7 +2571,8 @@ impl Opcode {
                 let x5 = Writer::read_word(chunk, env, idx);
                 let x6 = Writer::read_word(chunk, env, idx);
                 let x7 = Writer::read_word(chunk, env, idx);
-                AtomicCompareExchangeWeak(x0, x1, x2, x3, x4, x5, x6, x7)
+                env.insert_id(x1);
+                env.insert_op(AtomicCompareExchangeWeak(x0, x1, x2, x3, x4, x5, x6, x7))
             }
             232 => {
                 let x0 = Writer::read_word(chunk, env, idx);
@@ -2334,7 +2580,8 @@ impl Opcode {
                 let x2 = Writer::read_word(chunk, env, idx);
                 let x3 = Writer::read_word(chunk, env, idx);
                 let x4 = Writer::read_word(chunk, env, idx);
-                AtomicIIncrement(x0, x1, x2, x3, x4)
+                env.insert_id(x1);
+                env.insert_op(AtomicIIncrement(x0, x1, x2, x3, x4))
             }
             233 => {
                 let x0 = Writer::read_word(chunk, env, idx);
@@ -2342,7 +2589,8 @@ impl Opcode {
                 let x2 = Writer::read_word(chunk, env, idx);
                 let x3 = Writer::read_word(chunk, env, idx);
                 let x4 = Writer::read_word(chunk, env, idx);
-                AtomicIDecrement(x0, x1, x2, x3, x4)
+                env.insert_id(x1);
+                env.insert_op(AtomicIDecrement(x0, x1, x2, x3, x4))
             }
             234 => {
                 let x0 = Writer::read_word(chunk, env, idx);
@@ -2351,7 +2599,8 @@ impl Opcode {
                 let x3 = Writer::read_word(chunk, env, idx);
                 let x4 = Writer::read_word(chunk, env, idx);
                 let x5 = Writer::read_word(chunk, env, idx);
-                AtomicIAdd(x0, x1, x2, x3, x4, x5)
+                env.insert_id(x1);
+                env.insert_op(AtomicIAdd(x0, x1, x2, x3, x4, x5))
             }
             235 => {
                 let x0 = Writer::read_word(chunk, env, idx);
@@ -2360,7 +2609,8 @@ impl Opcode {
                 let x3 = Writer::read_word(chunk, env, idx);
                 let x4 = Writer::read_word(chunk, env, idx);
                 let x5 = Writer::read_word(chunk, env, idx);
-                AtomicISub(x0, x1, x2, x3, x4, x5)
+                env.insert_id(x1);
+                env.insert_op(AtomicISub(x0, x1, x2, x3, x4, x5))
             }
             236 => {
                 let x0 = Writer::read_word(chunk, env, idx);
@@ -2369,7 +2619,8 @@ impl Opcode {
                 let x3 = Writer::read_word(chunk, env, idx);
                 let x4 = Writer::read_word(chunk, env, idx);
                 let x5 = Writer::read_word(chunk, env, idx);
-                AtomicSMin(x0, x1, x2, x3, x4, x5)
+                env.insert_id(x1);
+                env.insert_op(AtomicSMin(x0, x1, x2, x3, x4, x5))
             }
             237 => {
                 let x0 = Writer::read_word(chunk, env, idx);
@@ -2378,7 +2629,8 @@ impl Opcode {
                 let x3 = Writer::read_word(chunk, env, idx);
                 let x4 = Writer::read_word(chunk, env, idx);
                 let x5 = Writer::read_word(chunk, env, idx);
-                AtomicUMin(x0, x1, x2, x3, x4, x5)
+                env.insert_id(x1);
+                env.insert_op(AtomicUMin(x0, x1, x2, x3, x4, x5))
             }
             238 => {
                 let x0 = Writer::read_word(chunk, env, idx);
@@ -2387,7 +2639,8 @@ impl Opcode {
                 let x3 = Writer::read_word(chunk, env, idx);
                 let x4 = Writer::read_word(chunk, env, idx);
                 let x5 = Writer::read_word(chunk, env, idx);
-                AtomicSMax(x0, x1, x2, x3, x4, x5)
+                env.insert_id(x1);
+                env.insert_op(AtomicSMax(x0, x1, x2, x3, x4, x5))
             }
             239 => {
                 let x0 = Writer::read_word(chunk, env, idx);
@@ -2396,7 +2649,8 @@ impl Opcode {
                 let x3 = Writer::read_word(chunk, env, idx);
                 let x4 = Writer::read_word(chunk, env, idx);
                 let x5 = Writer::read_word(chunk, env, idx);
-                AtomicUMax(x0, x1, x2, x3, x4, x5)
+                env.insert_id(x1);
+                env.insert_op(AtomicUMax(x0, x1, x2, x3, x4, x5))
             }
             240 => {
                 let x0 = Writer::read_word(chunk, env, idx);
@@ -2405,7 +2659,8 @@ impl Opcode {
                 let x3 = Writer::read_word(chunk, env, idx);
                 let x4 = Writer::read_word(chunk, env, idx);
                 let x5 = Writer::read_word(chunk, env, idx);
-                AtomicAnd(x0, x1, x2, x3, x4, x5)
+                env.insert_id(x1);
+                env.insert_op(AtomicAnd(x0, x1, x2, x3, x4, x5))
             }
             241 => {
                 let x0 = Writer::read_word(chunk, env, idx);
@@ -2414,7 +2669,8 @@ impl Opcode {
                 let x3 = Writer::read_word(chunk, env, idx);
                 let x4 = Writer::read_word(chunk, env, idx);
                 let x5 = Writer::read_word(chunk, env, idx);
-                AtomicOr(x0, x1, x2, x3, x4, x5)
+                env.insert_id(x1);
+                env.insert_op(AtomicOr(x0, x1, x2, x3, x4, x5))
             }
             242 => {
                 let x0 = Writer::read_word(chunk, env, idx);
@@ -2423,62 +2679,65 @@ impl Opcode {
                 let x3 = Writer::read_word(chunk, env, idx);
                 let x4 = Writer::read_word(chunk, env, idx);
                 let x5 = Writer::read_word(chunk, env, idx);
-                AtomicXor(x0, x1, x2, x3, x4, x5)
+                env.insert_id(x1);
+                env.insert_op(AtomicXor(x0, x1, x2, x3, x4, x5))
             }
             245 => {
                 let x0 = Writer::read_word(chunk, env, idx);
                 let x1 = Writer::read_word(chunk, env, idx);
                 let x2 = Writer::read_word(chunk, env, idx);
-                Phi(x0, x1, x2)
+                env.insert_id(x1);
+                env.insert_op(Phi(x0, x1, x2))
             }
             246 => {
                 let x0 = Writer::read_word(chunk, env, idx);
                 let x1 = Writer::read_word(chunk, env, idx);
                 let x2 = Writer::read_word(chunk, env, idx);
-                LoopMerge(x0, x1, x2)
+                env.insert_op(LoopMerge(x0, x1, x2))
             }
             247 => {
                 let x0 = Writer::read_word(chunk, env, idx);
                 let x1 = Writer::read_word(chunk, env, idx);
-                SelectionMerge(x0, x1)
+                env.insert_op(SelectionMerge(x0, x1))
             }
             248 => {
                 let x0 = Writer::read_word(chunk, env, idx);
-                Label(x0)
+                env.insert_id(x0);
+                env.insert_op(Label(x0))
             }
             249 => {
                 let x0 = Writer::read_word(chunk, env, idx);
-                Branch(x0)
+                env.insert_op(Branch(x0))
             }
             250 => {
                 let x0 = Writer::read_word(chunk, env, idx);
                 let x1 = Writer::read_word(chunk, env, idx);
                 let x2 = Writer::read_word(chunk, env, idx);
                 let x3 = Writer::read_word(chunk, env, idx);
-                BranchConditional(x0, x1, x2, x3)
+                env.insert_op(BranchConditional(x0, x1, x2, x3))
             }
             251 => {
                 let x0 = Writer::read_word(chunk, env, idx);
                 let x1 = Writer::read_word(chunk, env, idx);
                 let x2 = Writer::read_word(chunk, env, idx);
-                Switch(x0, x1, x2)
+                env.insert_op(Switch(x0, x1, x2))
             }
-            252 => Kill(),
-            253 => Return(),
+            252 => env.insert_op(Kill()),
+            253 => env.insert_op(Return()),
             254 => {
                 let x0 = Writer::read_word(chunk, env, idx);
-                ReturnValue(x0)
+                env.insert_op(ReturnValue(x0))
             }
-            255 => Unreachable(),
+            255 => env.insert_op(Unreachable()),
             256 => {
                 let x0 = Writer::read_word(chunk, env, idx);
                 let x1 = Writer::read_word(chunk, env, idx);
-                LifetimeStart(x0, x1)
+                env.insert_op(LifetimeStart(x0, x1))
             }
             257 => {
                 let x0 = Writer::read_word(chunk, env, idx);
                 let x1 = Writer::read_word(chunk, env, idx);
-                LifetimeStop(x0, x1)
+                env.insert_op(LifetimeStop(x0, x1))
             }
             259 => {
                 let x0 = Writer::read_word(chunk, env, idx);
@@ -2489,27 +2748,30 @@ impl Opcode {
                 let x5 = Writer::read_word(chunk, env, idx);
                 let x6 = Writer::read_word(chunk, env, idx);
                 let x7 = Writer::read_word(chunk, env, idx);
-                GroupAsyncCopy(x0, x1, x2, x3, x4, x5, x6, x7)
+                env.insert_id(x1);
+                env.insert_op(GroupAsyncCopy(x0, x1, x2, x3, x4, x5, x6, x7))
             }
             260 => {
                 let x0 = Writer::read_word(chunk, env, idx);
                 let x1 = Writer::read_word(chunk, env, idx);
                 let x2 = Writer::read_word(chunk, env, idx);
-                GroupWaitEvents(x0, x1, x2)
+                env.insert_op(GroupWaitEvents(x0, x1, x2))
             }
             261 => {
                 let x0 = Writer::read_word(chunk, env, idx);
                 let x1 = Writer::read_word(chunk, env, idx);
                 let x2 = Writer::read_word(chunk, env, idx);
                 let x3 = Writer::read_word(chunk, env, idx);
-                GroupAll(x0, x1, x2, x3)
+                env.insert_id(x1);
+                env.insert_op(GroupAll(x0, x1, x2, x3))
             }
             262 => {
                 let x0 = Writer::read_word(chunk, env, idx);
                 let x1 = Writer::read_word(chunk, env, idx);
                 let x2 = Writer::read_word(chunk, env, idx);
                 let x3 = Writer::read_word(chunk, env, idx);
-                GroupAny(x0, x1, x2, x3)
+                env.insert_id(x1);
+                env.insert_op(GroupAny(x0, x1, x2, x3))
             }
             263 => {
                 let x0 = Writer::read_word(chunk, env, idx);
@@ -2517,7 +2779,8 @@ impl Opcode {
                 let x2 = Writer::read_word(chunk, env, idx);
                 let x3 = Writer::read_word(chunk, env, idx);
                 let x4 = Writer::read_word(chunk, env, idx);
-                GroupBroadcast(x0, x1, x2, x3, x4)
+                env.insert_id(x1);
+                env.insert_op(GroupBroadcast(x0, x1, x2, x3, x4))
             }
             264 => {
                 let x0 = Writer::read_word(chunk, env, idx);
@@ -2525,7 +2788,8 @@ impl Opcode {
                 let x2 = Writer::read_word(chunk, env, idx);
                 let x3 = Writer::read_word(chunk, env, idx);
                 let x4 = Writer::read_word(chunk, env, idx);
-                GroupIAdd(x0, x1, x2, x3, x4)
+                env.insert_id(x1);
+                env.insert_op(GroupIAdd(x0, x1, x2, x3, x4))
             }
             265 => {
                 let x0 = Writer::read_word(chunk, env, idx);
@@ -2533,7 +2797,8 @@ impl Opcode {
                 let x2 = Writer::read_word(chunk, env, idx);
                 let x3 = Writer::read_word(chunk, env, idx);
                 let x4 = Writer::read_word(chunk, env, idx);
-                GroupFAdd(x0, x1, x2, x3, x4)
+                env.insert_id(x1);
+                env.insert_op(GroupFAdd(x0, x1, x2, x3, x4))
             }
             266 => {
                 let x0 = Writer::read_word(chunk, env, idx);
@@ -2541,7 +2806,8 @@ impl Opcode {
                 let x2 = Writer::read_word(chunk, env, idx);
                 let x3 = Writer::read_word(chunk, env, idx);
                 let x4 = Writer::read_word(chunk, env, idx);
-                GroupFMin(x0, x1, x2, x3, x4)
+                env.insert_id(x1);
+                env.insert_op(GroupFMin(x0, x1, x2, x3, x4))
             }
             267 => {
                 let x0 = Writer::read_word(chunk, env, idx);
@@ -2549,7 +2815,8 @@ impl Opcode {
                 let x2 = Writer::read_word(chunk, env, idx);
                 let x3 = Writer::read_word(chunk, env, idx);
                 let x4 = Writer::read_word(chunk, env, idx);
-                GroupUMin(x0, x1, x2, x3, x4)
+                env.insert_id(x1);
+                env.insert_op(GroupUMin(x0, x1, x2, x3, x4))
             }
             268 => {
                 let x0 = Writer::read_word(chunk, env, idx);
@@ -2557,7 +2824,8 @@ impl Opcode {
                 let x2 = Writer::read_word(chunk, env, idx);
                 let x3 = Writer::read_word(chunk, env, idx);
                 let x4 = Writer::read_word(chunk, env, idx);
-                GroupSMin(x0, x1, x2, x3, x4)
+                env.insert_id(x1);
+                env.insert_op(GroupSMin(x0, x1, x2, x3, x4))
             }
             269 => {
                 let x0 = Writer::read_word(chunk, env, idx);
@@ -2565,7 +2833,8 @@ impl Opcode {
                 let x2 = Writer::read_word(chunk, env, idx);
                 let x3 = Writer::read_word(chunk, env, idx);
                 let x4 = Writer::read_word(chunk, env, idx);
-                GroupFMax(x0, x1, x2, x3, x4)
+                env.insert_id(x1);
+                env.insert_op(GroupFMax(x0, x1, x2, x3, x4))
             }
             270 => {
                 let x0 = Writer::read_word(chunk, env, idx);
@@ -2573,7 +2842,8 @@ impl Opcode {
                 let x2 = Writer::read_word(chunk, env, idx);
                 let x3 = Writer::read_word(chunk, env, idx);
                 let x4 = Writer::read_word(chunk, env, idx);
-                GroupUMax(x0, x1, x2, x3, x4)
+                env.insert_id(x1);
+                env.insert_op(GroupUMax(x0, x1, x2, x3, x4))
             }
             271 => {
                 let x0 = Writer::read_word(chunk, env, idx);
@@ -2581,7 +2851,8 @@ impl Opcode {
                 let x2 = Writer::read_word(chunk, env, idx);
                 let x3 = Writer::read_word(chunk, env, idx);
                 let x4 = Writer::read_word(chunk, env, idx);
-                GroupSMax(x0, x1, x2, x3, x4)
+                env.insert_id(x1);
+                env.insert_op(GroupSMax(x0, x1, x2, x3, x4))
             }
             274 => {
                 let x0 = Writer::read_word(chunk, env, idx);
@@ -2590,7 +2861,8 @@ impl Opcode {
                 let x3 = Writer::read_word(chunk, env, idx);
                 let x4 = Writer::read_word(chunk, env, idx);
                 let x5 = Writer::read_word(chunk, env, idx);
-                ReadPipe(x0, x1, x2, x3, x4, x5)
+                env.insert_id(x1);
+                env.insert_op(ReadPipe(x0, x1, x2, x3, x4, x5))
             }
             275 => {
                 let x0 = Writer::read_word(chunk, env, idx);
@@ -2599,7 +2871,8 @@ impl Opcode {
                 let x3 = Writer::read_word(chunk, env, idx);
                 let x4 = Writer::read_word(chunk, env, idx);
                 let x5 = Writer::read_word(chunk, env, idx);
-                WritePipe(x0, x1, x2, x3, x4, x5)
+                env.insert_id(x1);
+                env.insert_op(WritePipe(x0, x1, x2, x3, x4, x5))
             }
             276 => {
                 let x0 = Writer::read_word(chunk, env, idx);
@@ -2610,7 +2883,8 @@ impl Opcode {
                 let x5 = Writer::read_word(chunk, env, idx);
                 let x6 = Writer::read_word(chunk, env, idx);
                 let x7 = Writer::read_word(chunk, env, idx);
-                ReservedReadPipe(x0, x1, x2, x3, x4, x5, x6, x7)
+                env.insert_id(x1);
+                env.insert_op(ReservedReadPipe(x0, x1, x2, x3, x4, x5, x6, x7))
             }
             277 => {
                 let x0 = Writer::read_word(chunk, env, idx);
@@ -2621,7 +2895,8 @@ impl Opcode {
                 let x5 = Writer::read_word(chunk, env, idx);
                 let x6 = Writer::read_word(chunk, env, idx);
                 let x7 = Writer::read_word(chunk, env, idx);
-                ReservedWritePipe(x0, x1, x2, x3, x4, x5, x6, x7)
+                env.insert_id(x1);
+                env.insert_op(ReservedWritePipe(x0, x1, x2, x3, x4, x5, x6, x7))
             }
             278 => {
                 let x0 = Writer::read_word(chunk, env, idx);
@@ -2630,7 +2905,8 @@ impl Opcode {
                 let x3 = Writer::read_word(chunk, env, idx);
                 let x4 = Writer::read_word(chunk, env, idx);
                 let x5 = Writer::read_word(chunk, env, idx);
-                ReserveReadPipePackets(x0, x1, x2, x3, x4, x5)
+                env.insert_id(x1);
+                env.insert_op(ReserveReadPipePackets(x0, x1, x2, x3, x4, x5))
             }
             279 => {
                 let x0 = Writer::read_word(chunk, env, idx);
@@ -2639,27 +2915,29 @@ impl Opcode {
                 let x3 = Writer::read_word(chunk, env, idx);
                 let x4 = Writer::read_word(chunk, env, idx);
                 let x5 = Writer::read_word(chunk, env, idx);
-                ReserveWritePipePackets(x0, x1, x2, x3, x4, x5)
+                env.insert_id(x1);
+                env.insert_op(ReserveWritePipePackets(x0, x1, x2, x3, x4, x5))
             }
             280 => {
                 let x0 = Writer::read_word(chunk, env, idx);
                 let x1 = Writer::read_word(chunk, env, idx);
                 let x2 = Writer::read_word(chunk, env, idx);
                 let x3 = Writer::read_word(chunk, env, idx);
-                CommitReadPipe(x0, x1, x2, x3)
+                env.insert_op(CommitReadPipe(x0, x1, x2, x3))
             }
             281 => {
                 let x0 = Writer::read_word(chunk, env, idx);
                 let x1 = Writer::read_word(chunk, env, idx);
                 let x2 = Writer::read_word(chunk, env, idx);
                 let x3 = Writer::read_word(chunk, env, idx);
-                CommitWritePipe(x0, x1, x2, x3)
+                env.insert_op(CommitWritePipe(x0, x1, x2, x3))
             }
             282 => {
                 let x0 = Writer::read_word(chunk, env, idx);
                 let x1 = Writer::read_word(chunk, env, idx);
                 let x2 = Writer::read_word(chunk, env, idx);
-                IsValidReserveId(x0, x1, x2)
+                env.insert_id(x1);
+                env.insert_op(IsValidReserveId(x0, x1, x2))
             }
             283 => {
                 let x0 = Writer::read_word(chunk, env, idx);
@@ -2667,7 +2945,8 @@ impl Opcode {
                 let x2 = Writer::read_word(chunk, env, idx);
                 let x3 = Writer::read_word(chunk, env, idx);
                 let x4 = Writer::read_word(chunk, env, idx);
-                GetNumPipePackets(x0, x1, x2, x3, x4)
+                env.insert_id(x1);
+                env.insert_op(GetNumPipePackets(x0, x1, x2, x3, x4))
             }
             284 => {
                 let x0 = Writer::read_word(chunk, env, idx);
@@ -2675,7 +2954,8 @@ impl Opcode {
                 let x2 = Writer::read_word(chunk, env, idx);
                 let x3 = Writer::read_word(chunk, env, idx);
                 let x4 = Writer::read_word(chunk, env, idx);
-                GetMaxPipePackets(x0, x1, x2, x3, x4)
+                env.insert_id(x1);
+                env.insert_op(GetMaxPipePackets(x0, x1, x2, x3, x4))
             }
             285 => {
                 let x0 = Writer::read_word(chunk, env, idx);
@@ -2685,7 +2965,8 @@ impl Opcode {
                 let x4 = Writer::read_word(chunk, env, idx);
                 let x5 = Writer::read_word(chunk, env, idx);
                 let x6 = Writer::read_word(chunk, env, idx);
-                GroupReserveReadPipePackets(x0, x1, x2, x3, x4, x5, x6)
+                env.insert_id(x1);
+                env.insert_op(GroupReserveReadPipePackets(x0, x1, x2, x3, x4, x5, x6))
             }
             286 => {
                 let x0 = Writer::read_word(chunk, env, idx);
@@ -2695,7 +2976,8 @@ impl Opcode {
                 let x4 = Writer::read_word(chunk, env, idx);
                 let x5 = Writer::read_word(chunk, env, idx);
                 let x6 = Writer::read_word(chunk, env, idx);
-                GroupReserveWritePipePackets(x0, x1, x2, x3, x4, x5, x6)
+                env.insert_id(x1);
+                env.insert_op(GroupReserveWritePipePackets(x0, x1, x2, x3, x4, x5, x6))
             }
             287 => {
                 let x0 = Writer::read_word(chunk, env, idx);
@@ -2703,7 +2985,7 @@ impl Opcode {
                 let x2 = Writer::read_word(chunk, env, idx);
                 let x3 = Writer::read_word(chunk, env, idx);
                 let x4 = Writer::read_word(chunk, env, idx);
-                GroupCommitReadPipe(x0, x1, x2, x3, x4)
+                env.insert_op(GroupCommitReadPipe(x0, x1, x2, x3, x4))
             }
             288 => {
                 let x0 = Writer::read_word(chunk, env, idx);
@@ -2711,7 +2993,7 @@ impl Opcode {
                 let x2 = Writer::read_word(chunk, env, idx);
                 let x3 = Writer::read_word(chunk, env, idx);
                 let x4 = Writer::read_word(chunk, env, idx);
-                GroupCommitWritePipe(x0, x1, x2, x3, x4)
+                env.insert_op(GroupCommitWritePipe(x0, x1, x2, x3, x4))
             }
             291 => {
                 let x0 = Writer::read_word(chunk, env, idx);
@@ -2720,7 +3002,8 @@ impl Opcode {
                 let x3 = Writer::read_word(chunk, env, idx);
                 let x4 = Writer::read_word(chunk, env, idx);
                 let x5 = Writer::read_word(chunk, env, idx);
-                EnqueueMarker(x0, x1, x2, x3, x4, x5)
+                env.insert_id(x1);
+                env.insert_op(EnqueueMarker(x0, x1, x2, x3, x4, x5))
             }
             292 => {
                 let x0 = Writer::read_word(chunk, env, idx);
@@ -2736,7 +3019,10 @@ impl Opcode {
                 let x10 = Writer::read_word(chunk, env, idx);
                 let x11 = Writer::read_word(chunk, env, idx);
                 let x12 = Writer::read_word(chunk, env, idx);
-                EnqueueKernel(x0, x1, x2, x3, x4, x5, x6, x7, x8, x9, x10, x11, x12)
+                env.insert_id(x1);
+                env.insert_op(EnqueueKernel(
+                    x0, x1, x2, x3, x4, x5, x6, x7, x8, x9, x10, x11, x12,
+                ))
             }
             293 => {
                 let x0 = Writer::read_word(chunk, env, idx);
@@ -2746,7 +3032,8 @@ impl Opcode {
                 let x4 = Writer::read_word(chunk, env, idx);
                 let x5 = Writer::read_word(chunk, env, idx);
                 let x6 = Writer::read_word(chunk, env, idx);
-                GetKernelNDrangeSubGroupCount(x0, x1, x2, x3, x4, x5, x6)
+                env.insert_id(x1);
+                env.insert_op(GetKernelNDrangeSubGroupCount(x0, x1, x2, x3, x4, x5, x6))
             }
             294 => {
                 let x0 = Writer::read_word(chunk, env, idx);
@@ -2756,7 +3043,8 @@ impl Opcode {
                 let x4 = Writer::read_word(chunk, env, idx);
                 let x5 = Writer::read_word(chunk, env, idx);
                 let x6 = Writer::read_word(chunk, env, idx);
-                GetKernelNDrangeMaxSubGroupSize(x0, x1, x2, x3, x4, x5, x6)
+                env.insert_id(x1);
+                env.insert_op(GetKernelNDrangeMaxSubGroupSize(x0, x1, x2, x3, x4, x5, x6))
             }
             295 => {
                 let x0 = Writer::read_word(chunk, env, idx);
@@ -2765,7 +3053,8 @@ impl Opcode {
                 let x3 = Writer::read_word(chunk, env, idx);
                 let x4 = Writer::read_word(chunk, env, idx);
                 let x5 = Writer::read_word(chunk, env, idx);
-                GetKernelWorkGroupSize(x0, x1, x2, x3, x4, x5)
+                env.insert_id(x1);
+                env.insert_op(GetKernelWorkGroupSize(x0, x1, x2, x3, x4, x5))
             }
             296 => {
                 let x0 = Writer::read_word(chunk, env, idx);
@@ -2774,42 +3063,48 @@ impl Opcode {
                 let x3 = Writer::read_word(chunk, env, idx);
                 let x4 = Writer::read_word(chunk, env, idx);
                 let x5 = Writer::read_word(chunk, env, idx);
-                GetKernelPreferredWorkGroupSizeMultiple(x0, x1, x2, x3, x4, x5)
+                env.insert_id(x1);
+                env.insert_op(GetKernelPreferredWorkGroupSizeMultiple(
+                    x0, x1, x2, x3, x4, x5,
+                ))
             }
             297 => {
                 let x0 = Writer::read_word(chunk, env, idx);
-                RetainEvent(x0)
+                env.insert_op(RetainEvent(x0))
             }
             298 => {
                 let x0 = Writer::read_word(chunk, env, idx);
-                ReleaseEvent(x0)
+                env.insert_op(ReleaseEvent(x0))
             }
             299 => {
                 let x0 = Writer::read_word(chunk, env, idx);
                 let x1 = Writer::read_word(chunk, env, idx);
-                CreateUserEvent(x0, x1)
+                env.insert_id(x1);
+                env.insert_op(CreateUserEvent(x0, x1))
             }
             300 => {
                 let x0 = Writer::read_word(chunk, env, idx);
                 let x1 = Writer::read_word(chunk, env, idx);
                 let x2 = Writer::read_word(chunk, env, idx);
-                IsValidEvent(x0, x1, x2)
+                env.insert_id(x1);
+                env.insert_op(IsValidEvent(x0, x1, x2))
             }
             301 => {
                 let x0 = Writer::read_word(chunk, env, idx);
                 let x1 = Writer::read_word(chunk, env, idx);
-                SetUserEventStatus(x0, x1)
+                env.insert_op(SetUserEventStatus(x0, x1))
             }
             302 => {
                 let x0 = Writer::read_word(chunk, env, idx);
                 let x1 = Writer::read_word(chunk, env, idx);
                 let x2 = Writer::read_word(chunk, env, idx);
-                CaptureEventProfilingInfo(x0, x1, x2)
+                env.insert_op(CaptureEventProfilingInfo(x0, x1, x2))
             }
             303 => {
                 let x0 = Writer::read_word(chunk, env, idx);
                 let x1 = Writer::read_word(chunk, env, idx);
-                GetDefaultQueue(x0, x1)
+                env.insert_id(x1);
+                env.insert_op(GetDefaultQueue(x0, x1))
             }
             304 => {
                 let x0 = Writer::read_word(chunk, env, idx);
@@ -2817,7 +3112,8 @@ impl Opcode {
                 let x2 = Writer::read_word(chunk, env, idx);
                 let x3 = Writer::read_word(chunk, env, idx);
                 let x4 = Writer::read_word(chunk, env, idx);
-                BuildNDRange(x0, x1, x2, x3, x4)
+                env.insert_id(x1);
+                env.insert_op(BuildNDRange(x0, x1, x2, x3, x4))
             }
             305 => {
                 let x0 = Writer::read_word(chunk, env, idx);
@@ -2825,7 +3121,8 @@ impl Opcode {
                 let x2 = Writer::read_word(chunk, env, idx);
                 let x3 = Writer::read_word(chunk, env, idx);
                 let x4 = Writer::read_word(chunk, env, idx);
-                ImageSparseSampleImplicitLod(x0, x1, x2, x3, x4)
+                env.insert_id(x1);
+                env.insert_op(ImageSparseSampleImplicitLod(x0, x1, x2, x3, x4))
             }
             306 => {
                 let x0 = Writer::read_word(chunk, env, idx);
@@ -2833,7 +3130,8 @@ impl Opcode {
                 let x2 = Writer::read_word(chunk, env, idx);
                 let x3 = Writer::read_word(chunk, env, idx);
                 let x4 = Writer::read_word(chunk, env, idx);
-                ImageSparseSampleExplicitLod(x0, x1, x2, x3, x4)
+                env.insert_id(x1);
+                env.insert_op(ImageSparseSampleExplicitLod(x0, x1, x2, x3, x4))
             }
             307 => {
                 let x0 = Writer::read_word(chunk, env, idx);
@@ -2842,7 +3140,8 @@ impl Opcode {
                 let x3 = Writer::read_word(chunk, env, idx);
                 let x4 = Writer::read_word(chunk, env, idx);
                 let x5 = Writer::read_word(chunk, env, idx);
-                ImageSparseSampleDrefImplicitLod(x0, x1, x2, x3, x4, x5)
+                env.insert_id(x1);
+                env.insert_op(ImageSparseSampleDrefImplicitLod(x0, x1, x2, x3, x4, x5))
             }
             308 => {
                 let x0 = Writer::read_word(chunk, env, idx);
@@ -2851,7 +3150,8 @@ impl Opcode {
                 let x3 = Writer::read_word(chunk, env, idx);
                 let x4 = Writer::read_word(chunk, env, idx);
                 let x5 = Writer::read_word(chunk, env, idx);
-                ImageSparseSampleDrefExplicitLod(x0, x1, x2, x3, x4, x5)
+                env.insert_id(x1);
+                env.insert_op(ImageSparseSampleDrefExplicitLod(x0, x1, x2, x3, x4, x5))
             }
             309 => {
                 let x0 = Writer::read_word(chunk, env, idx);
@@ -2859,7 +3159,8 @@ impl Opcode {
                 let x2 = Writer::read_word(chunk, env, idx);
                 let x3 = Writer::read_word(chunk, env, idx);
                 let x4 = Writer::read_word(chunk, env, idx);
-                ImageSparseSampleProjImplicitLod(x0, x1, x2, x3, x4)
+                env.insert_id(x1);
+                env.insert_op(ImageSparseSampleProjImplicitLod(x0, x1, x2, x3, x4))
             }
             310 => {
                 let x0 = Writer::read_word(chunk, env, idx);
@@ -2867,7 +3168,8 @@ impl Opcode {
                 let x2 = Writer::read_word(chunk, env, idx);
                 let x3 = Writer::read_word(chunk, env, idx);
                 let x4 = Writer::read_word(chunk, env, idx);
-                ImageSparseSampleProjExplicitLod(x0, x1, x2, x3, x4)
+                env.insert_id(x1);
+                env.insert_op(ImageSparseSampleProjExplicitLod(x0, x1, x2, x3, x4))
             }
             311 => {
                 let x0 = Writer::read_word(chunk, env, idx);
@@ -2876,7 +3178,8 @@ impl Opcode {
                 let x3 = Writer::read_word(chunk, env, idx);
                 let x4 = Writer::read_word(chunk, env, idx);
                 let x5 = Writer::read_word(chunk, env, idx);
-                ImageSparseSampleProjDrefImplicitLod(x0, x1, x2, x3, x4, x5)
+                env.insert_id(x1);
+                env.insert_op(ImageSparseSampleProjDrefImplicitLod(x0, x1, x2, x3, x4, x5))
             }
             312 => {
                 let x0 = Writer::read_word(chunk, env, idx);
@@ -2885,7 +3188,8 @@ impl Opcode {
                 let x3 = Writer::read_word(chunk, env, idx);
                 let x4 = Writer::read_word(chunk, env, idx);
                 let x5 = Writer::read_word(chunk, env, idx);
-                ImageSparseSampleProjDrefExplicitLod(x0, x1, x2, x3, x4, x5)
+                env.insert_id(x1);
+                env.insert_op(ImageSparseSampleProjDrefExplicitLod(x0, x1, x2, x3, x4, x5))
             }
             313 => {
                 let x0 = Writer::read_word(chunk, env, idx);
@@ -2893,7 +3197,8 @@ impl Opcode {
                 let x2 = Writer::read_word(chunk, env, idx);
                 let x3 = Writer::read_word(chunk, env, idx);
                 let x4 = Writer::read_word(chunk, env, idx);
-                ImageSparseFetch(x0, x1, x2, x3, x4)
+                env.insert_id(x1);
+                env.insert_op(ImageSparseFetch(x0, x1, x2, x3, x4))
             }
             314 => {
                 let x0 = Writer::read_word(chunk, env, idx);
@@ -2902,7 +3207,8 @@ impl Opcode {
                 let x3 = Writer::read_word(chunk, env, idx);
                 let x4 = Writer::read_word(chunk, env, idx);
                 let x5 = Writer::read_word(chunk, env, idx);
-                ImageSparseGather(x0, x1, x2, x3, x4, x5)
+                env.insert_id(x1);
+                env.insert_op(ImageSparseGather(x0, x1, x2, x3, x4, x5))
             }
             315 => {
                 let x0 = Writer::read_word(chunk, env, idx);
@@ -2911,28 +3217,31 @@ impl Opcode {
                 let x3 = Writer::read_word(chunk, env, idx);
                 let x4 = Writer::read_word(chunk, env, idx);
                 let x5 = Writer::read_word(chunk, env, idx);
-                ImageSparseDrefGather(x0, x1, x2, x3, x4, x5)
+                env.insert_id(x1);
+                env.insert_op(ImageSparseDrefGather(x0, x1, x2, x3, x4, x5))
             }
             316 => {
                 let x0 = Writer::read_word(chunk, env, idx);
                 let x1 = Writer::read_word(chunk, env, idx);
                 let x2 = Writer::read_word(chunk, env, idx);
-                ImageSparseTexelsResident(x0, x1, x2)
+                env.insert_id(x1);
+                env.insert_op(ImageSparseTexelsResident(x0, x1, x2))
             }
-            317 => NoLine(),
+            317 => env.insert_op(NoLine()),
             318 => {
                 let x0 = Writer::read_word(chunk, env, idx);
                 let x1 = Writer::read_word(chunk, env, idx);
                 let x2 = Writer::read_word(chunk, env, idx);
                 let x3 = Writer::read_word(chunk, env, idx);
                 let x4 = Writer::read_word(chunk, env, idx);
-                AtomicFlagTestAndSet(x0, x1, x2, x3, x4)
+                env.insert_id(x1);
+                env.insert_op(AtomicFlagTestAndSet(x0, x1, x2, x3, x4))
             }
             319 => {
                 let x0 = Writer::read_word(chunk, env, idx);
                 let x1 = Writer::read_word(chunk, env, idx);
                 let x2 = Writer::read_word(chunk, env, idx);
-                AtomicFlagClear(x0, x1, x2)
+                env.insert_op(AtomicFlagClear(x0, x1, x2))
             }
             320 => {
                 let x0 = Writer::read_word(chunk, env, idx);
@@ -2940,17 +3249,20 @@ impl Opcode {
                 let x2 = Writer::read_word(chunk, env, idx);
                 let x3 = Writer::read_word(chunk, env, idx);
                 let x4 = Writer::read_word(chunk, env, idx);
-                ImageSparseRead(x0, x1, x2, x3, x4)
+                env.insert_id(x1);
+                env.insert_op(ImageSparseRead(x0, x1, x2, x3, x4))
             }
             321 => {
                 let x0 = Writer::read_word(chunk, env, idx);
                 let x1 = Writer::read_word(chunk, env, idx);
                 let x2 = Writer::read_word(chunk, env, idx);
-                SizeOf(x0, x1, x2)
+                env.insert_id(x1);
+                env.insert_op(SizeOf(x0, x1, x2))
             }
             322 => {
                 let x0 = Writer::read_word(chunk, env, idx);
-                TypePipeStorage(x0)
+                env.insert_id(x0);
+                env.insert_op(TypePipeStorage(x0))
             }
             323 => {
                 let x0 = Writer::read_word(chunk, env, idx);
@@ -2958,13 +3270,15 @@ impl Opcode {
                 let x2 = Writer::read_word(chunk, env, idx);
                 let x3 = Writer::read_word(chunk, env, idx);
                 let x4 = Writer::read_word(chunk, env, idx);
-                ConstantPipeStorage(x0, x1, x2, x3, x4)
+                env.insert_id(x1);
+                env.insert_op(ConstantPipeStorage(x0, x1, x2, x3, x4))
             }
             324 => {
                 let x0 = Writer::read_word(chunk, env, idx);
                 let x1 = Writer::read_word(chunk, env, idx);
                 let x2 = Writer::read_word(chunk, env, idx);
-                CreatePipeFromPipeStorage(x0, x1, x2)
+                env.insert_id(x1);
+                env.insert_op(CreatePipeFromPipeStorage(x0, x1, x2))
             }
             325 => {
                 let x0 = Writer::read_word(chunk, env, idx);
@@ -2974,7 +3288,10 @@ impl Opcode {
                 let x4 = Writer::read_word(chunk, env, idx);
                 let x5 = Writer::read_word(chunk, env, idx);
                 let x6 = Writer::read_word(chunk, env, idx);
-                GetKernelLocalSizeForSubgroupCount(x0, x1, x2, x3, x4, x5, x6)
+                env.insert_id(x1);
+                env.insert_op(GetKernelLocalSizeForSubgroupCount(
+                    x0, x1, x2, x3, x4, x5, x6,
+                ))
             }
             326 => {
                 let x0 = Writer::read_word(chunk, env, idx);
@@ -2983,64 +3300,71 @@ impl Opcode {
                 let x3 = Writer::read_word(chunk, env, idx);
                 let x4 = Writer::read_word(chunk, env, idx);
                 let x5 = Writer::read_word(chunk, env, idx);
-                GetKernelMaxNumSubgroups(x0, x1, x2, x3, x4, x5)
+                env.insert_id(x1);
+                env.insert_op(GetKernelMaxNumSubgroups(x0, x1, x2, x3, x4, x5))
             }
             327 => {
                 let x0 = Writer::read_word(chunk, env, idx);
-                TypeNamedBarrier(x0)
+                env.insert_id(x0);
+                env.insert_op(TypeNamedBarrier(x0))
             }
             328 => {
                 let x0 = Writer::read_word(chunk, env, idx);
                 let x1 = Writer::read_word(chunk, env, idx);
                 let x2 = Writer::read_word(chunk, env, idx);
-                NamedBarrierInitialize(x0, x1, x2)
+                env.insert_id(x1);
+                env.insert_op(NamedBarrierInitialize(x0, x1, x2))
             }
             329 => {
                 let x0 = Writer::read_word(chunk, env, idx);
                 let x1 = Writer::read_word(chunk, env, idx);
                 let x2 = Writer::read_word(chunk, env, idx);
-                MemoryNamedBarrier(x0, x1, x2)
+                env.insert_op(MemoryNamedBarrier(x0, x1, x2))
             }
             330 => {
                 let x0 = Writer::read_word(chunk, env, idx);
-                ModuleProcessed(x0)
+                env.insert_op(ModuleProcessed(x0))
             }
             331 => {
                 let x0 = Writer::read_word(chunk, env, idx);
                 let x1 = Writer::read_word(chunk, env, idx);
-                ExecutionModeId(x0, x1)
+                env.insert_op(ExecutionModeId(x0, x1))
             }
             332 => {
                 let x0 = Writer::read_word(chunk, env, idx);
                 let x1 = Writer::read_word(chunk, env, idx);
-                DecorateId(x0, x1)
+                env.insert_op(DecorateId(x0, x1))
             }
             333 => {
                 let x0 = Writer::read_word(chunk, env, idx);
                 let x1 = Writer::read_word(chunk, env, idx);
                 let x2 = Writer::read_word(chunk, env, idx);
-                GroupNonUniformElect(x0, x1, x2)
+                env.insert_id(x1);
+                env.insert_op(GroupNonUniformElect(x0, x1, x2))
             }
             334 => {
                 let x0 = Writer::read_word(chunk, env, idx);
                 let x1 = Writer::read_word(chunk, env, idx);
                 let x2 = Writer::read_word(chunk, env, idx);
                 let x3 = Writer::read_word(chunk, env, idx);
-                GroupNonUniformAll(x0, x1, x2, x3)
+                env.insert_id(x1);
+                env.insert_op(GroupNonUniformAll(x0, x1, x2, x3))
             }
             335 => {
                 let x0 = Writer::read_word(chunk, env, idx);
                 let x1 = Writer::read_word(chunk, env, idx);
                 let x2 = Writer::read_word(chunk, env, idx);
                 let x3 = Writer::read_word(chunk, env, idx);
-                GroupNonUniformAny(x0, x1, x2, x3)
+                env.insert_id(x1);
+                env.insert_op(GroupNonUniformAny(x0, x1, x2, x3))
             }
             336 => {
                 let x0 = Writer::read_word(chunk, env, idx);
                 let x1 = Writer::read_word(chunk, env, idx);
                 let x2 = Writer::read_word(chunk, env, idx);
                 let x3 = Writer::read_word(chunk, env, idx);
-                GroupNonUniformAllEqual(x0, x1, x2, x3)
+                env.insert_id(x1);
+                env.insert_op(GroupNonUniformAllEqual(x0, x1, x2, x3))
             }
             337 => {
                 let x0 = Writer::read_word(chunk, env, idx);
@@ -3048,28 +3372,32 @@ impl Opcode {
                 let x2 = Writer::read_word(chunk, env, idx);
                 let x3 = Writer::read_word(chunk, env, idx);
                 let x4 = Writer::read_word(chunk, env, idx);
-                GroupNonUniformBroadcast(x0, x1, x2, x3, x4)
+                env.insert_id(x1);
+                env.insert_op(GroupNonUniformBroadcast(x0, x1, x2, x3, x4))
             }
             338 => {
                 let x0 = Writer::read_word(chunk, env, idx);
                 let x1 = Writer::read_word(chunk, env, idx);
                 let x2 = Writer::read_word(chunk, env, idx);
                 let x3 = Writer::read_word(chunk, env, idx);
-                GroupNonUniformBroadcastFirst(x0, x1, x2, x3)
+                env.insert_id(x1);
+                env.insert_op(GroupNonUniformBroadcastFirst(x0, x1, x2, x3))
             }
             339 => {
                 let x0 = Writer::read_word(chunk, env, idx);
                 let x1 = Writer::read_word(chunk, env, idx);
                 let x2 = Writer::read_word(chunk, env, idx);
                 let x3 = Writer::read_word(chunk, env, idx);
-                GroupNonUniformBallot(x0, x1, x2, x3)
+                env.insert_id(x1);
+                env.insert_op(GroupNonUniformBallot(x0, x1, x2, x3))
             }
             340 => {
                 let x0 = Writer::read_word(chunk, env, idx);
                 let x1 = Writer::read_word(chunk, env, idx);
                 let x2 = Writer::read_word(chunk, env, idx);
                 let x3 = Writer::read_word(chunk, env, idx);
-                GroupNonUniformInverseBallot(x0, x1, x2, x3)
+                env.insert_id(x1);
+                env.insert_op(GroupNonUniformInverseBallot(x0, x1, x2, x3))
             }
             341 => {
                 let x0 = Writer::read_word(chunk, env, idx);
@@ -3077,7 +3405,8 @@ impl Opcode {
                 let x2 = Writer::read_word(chunk, env, idx);
                 let x3 = Writer::read_word(chunk, env, idx);
                 let x4 = Writer::read_word(chunk, env, idx);
-                GroupNonUniformBallotBitExtract(x0, x1, x2, x3, x4)
+                env.insert_id(x1);
+                env.insert_op(GroupNonUniformBallotBitExtract(x0, x1, x2, x3, x4))
             }
             342 => {
                 let x0 = Writer::read_word(chunk, env, idx);
@@ -3085,21 +3414,24 @@ impl Opcode {
                 let x2 = Writer::read_word(chunk, env, idx);
                 let x3 = Writer::read_word(chunk, env, idx);
                 let x4 = Writer::read_word(chunk, env, idx);
-                GroupNonUniformBallotBitCount(x0, x1, x2, x3, x4)
+                env.insert_id(x1);
+                env.insert_op(GroupNonUniformBallotBitCount(x0, x1, x2, x3, x4))
             }
             343 => {
                 let x0 = Writer::read_word(chunk, env, idx);
                 let x1 = Writer::read_word(chunk, env, idx);
                 let x2 = Writer::read_word(chunk, env, idx);
                 let x3 = Writer::read_word(chunk, env, idx);
-                GroupNonUniformBallotFindLSB(x0, x1, x2, x3)
+                env.insert_id(x1);
+                env.insert_op(GroupNonUniformBallotFindLSB(x0, x1, x2, x3))
             }
             344 => {
                 let x0 = Writer::read_word(chunk, env, idx);
                 let x1 = Writer::read_word(chunk, env, idx);
                 let x2 = Writer::read_word(chunk, env, idx);
                 let x3 = Writer::read_word(chunk, env, idx);
-                GroupNonUniformBallotFindMSB(x0, x1, x2, x3)
+                env.insert_id(x1);
+                env.insert_op(GroupNonUniformBallotFindMSB(x0, x1, x2, x3))
             }
             345 => {
                 let x0 = Writer::read_word(chunk, env, idx);
@@ -3107,7 +3439,8 @@ impl Opcode {
                 let x2 = Writer::read_word(chunk, env, idx);
                 let x3 = Writer::read_word(chunk, env, idx);
                 let x4 = Writer::read_word(chunk, env, idx);
-                GroupNonUniformShuffle(x0, x1, x2, x3, x4)
+                env.insert_id(x1);
+                env.insert_op(GroupNonUniformShuffle(x0, x1, x2, x3, x4))
             }
             346 => {
                 let x0 = Writer::read_word(chunk, env, idx);
@@ -3115,7 +3448,8 @@ impl Opcode {
                 let x2 = Writer::read_word(chunk, env, idx);
                 let x3 = Writer::read_word(chunk, env, idx);
                 let x4 = Writer::read_word(chunk, env, idx);
-                GroupNonUniformShuffleXor(x0, x1, x2, x3, x4)
+                env.insert_id(x1);
+                env.insert_op(GroupNonUniformShuffleXor(x0, x1, x2, x3, x4))
             }
             347 => {
                 let x0 = Writer::read_word(chunk, env, idx);
@@ -3123,7 +3457,8 @@ impl Opcode {
                 let x2 = Writer::read_word(chunk, env, idx);
                 let x3 = Writer::read_word(chunk, env, idx);
                 let x4 = Writer::read_word(chunk, env, idx);
-                GroupNonUniformShuffleUp(x0, x1, x2, x3, x4)
+                env.insert_id(x1);
+                env.insert_op(GroupNonUniformShuffleUp(x0, x1, x2, x3, x4))
             }
             348 => {
                 let x0 = Writer::read_word(chunk, env, idx);
@@ -3131,7 +3466,8 @@ impl Opcode {
                 let x2 = Writer::read_word(chunk, env, idx);
                 let x3 = Writer::read_word(chunk, env, idx);
                 let x4 = Writer::read_word(chunk, env, idx);
-                GroupNonUniformShuffleDown(x0, x1, x2, x3, x4)
+                env.insert_id(x1);
+                env.insert_op(GroupNonUniformShuffleDown(x0, x1, x2, x3, x4))
             }
             349 => {
                 let x0 = Writer::read_word(chunk, env, idx);
@@ -3140,7 +3476,8 @@ impl Opcode {
                 let x3 = Writer::read_word(chunk, env, idx);
                 let x4 = Writer::read_word(chunk, env, idx);
                 let x5 = Writer::read_word(chunk, env, idx);
-                GroupNonUniformIAdd(x0, x1, x2, x3, x4, x5)
+                env.insert_id(x1);
+                env.insert_op(GroupNonUniformIAdd(x0, x1, x2, x3, x4, x5))
             }
             350 => {
                 let x0 = Writer::read_word(chunk, env, idx);
@@ -3149,7 +3486,8 @@ impl Opcode {
                 let x3 = Writer::read_word(chunk, env, idx);
                 let x4 = Writer::read_word(chunk, env, idx);
                 let x5 = Writer::read_word(chunk, env, idx);
-                GroupNonUniformFAdd(x0, x1, x2, x3, x4, x5)
+                env.insert_id(x1);
+                env.insert_op(GroupNonUniformFAdd(x0, x1, x2, x3, x4, x5))
             }
             351 => {
                 let x0 = Writer::read_word(chunk, env, idx);
@@ -3158,7 +3496,8 @@ impl Opcode {
                 let x3 = Writer::read_word(chunk, env, idx);
                 let x4 = Writer::read_word(chunk, env, idx);
                 let x5 = Writer::read_word(chunk, env, idx);
-                GroupNonUniformIMul(x0, x1, x2, x3, x4, x5)
+                env.insert_id(x1);
+                env.insert_op(GroupNonUniformIMul(x0, x1, x2, x3, x4, x5))
             }
             352 => {
                 let x0 = Writer::read_word(chunk, env, idx);
@@ -3167,7 +3506,8 @@ impl Opcode {
                 let x3 = Writer::read_word(chunk, env, idx);
                 let x4 = Writer::read_word(chunk, env, idx);
                 let x5 = Writer::read_word(chunk, env, idx);
-                GroupNonUniformFMul(x0, x1, x2, x3, x4, x5)
+                env.insert_id(x1);
+                env.insert_op(GroupNonUniformFMul(x0, x1, x2, x3, x4, x5))
             }
             353 => {
                 let x0 = Writer::read_word(chunk, env, idx);
@@ -3176,7 +3516,8 @@ impl Opcode {
                 let x3 = Writer::read_word(chunk, env, idx);
                 let x4 = Writer::read_word(chunk, env, idx);
                 let x5 = Writer::read_word(chunk, env, idx);
-                GroupNonUniformSMin(x0, x1, x2, x3, x4, x5)
+                env.insert_id(x1);
+                env.insert_op(GroupNonUniformSMin(x0, x1, x2, x3, x4, x5))
             }
             354 => {
                 let x0 = Writer::read_word(chunk, env, idx);
@@ -3185,7 +3526,8 @@ impl Opcode {
                 let x3 = Writer::read_word(chunk, env, idx);
                 let x4 = Writer::read_word(chunk, env, idx);
                 let x5 = Writer::read_word(chunk, env, idx);
-                GroupNonUniformUMin(x0, x1, x2, x3, x4, x5)
+                env.insert_id(x1);
+                env.insert_op(GroupNonUniformUMin(x0, x1, x2, x3, x4, x5))
             }
             355 => {
                 let x0 = Writer::read_word(chunk, env, idx);
@@ -3194,7 +3536,8 @@ impl Opcode {
                 let x3 = Writer::read_word(chunk, env, idx);
                 let x4 = Writer::read_word(chunk, env, idx);
                 let x5 = Writer::read_word(chunk, env, idx);
-                GroupNonUniformFMin(x0, x1, x2, x3, x4, x5)
+                env.insert_id(x1);
+                env.insert_op(GroupNonUniformFMin(x0, x1, x2, x3, x4, x5))
             }
             356 => {
                 let x0 = Writer::read_word(chunk, env, idx);
@@ -3203,7 +3546,8 @@ impl Opcode {
                 let x3 = Writer::read_word(chunk, env, idx);
                 let x4 = Writer::read_word(chunk, env, idx);
                 let x5 = Writer::read_word(chunk, env, idx);
-                GroupNonUniformSMax(x0, x1, x2, x3, x4, x5)
+                env.insert_id(x1);
+                env.insert_op(GroupNonUniformSMax(x0, x1, x2, x3, x4, x5))
             }
             357 => {
                 let x0 = Writer::read_word(chunk, env, idx);
@@ -3212,7 +3556,8 @@ impl Opcode {
                 let x3 = Writer::read_word(chunk, env, idx);
                 let x4 = Writer::read_word(chunk, env, idx);
                 let x5 = Writer::read_word(chunk, env, idx);
-                GroupNonUniformUMax(x0, x1, x2, x3, x4, x5)
+                env.insert_id(x1);
+                env.insert_op(GroupNonUniformUMax(x0, x1, x2, x3, x4, x5))
             }
             358 => {
                 let x0 = Writer::read_word(chunk, env, idx);
@@ -3221,7 +3566,8 @@ impl Opcode {
                 let x3 = Writer::read_word(chunk, env, idx);
                 let x4 = Writer::read_word(chunk, env, idx);
                 let x5 = Writer::read_word(chunk, env, idx);
-                GroupNonUniformFMax(x0, x1, x2, x3, x4, x5)
+                env.insert_id(x1);
+                env.insert_op(GroupNonUniformFMax(x0, x1, x2, x3, x4, x5))
             }
             359 => {
                 let x0 = Writer::read_word(chunk, env, idx);
@@ -3230,7 +3576,8 @@ impl Opcode {
                 let x3 = Writer::read_word(chunk, env, idx);
                 let x4 = Writer::read_word(chunk, env, idx);
                 let x5 = Writer::read_word(chunk, env, idx);
-                GroupNonUniformBitwiseAnd(x0, x1, x2, x3, x4, x5)
+                env.insert_id(x1);
+                env.insert_op(GroupNonUniformBitwiseAnd(x0, x1, x2, x3, x4, x5))
             }
             360 => {
                 let x0 = Writer::read_word(chunk, env, idx);
@@ -3239,7 +3586,8 @@ impl Opcode {
                 let x3 = Writer::read_word(chunk, env, idx);
                 let x4 = Writer::read_word(chunk, env, idx);
                 let x5 = Writer::read_word(chunk, env, idx);
-                GroupNonUniformBitwiseOr(x0, x1, x2, x3, x4, x5)
+                env.insert_id(x1);
+                env.insert_op(GroupNonUniformBitwiseOr(x0, x1, x2, x3, x4, x5))
             }
             361 => {
                 let x0 = Writer::read_word(chunk, env, idx);
@@ -3248,7 +3596,8 @@ impl Opcode {
                 let x3 = Writer::read_word(chunk, env, idx);
                 let x4 = Writer::read_word(chunk, env, idx);
                 let x5 = Writer::read_word(chunk, env, idx);
-                GroupNonUniformBitwiseXor(x0, x1, x2, x3, x4, x5)
+                env.insert_id(x1);
+                env.insert_op(GroupNonUniformBitwiseXor(x0, x1, x2, x3, x4, x5))
             }
             362 => {
                 let x0 = Writer::read_word(chunk, env, idx);
@@ -3257,7 +3606,8 @@ impl Opcode {
                 let x3 = Writer::read_word(chunk, env, idx);
                 let x4 = Writer::read_word(chunk, env, idx);
                 let x5 = Writer::read_word(chunk, env, idx);
-                GroupNonUniformLogicalAnd(x0, x1, x2, x3, x4, x5)
+                env.insert_id(x1);
+                env.insert_op(GroupNonUniformLogicalAnd(x0, x1, x2, x3, x4, x5))
             }
             363 => {
                 let x0 = Writer::read_word(chunk, env, idx);
@@ -3266,7 +3616,8 @@ impl Opcode {
                 let x3 = Writer::read_word(chunk, env, idx);
                 let x4 = Writer::read_word(chunk, env, idx);
                 let x5 = Writer::read_word(chunk, env, idx);
-                GroupNonUniformLogicalOr(x0, x1, x2, x3, x4, x5)
+                env.insert_id(x1);
+                env.insert_op(GroupNonUniformLogicalOr(x0, x1, x2, x3, x4, x5))
             }
             364 => {
                 let x0 = Writer::read_word(chunk, env, idx);
@@ -3275,7 +3626,8 @@ impl Opcode {
                 let x3 = Writer::read_word(chunk, env, idx);
                 let x4 = Writer::read_word(chunk, env, idx);
                 let x5 = Writer::read_word(chunk, env, idx);
-                GroupNonUniformLogicalXor(x0, x1, x2, x3, x4, x5)
+                env.insert_id(x1);
+                env.insert_op(GroupNonUniformLogicalXor(x0, x1, x2, x3, x4, x5))
             }
             365 => {
                 let x0 = Writer::read_word(chunk, env, idx);
@@ -3283,7 +3635,8 @@ impl Opcode {
                 let x2 = Writer::read_word(chunk, env, idx);
                 let x3 = Writer::read_word(chunk, env, idx);
                 let x4 = Writer::read_word(chunk, env, idx);
-                GroupNonUniformQuadBroadcast(x0, x1, x2, x3, x4)
+                env.insert_id(x1);
+                env.insert_op(GroupNonUniformQuadBroadcast(x0, x1, x2, x3, x4))
             }
             366 => {
                 let x0 = Writer::read_word(chunk, env, idx);
@@ -3291,72 +3644,83 @@ impl Opcode {
                 let x2 = Writer::read_word(chunk, env, idx);
                 let x3 = Writer::read_word(chunk, env, idx);
                 let x4 = Writer::read_word(chunk, env, idx);
-                GroupNonUniformQuadSwap(x0, x1, x2, x3, x4)
+                env.insert_id(x1);
+                env.insert_op(GroupNonUniformQuadSwap(x0, x1, x2, x3, x4))
             }
             400 => {
                 let x0 = Writer::read_word(chunk, env, idx);
                 let x1 = Writer::read_word(chunk, env, idx);
                 let x2 = Writer::read_word(chunk, env, idx);
-                CopyLogical(x0, x1, x2)
+                env.insert_id(x1);
+                env.insert_op(CopyLogical(x0, x1, x2))
             }
             401 => {
                 let x0 = Writer::read_word(chunk, env, idx);
                 let x1 = Writer::read_word(chunk, env, idx);
                 let x2 = Writer::read_word(chunk, env, idx);
                 let x3 = Writer::read_word(chunk, env, idx);
-                PtrEqual(x0, x1, x2, x3)
+                env.insert_id(x1);
+                env.insert_op(PtrEqual(x0, x1, x2, x3))
             }
             402 => {
                 let x0 = Writer::read_word(chunk, env, idx);
                 let x1 = Writer::read_word(chunk, env, idx);
                 let x2 = Writer::read_word(chunk, env, idx);
                 let x3 = Writer::read_word(chunk, env, idx);
-                PtrNotEqual(x0, x1, x2, x3)
+                env.insert_id(x1);
+                env.insert_op(PtrNotEqual(x0, x1, x2, x3))
             }
             403 => {
                 let x0 = Writer::read_word(chunk, env, idx);
                 let x1 = Writer::read_word(chunk, env, idx);
                 let x2 = Writer::read_word(chunk, env, idx);
                 let x3 = Writer::read_word(chunk, env, idx);
-                PtrDiff(x0, x1, x2, x3)
+                env.insert_id(x1);
+                env.insert_op(PtrDiff(x0, x1, x2, x3))
             }
-            4416 => TerminateInvocation(),
+            4416 => env.insert_op(TerminateInvocation()),
             4421 => {
                 let x0 = Writer::read_word(chunk, env, idx);
                 let x1 = Writer::read_word(chunk, env, idx);
                 let x2 = Writer::read_word(chunk, env, idx);
-                SubgroupBallotKHR(x0, x1, x2)
+                env.insert_id(x1);
+                env.insert_op(SubgroupBallotKHR(x0, x1, x2))
             }
             4422 => {
                 let x0 = Writer::read_word(chunk, env, idx);
                 let x1 = Writer::read_word(chunk, env, idx);
                 let x2 = Writer::read_word(chunk, env, idx);
-                SubgroupFirstInvocationKHR(x0, x1, x2)
+                env.insert_id(x1);
+                env.insert_op(SubgroupFirstInvocationKHR(x0, x1, x2))
             }
             4428 => {
                 let x0 = Writer::read_word(chunk, env, idx);
                 let x1 = Writer::read_word(chunk, env, idx);
                 let x2 = Writer::read_word(chunk, env, idx);
-                SubgroupAllKHR(x0, x1, x2)
+                env.insert_id(x1);
+                env.insert_op(SubgroupAllKHR(x0, x1, x2))
             }
             4429 => {
                 let x0 = Writer::read_word(chunk, env, idx);
                 let x1 = Writer::read_word(chunk, env, idx);
                 let x2 = Writer::read_word(chunk, env, idx);
-                SubgroupAnyKHR(x0, x1, x2)
+                env.insert_id(x1);
+                env.insert_op(SubgroupAnyKHR(x0, x1, x2))
             }
             4430 => {
                 let x0 = Writer::read_word(chunk, env, idx);
                 let x1 = Writer::read_word(chunk, env, idx);
                 let x2 = Writer::read_word(chunk, env, idx);
-                SubgroupAllEqualKHR(x0, x1, x2)
+                env.insert_id(x1);
+                env.insert_op(SubgroupAllEqualKHR(x0, x1, x2))
             }
             4432 => {
                 let x0 = Writer::read_word(chunk, env, idx);
                 let x1 = Writer::read_word(chunk, env, idx);
                 let x2 = Writer::read_word(chunk, env, idx);
                 let x3 = Writer::read_word(chunk, env, idx);
-                SubgroupReadInvocationKHR(x0, x1, x2, x3)
+                env.insert_id(x1);
+                env.insert_op(SubgroupReadInvocationKHR(x0, x1, x2, x3))
             }
             4445 => {
                 let x0 = Writer::read_word(chunk, env, idx);
@@ -3370,24 +3734,83 @@ impl Opcode {
                 let x8 = Writer::read_word(chunk, env, idx);
                 let x9 = Writer::read_word(chunk, env, idx);
                 let x10 = Writer::read_word(chunk, env, idx);
-                TraceRayKHR(x0, x1, x2, x3, x4, x5, x6, x7, x8, x9, x10)
+                env.insert_op(TraceRayKHR(x0, x1, x2, x3, x4, x5, x6, x7, x8, x9, x10))
             }
             4446 => {
                 let x0 = Writer::read_word(chunk, env, idx);
                 let x1 = Writer::read_word(chunk, env, idx);
-                ExecuteCallableKHR(x0, x1)
+                env.insert_op(ExecuteCallableKHR(x0, x1))
             }
             4447 => {
                 let x0 = Writer::read_word(chunk, env, idx);
                 let x1 = Writer::read_word(chunk, env, idx);
                 let x2 = Writer::read_word(chunk, env, idx);
-                ConvertUToAccelerationStructureKHR(x0, x1, x2)
+                env.insert_id(x1);
+                env.insert_op(ConvertUToAccelerationStructureKHR(x0, x1, x2))
             }
-            4448 => IgnoreIntersectionKHR(),
-            4449 => TerminateRayKHR(),
+            4448 => env.insert_op(IgnoreIntersectionKHR()),
+            4449 => env.insert_op(TerminateRayKHR()),
+            4450 => {
+                let x0 = Writer::read_word(chunk, env, idx);
+                let x1 = Writer::read_word(chunk, env, idx);
+                let x2 = Writer::read_word(chunk, env, idx);
+                let x3 = Writer::read_word(chunk, env, idx);
+                let x4 = Writer::read_word(chunk, env, idx);
+                env.insert_id(x1);
+                env.insert_op(SDotKHR(x0, x1, x2, x3, x4))
+            }
+            4451 => {
+                let x0 = Writer::read_word(chunk, env, idx);
+                let x1 = Writer::read_word(chunk, env, idx);
+                let x2 = Writer::read_word(chunk, env, idx);
+                let x3 = Writer::read_word(chunk, env, idx);
+                let x4 = Writer::read_word(chunk, env, idx);
+                env.insert_id(x1);
+                env.insert_op(UDotKHR(x0, x1, x2, x3, x4))
+            }
+            4452 => {
+                let x0 = Writer::read_word(chunk, env, idx);
+                let x1 = Writer::read_word(chunk, env, idx);
+                let x2 = Writer::read_word(chunk, env, idx);
+                let x3 = Writer::read_word(chunk, env, idx);
+                let x4 = Writer::read_word(chunk, env, idx);
+                env.insert_id(x1);
+                env.insert_op(SUDotKHR(x0, x1, x2, x3, x4))
+            }
+            4453 => {
+                let x0 = Writer::read_word(chunk, env, idx);
+                let x1 = Writer::read_word(chunk, env, idx);
+                let x2 = Writer::read_word(chunk, env, idx);
+                let x3 = Writer::read_word(chunk, env, idx);
+                let x4 = Writer::read_word(chunk, env, idx);
+                let x5 = Writer::read_word(chunk, env, idx);
+                env.insert_id(x1);
+                env.insert_op(SDotAccSatKHR(x0, x1, x2, x3, x4, x5))
+            }
+            4454 => {
+                let x0 = Writer::read_word(chunk, env, idx);
+                let x1 = Writer::read_word(chunk, env, idx);
+                let x2 = Writer::read_word(chunk, env, idx);
+                let x3 = Writer::read_word(chunk, env, idx);
+                let x4 = Writer::read_word(chunk, env, idx);
+                let x5 = Writer::read_word(chunk, env, idx);
+                env.insert_id(x1);
+                env.insert_op(UDotAccSatKHR(x0, x1, x2, x3, x4, x5))
+            }
+            4455 => {
+                let x0 = Writer::read_word(chunk, env, idx);
+                let x1 = Writer::read_word(chunk, env, idx);
+                let x2 = Writer::read_word(chunk, env, idx);
+                let x3 = Writer::read_word(chunk, env, idx);
+                let x4 = Writer::read_word(chunk, env, idx);
+                let x5 = Writer::read_word(chunk, env, idx);
+                env.insert_id(x1);
+                env.insert_op(SUDotAccSatKHR(x0, x1, x2, x3, x4, x5))
+            }
             4472 => {
                 let x0 = Writer::read_word(chunk, env, idx);
-                TypeRayQueryKHR(x0)
+                env.insert_id(x0);
+                env.insert_op(TypeRayQueryKHR(x0))
             }
             4473 => {
                 let x0 = Writer::read_word(chunk, env, idx);
@@ -3398,33 +3821,35 @@ impl Opcode {
                 let x5 = Writer::read_word(chunk, env, idx);
                 let x6 = Writer::read_word(chunk, env, idx);
                 let x7 = Writer::read_word(chunk, env, idx);
-                RayQueryInitializeKHR(x0, x1, x2, x3, x4, x5, x6, x7)
+                env.insert_op(RayQueryInitializeKHR(x0, x1, x2, x3, x4, x5, x6, x7))
             }
             4474 => {
                 let x0 = Writer::read_word(chunk, env, idx);
-                RayQueryTerminateKHR(x0)
+                env.insert_op(RayQueryTerminateKHR(x0))
             }
             4475 => {
                 let x0 = Writer::read_word(chunk, env, idx);
                 let x1 = Writer::read_word(chunk, env, idx);
-                RayQueryGenerateIntersectionKHR(x0, x1)
+                env.insert_op(RayQueryGenerateIntersectionKHR(x0, x1))
             }
             4476 => {
                 let x0 = Writer::read_word(chunk, env, idx);
-                RayQueryConfirmIntersectionKHR(x0)
+                env.insert_op(RayQueryConfirmIntersectionKHR(x0))
             }
             4477 => {
                 let x0 = Writer::read_word(chunk, env, idx);
                 let x1 = Writer::read_word(chunk, env, idx);
                 let x2 = Writer::read_word(chunk, env, idx);
-                RayQueryProceedKHR(x0, x1, x2)
+                env.insert_id(x1);
+                env.insert_op(RayQueryProceedKHR(x0, x1, x2))
             }
             4479 => {
                 let x0 = Writer::read_word(chunk, env, idx);
                 let x1 = Writer::read_word(chunk, env, idx);
                 let x2 = Writer::read_word(chunk, env, idx);
                 let x3 = Writer::read_word(chunk, env, idx);
-                RayQueryGetIntersectionTypeKHR(x0, x1, x2, x3)
+                env.insert_id(x1);
+                env.insert_op(RayQueryGetIntersectionTypeKHR(x0, x1, x2, x3))
             }
             5000 => {
                 let x0 = Writer::read_word(chunk, env, idx);
@@ -3432,7 +3857,8 @@ impl Opcode {
                 let x2 = Writer::read_word(chunk, env, idx);
                 let x3 = Writer::read_word(chunk, env, idx);
                 let x4 = Writer::read_word(chunk, env, idx);
-                GroupIAddNonUniformAMD(x0, x1, x2, x3, x4)
+                env.insert_id(x1);
+                env.insert_op(GroupIAddNonUniformAMD(x0, x1, x2, x3, x4))
             }
             5001 => {
                 let x0 = Writer::read_word(chunk, env, idx);
@@ -3440,7 +3866,8 @@ impl Opcode {
                 let x2 = Writer::read_word(chunk, env, idx);
                 let x3 = Writer::read_word(chunk, env, idx);
                 let x4 = Writer::read_word(chunk, env, idx);
-                GroupFAddNonUniformAMD(x0, x1, x2, x3, x4)
+                env.insert_id(x1);
+                env.insert_op(GroupFAddNonUniformAMD(x0, x1, x2, x3, x4))
             }
             5002 => {
                 let x0 = Writer::read_word(chunk, env, idx);
@@ -3448,7 +3875,8 @@ impl Opcode {
                 let x2 = Writer::read_word(chunk, env, idx);
                 let x3 = Writer::read_word(chunk, env, idx);
                 let x4 = Writer::read_word(chunk, env, idx);
-                GroupFMinNonUniformAMD(x0, x1, x2, x3, x4)
+                env.insert_id(x1);
+                env.insert_op(GroupFMinNonUniformAMD(x0, x1, x2, x3, x4))
             }
             5003 => {
                 let x0 = Writer::read_word(chunk, env, idx);
@@ -3456,7 +3884,8 @@ impl Opcode {
                 let x2 = Writer::read_word(chunk, env, idx);
                 let x3 = Writer::read_word(chunk, env, idx);
                 let x4 = Writer::read_word(chunk, env, idx);
-                GroupUMinNonUniformAMD(x0, x1, x2, x3, x4)
+                env.insert_id(x1);
+                env.insert_op(GroupUMinNonUniformAMD(x0, x1, x2, x3, x4))
             }
             5004 => {
                 let x0 = Writer::read_word(chunk, env, idx);
@@ -3464,7 +3893,8 @@ impl Opcode {
                 let x2 = Writer::read_word(chunk, env, idx);
                 let x3 = Writer::read_word(chunk, env, idx);
                 let x4 = Writer::read_word(chunk, env, idx);
-                GroupSMinNonUniformAMD(x0, x1, x2, x3, x4)
+                env.insert_id(x1);
+                env.insert_op(GroupSMinNonUniformAMD(x0, x1, x2, x3, x4))
             }
             5005 => {
                 let x0 = Writer::read_word(chunk, env, idx);
@@ -3472,7 +3902,8 @@ impl Opcode {
                 let x2 = Writer::read_word(chunk, env, idx);
                 let x3 = Writer::read_word(chunk, env, idx);
                 let x4 = Writer::read_word(chunk, env, idx);
-                GroupFMaxNonUniformAMD(x0, x1, x2, x3, x4)
+                env.insert_id(x1);
+                env.insert_op(GroupFMaxNonUniformAMD(x0, x1, x2, x3, x4))
             }
             5006 => {
                 let x0 = Writer::read_word(chunk, env, idx);
@@ -3480,7 +3911,8 @@ impl Opcode {
                 let x2 = Writer::read_word(chunk, env, idx);
                 let x3 = Writer::read_word(chunk, env, idx);
                 let x4 = Writer::read_word(chunk, env, idx);
-                GroupUMaxNonUniformAMD(x0, x1, x2, x3, x4)
+                env.insert_id(x1);
+                env.insert_op(GroupUMaxNonUniformAMD(x0, x1, x2, x3, x4))
             }
             5007 => {
                 let x0 = Writer::read_word(chunk, env, idx);
@@ -3488,14 +3920,16 @@ impl Opcode {
                 let x2 = Writer::read_word(chunk, env, idx);
                 let x3 = Writer::read_word(chunk, env, idx);
                 let x4 = Writer::read_word(chunk, env, idx);
-                GroupSMaxNonUniformAMD(x0, x1, x2, x3, x4)
+                env.insert_id(x1);
+                env.insert_op(GroupSMaxNonUniformAMD(x0, x1, x2, x3, x4))
             }
             5011 => {
                 let x0 = Writer::read_word(chunk, env, idx);
                 let x1 = Writer::read_word(chunk, env, idx);
                 let x2 = Writer::read_word(chunk, env, idx);
                 let x3 = Writer::read_word(chunk, env, idx);
-                FragmentMaskFetchAMD(x0, x1, x2, x3)
+                env.insert_id(x1);
+                env.insert_op(FragmentMaskFetchAMD(x0, x1, x2, x3))
             }
             5012 => {
                 let x0 = Writer::read_word(chunk, env, idx);
@@ -3503,13 +3937,15 @@ impl Opcode {
                 let x2 = Writer::read_word(chunk, env, idx);
                 let x3 = Writer::read_word(chunk, env, idx);
                 let x4 = Writer::read_word(chunk, env, idx);
-                FragmentFetchAMD(x0, x1, x2, x3, x4)
+                env.insert_id(x1);
+                env.insert_op(FragmentFetchAMD(x0, x1, x2, x3, x4))
             }
             5056 => {
                 let x0 = Writer::read_word(chunk, env, idx);
                 let x1 = Writer::read_word(chunk, env, idx);
                 let x2 = Writer::read_word(chunk, env, idx);
-                ReadClockKHR(x0, x1, x2)
+                env.insert_id(x1);
+                env.insert_op(ReadClockKHR(x0, x1, x2))
             }
             5283 => {
                 let x0 = Writer::read_word(chunk, env, idx);
@@ -3519,28 +3955,31 @@ impl Opcode {
                 let x4 = Writer::read_word(chunk, env, idx);
                 let x5 = Writer::read_word(chunk, env, idx);
                 let x6 = Writer::read_word(chunk, env, idx);
-                ImageSampleFootprintNV(x0, x1, x2, x3, x4, x5, x6)
+                env.insert_id(x1);
+                env.insert_op(ImageSampleFootprintNV(x0, x1, x2, x3, x4, x5, x6))
             }
             5296 => {
                 let x0 = Writer::read_word(chunk, env, idx);
                 let x1 = Writer::read_word(chunk, env, idx);
                 let x2 = Writer::read_word(chunk, env, idx);
-                GroupNonUniformPartitionNV(x0, x1, x2)
+                env.insert_id(x1);
+                env.insert_op(GroupNonUniformPartitionNV(x0, x1, x2))
             }
             5299 => {
                 let x0 = Writer::read_word(chunk, env, idx);
                 let x1 = Writer::read_word(chunk, env, idx);
-                WritePackedPrimitiveIndices4x8NV(x0, x1)
+                env.insert_op(WritePackedPrimitiveIndices4x8NV(x0, x1))
             }
             5334 => {
                 let x0 = Writer::read_word(chunk, env, idx);
                 let x1 = Writer::read_word(chunk, env, idx);
                 let x2 = Writer::read_word(chunk, env, idx);
                 let x3 = Writer::read_word(chunk, env, idx);
-                ReportIntersectionNV(x0, x1, x2, x3)
+                env.insert_id(x1);
+                env.insert_op(ReportIntersectionNV(x0, x1, x2, x3))
             }
-            5335 => IgnoreIntersectionNV(),
-            5336 => TerminateRayNV(),
+            5335 => env.insert_op(IgnoreIntersectionNV()),
+            5336 => env.insert_op(TerminateRayNV()),
             5337 => {
                 let x0 = Writer::read_word(chunk, env, idx);
                 let x1 = Writer::read_word(chunk, env, idx);
@@ -3553,16 +3992,51 @@ impl Opcode {
                 let x8 = Writer::read_word(chunk, env, idx);
                 let x9 = Writer::read_word(chunk, env, idx);
                 let x10 = Writer::read_word(chunk, env, idx);
-                TraceNV(x0, x1, x2, x3, x4, x5, x6, x7, x8, x9, x10)
+                env.insert_op(TraceNV(x0, x1, x2, x3, x4, x5, x6, x7, x8, x9, x10))
+            }
+            5338 => {
+                let x0 = Writer::read_word(chunk, env, idx);
+                let x1 = Writer::read_word(chunk, env, idx);
+                let x2 = Writer::read_word(chunk, env, idx);
+                let x3 = Writer::read_word(chunk, env, idx);
+                let x4 = Writer::read_word(chunk, env, idx);
+                let x5 = Writer::read_word(chunk, env, idx);
+                let x6 = Writer::read_word(chunk, env, idx);
+                let x7 = Writer::read_word(chunk, env, idx);
+                let x8 = Writer::read_word(chunk, env, idx);
+                let x9 = Writer::read_word(chunk, env, idx);
+                let x10 = Writer::read_word(chunk, env, idx);
+                let x11 = Writer::read_word(chunk, env, idx);
+                env.insert_op(TraceMotionNV(
+                    x0, x1, x2, x3, x4, x5, x6, x7, x8, x9, x10, x11,
+                ))
+            }
+            5339 => {
+                let x0 = Writer::read_word(chunk, env, idx);
+                let x1 = Writer::read_word(chunk, env, idx);
+                let x2 = Writer::read_word(chunk, env, idx);
+                let x3 = Writer::read_word(chunk, env, idx);
+                let x4 = Writer::read_word(chunk, env, idx);
+                let x5 = Writer::read_word(chunk, env, idx);
+                let x6 = Writer::read_word(chunk, env, idx);
+                let x7 = Writer::read_word(chunk, env, idx);
+                let x8 = Writer::read_word(chunk, env, idx);
+                let x9 = Writer::read_word(chunk, env, idx);
+                let x10 = Writer::read_word(chunk, env, idx);
+                let x11 = Writer::read_word(chunk, env, idx);
+                env.insert_op(TraceRayMotionNV(
+                    x0, x1, x2, x3, x4, x5, x6, x7, x8, x9, x10, x11,
+                ))
             }
             5341 => {
                 let x0 = Writer::read_word(chunk, env, idx);
-                TypeAccelerationStructureNV(x0)
+                env.insert_id(x0);
+                env.insert_op(TypeAccelerationStructureNV(x0))
             }
             5344 => {
                 let x0 = Writer::read_word(chunk, env, idx);
                 let x1 = Writer::read_word(chunk, env, idx);
-                ExecuteCallableNV(x0, x1)
+                env.insert_op(ExecuteCallableNV(x0, x1))
             }
             5358 => {
                 let x0 = Writer::read_word(chunk, env, idx);
@@ -3570,7 +4044,8 @@ impl Opcode {
                 let x2 = Writer::read_word(chunk, env, idx);
                 let x3 = Writer::read_word(chunk, env, idx);
                 let x4 = Writer::read_word(chunk, env, idx);
-                TypeCooperativeMatrixNV(x0, x1, x2, x3, x4)
+                env.insert_id(x0);
+                env.insert_op(TypeCooperativeMatrixNV(x0, x1, x2, x3, x4))
             }
             5359 => {
                 let x0 = Writer::read_word(chunk, env, idx);
@@ -3579,7 +4054,8 @@ impl Opcode {
                 let x3 = Writer::read_word(chunk, env, idx);
                 let x4 = Writer::read_word(chunk, env, idx);
                 let x5 = Writer::read_word(chunk, env, idx);
-                CooperativeMatrixLoadNV(x0, x1, x2, x3, x4, x5)
+                env.insert_id(x1);
+                env.insert_op(CooperativeMatrixLoadNV(x0, x1, x2, x3, x4, x5))
             }
             5360 => {
                 let x0 = Writer::read_word(chunk, env, idx);
@@ -3587,7 +4063,7 @@ impl Opcode {
                 let x2 = Writer::read_word(chunk, env, idx);
                 let x3 = Writer::read_word(chunk, env, idx);
                 let x4 = Writer::read_word(chunk, env, idx);
-                CooperativeMatrixStoreNV(x0, x1, x2, x3, x4)
+                env.insert_op(CooperativeMatrixStoreNV(x0, x1, x2, x3, x4))
             }
             5361 => {
                 let x0 = Writer::read_word(chunk, env, idx);
@@ -3595,28 +4071,32 @@ impl Opcode {
                 let x2 = Writer::read_word(chunk, env, idx);
                 let x3 = Writer::read_word(chunk, env, idx);
                 let x4 = Writer::read_word(chunk, env, idx);
-                CooperativeMatrixMulAddNV(x0, x1, x2, x3, x4)
+                env.insert_id(x1);
+                env.insert_op(CooperativeMatrixMulAddNV(x0, x1, x2, x3, x4))
             }
             5362 => {
                 let x0 = Writer::read_word(chunk, env, idx);
                 let x1 = Writer::read_word(chunk, env, idx);
                 let x2 = Writer::read_word(chunk, env, idx);
-                CooperativeMatrixLengthNV(x0, x1, x2)
+                env.insert_id(x1);
+                env.insert_op(CooperativeMatrixLengthNV(x0, x1, x2))
             }
-            5364 => BeginInvocationInterlockEXT(),
-            5365 => EndInvocationInterlockEXT(),
-            5380 => DemoteToHelperInvocationEXT(),
+            5364 => env.insert_op(BeginInvocationInterlockEXT()),
+            5365 => env.insert_op(EndInvocationInterlockEXT()),
+            5380 => env.insert_op(DemoteToHelperInvocationEXT()),
             5381 => {
                 let x0 = Writer::read_word(chunk, env, idx);
                 let x1 = Writer::read_word(chunk, env, idx);
-                IsHelperInvocationEXT(x0, x1)
+                env.insert_id(x1);
+                env.insert_op(IsHelperInvocationEXT(x0, x1))
             }
             5571 => {
                 let x0 = Writer::read_word(chunk, env, idx);
                 let x1 = Writer::read_word(chunk, env, idx);
                 let x2 = Writer::read_word(chunk, env, idx);
                 let x3 = Writer::read_word(chunk, env, idx);
-                SubgroupShuffleINTEL(x0, x1, x2, x3)
+                env.insert_id(x1);
+                env.insert_op(SubgroupShuffleINTEL(x0, x1, x2, x3))
             }
             5572 => {
                 let x0 = Writer::read_word(chunk, env, idx);
@@ -3624,7 +4104,8 @@ impl Opcode {
                 let x2 = Writer::read_word(chunk, env, idx);
                 let x3 = Writer::read_word(chunk, env, idx);
                 let x4 = Writer::read_word(chunk, env, idx);
-                SubgroupShuffleDownINTEL(x0, x1, x2, x3, x4)
+                env.insert_id(x1);
+                env.insert_op(SubgroupShuffleDownINTEL(x0, x1, x2, x3, x4))
             }
             5573 => {
                 let x0 = Writer::read_word(chunk, env, idx);
@@ -3632,38 +4113,42 @@ impl Opcode {
                 let x2 = Writer::read_word(chunk, env, idx);
                 let x3 = Writer::read_word(chunk, env, idx);
                 let x4 = Writer::read_word(chunk, env, idx);
-                SubgroupShuffleUpINTEL(x0, x1, x2, x3, x4)
+                env.insert_id(x1);
+                env.insert_op(SubgroupShuffleUpINTEL(x0, x1, x2, x3, x4))
             }
             5574 => {
                 let x0 = Writer::read_word(chunk, env, idx);
                 let x1 = Writer::read_word(chunk, env, idx);
                 let x2 = Writer::read_word(chunk, env, idx);
                 let x3 = Writer::read_word(chunk, env, idx);
-                SubgroupShuffleXorINTEL(x0, x1, x2, x3)
+                env.insert_id(x1);
+                env.insert_op(SubgroupShuffleXorINTEL(x0, x1, x2, x3))
             }
             5575 => {
                 let x0 = Writer::read_word(chunk, env, idx);
                 let x1 = Writer::read_word(chunk, env, idx);
                 let x2 = Writer::read_word(chunk, env, idx);
-                SubgroupBlockReadINTEL(x0, x1, x2)
+                env.insert_id(x1);
+                env.insert_op(SubgroupBlockReadINTEL(x0, x1, x2))
             }
             5576 => {
                 let x0 = Writer::read_word(chunk, env, idx);
                 let x1 = Writer::read_word(chunk, env, idx);
-                SubgroupBlockWriteINTEL(x0, x1)
+                env.insert_op(SubgroupBlockWriteINTEL(x0, x1))
             }
             5577 => {
                 let x0 = Writer::read_word(chunk, env, idx);
                 let x1 = Writer::read_word(chunk, env, idx);
                 let x2 = Writer::read_word(chunk, env, idx);
                 let x3 = Writer::read_word(chunk, env, idx);
-                SubgroupImageBlockReadINTEL(x0, x1, x2, x3)
+                env.insert_id(x1);
+                env.insert_op(SubgroupImageBlockReadINTEL(x0, x1, x2, x3))
             }
             5578 => {
                 let x0 = Writer::read_word(chunk, env, idx);
                 let x1 = Writer::read_word(chunk, env, idx);
                 let x2 = Writer::read_word(chunk, env, idx);
-                SubgroupImageBlockWriteINTEL(x0, x1, x2)
+                env.insert_op(SubgroupImageBlockWriteINTEL(x0, x1, x2))
             }
             5580 => {
                 let x0 = Writer::read_word(chunk, env, idx);
@@ -3672,7 +4157,8 @@ impl Opcode {
                 let x3 = Writer::read_word(chunk, env, idx);
                 let x4 = Writer::read_word(chunk, env, idx);
                 let x5 = Writer::read_word(chunk, env, idx);
-                SubgroupImageMediaBlockReadINTEL(x0, x1, x2, x3, x4, x5)
+                env.insert_id(x1);
+                env.insert_op(SubgroupImageMediaBlockReadINTEL(x0, x1, x2, x3, x4, x5))
             }
             5581 => {
                 let x0 = Writer::read_word(chunk, env, idx);
@@ -3680,121 +4166,138 @@ impl Opcode {
                 let x2 = Writer::read_word(chunk, env, idx);
                 let x3 = Writer::read_word(chunk, env, idx);
                 let x4 = Writer::read_word(chunk, env, idx);
-                SubgroupImageMediaBlockWriteINTEL(x0, x1, x2, x3, x4)
+                env.insert_op(SubgroupImageMediaBlockWriteINTEL(x0, x1, x2, x3, x4))
             }
             5585 => {
                 let x0 = Writer::read_word(chunk, env, idx);
                 let x1 = Writer::read_word(chunk, env, idx);
                 let x2 = Writer::read_word(chunk, env, idx);
-                UCountLeadingZerosINTEL(x0, x1, x2)
+                env.insert_id(x1);
+                env.insert_op(UCountLeadingZerosINTEL(x0, x1, x2))
             }
             5586 => {
                 let x0 = Writer::read_word(chunk, env, idx);
                 let x1 = Writer::read_word(chunk, env, idx);
                 let x2 = Writer::read_word(chunk, env, idx);
-                UCountTrailingZerosINTEL(x0, x1, x2)
+                env.insert_id(x1);
+                env.insert_op(UCountTrailingZerosINTEL(x0, x1, x2))
             }
             5587 => {
                 let x0 = Writer::read_word(chunk, env, idx);
                 let x1 = Writer::read_word(chunk, env, idx);
                 let x2 = Writer::read_word(chunk, env, idx);
                 let x3 = Writer::read_word(chunk, env, idx);
-                AbsISubINTEL(x0, x1, x2, x3)
+                env.insert_id(x1);
+                env.insert_op(AbsISubINTEL(x0, x1, x2, x3))
             }
             5588 => {
                 let x0 = Writer::read_word(chunk, env, idx);
                 let x1 = Writer::read_word(chunk, env, idx);
                 let x2 = Writer::read_word(chunk, env, idx);
                 let x3 = Writer::read_word(chunk, env, idx);
-                AbsUSubINTEL(x0, x1, x2, x3)
+                env.insert_id(x1);
+                env.insert_op(AbsUSubINTEL(x0, x1, x2, x3))
             }
             5589 => {
                 let x0 = Writer::read_word(chunk, env, idx);
                 let x1 = Writer::read_word(chunk, env, idx);
                 let x2 = Writer::read_word(chunk, env, idx);
                 let x3 = Writer::read_word(chunk, env, idx);
-                IAddSatINTEL(x0, x1, x2, x3)
+                env.insert_id(x1);
+                env.insert_op(IAddSatINTEL(x0, x1, x2, x3))
             }
             5590 => {
                 let x0 = Writer::read_word(chunk, env, idx);
                 let x1 = Writer::read_word(chunk, env, idx);
                 let x2 = Writer::read_word(chunk, env, idx);
                 let x3 = Writer::read_word(chunk, env, idx);
-                UAddSatINTEL(x0, x1, x2, x3)
+                env.insert_id(x1);
+                env.insert_op(UAddSatINTEL(x0, x1, x2, x3))
             }
             5591 => {
                 let x0 = Writer::read_word(chunk, env, idx);
                 let x1 = Writer::read_word(chunk, env, idx);
                 let x2 = Writer::read_word(chunk, env, idx);
                 let x3 = Writer::read_word(chunk, env, idx);
-                IAverageINTEL(x0, x1, x2, x3)
+                env.insert_id(x1);
+                env.insert_op(IAverageINTEL(x0, x1, x2, x3))
             }
             5592 => {
                 let x0 = Writer::read_word(chunk, env, idx);
                 let x1 = Writer::read_word(chunk, env, idx);
                 let x2 = Writer::read_word(chunk, env, idx);
                 let x3 = Writer::read_word(chunk, env, idx);
-                UAverageINTEL(x0, x1, x2, x3)
+                env.insert_id(x1);
+                env.insert_op(UAverageINTEL(x0, x1, x2, x3))
             }
             5593 => {
                 let x0 = Writer::read_word(chunk, env, idx);
                 let x1 = Writer::read_word(chunk, env, idx);
                 let x2 = Writer::read_word(chunk, env, idx);
                 let x3 = Writer::read_word(chunk, env, idx);
-                IAverageRoundedINTEL(x0, x1, x2, x3)
+                env.insert_id(x1);
+                env.insert_op(IAverageRoundedINTEL(x0, x1, x2, x3))
             }
             5594 => {
                 let x0 = Writer::read_word(chunk, env, idx);
                 let x1 = Writer::read_word(chunk, env, idx);
                 let x2 = Writer::read_word(chunk, env, idx);
                 let x3 = Writer::read_word(chunk, env, idx);
-                UAverageRoundedINTEL(x0, x1, x2, x3)
+                env.insert_id(x1);
+                env.insert_op(UAverageRoundedINTEL(x0, x1, x2, x3))
             }
             5595 => {
                 let x0 = Writer::read_word(chunk, env, idx);
                 let x1 = Writer::read_word(chunk, env, idx);
                 let x2 = Writer::read_word(chunk, env, idx);
                 let x3 = Writer::read_word(chunk, env, idx);
-                ISubSatINTEL(x0, x1, x2, x3)
+                env.insert_id(x1);
+                env.insert_op(ISubSatINTEL(x0, x1, x2, x3))
             }
             5596 => {
                 let x0 = Writer::read_word(chunk, env, idx);
                 let x1 = Writer::read_word(chunk, env, idx);
                 let x2 = Writer::read_word(chunk, env, idx);
                 let x3 = Writer::read_word(chunk, env, idx);
-                USubSatINTEL(x0, x1, x2, x3)
+                env.insert_id(x1);
+                env.insert_op(USubSatINTEL(x0, x1, x2, x3))
             }
             5597 => {
                 let x0 = Writer::read_word(chunk, env, idx);
                 let x1 = Writer::read_word(chunk, env, idx);
                 let x2 = Writer::read_word(chunk, env, idx);
                 let x3 = Writer::read_word(chunk, env, idx);
-                IMul32x16INTEL(x0, x1, x2, x3)
+                env.insert_id(x1);
+                env.insert_op(IMul32x16INTEL(x0, x1, x2, x3))
             }
             5598 => {
                 let x0 = Writer::read_word(chunk, env, idx);
                 let x1 = Writer::read_word(chunk, env, idx);
                 let x2 = Writer::read_word(chunk, env, idx);
                 let x3 = Writer::read_word(chunk, env, idx);
-                UMul32x16INTEL(x0, x1, x2, x3)
+                env.insert_id(x1);
+                env.insert_op(UMul32x16INTEL(x0, x1, x2, x3))
             }
             5600 => {
                 let x0 = Writer::read_word(chunk, env, idx);
                 let x1 = Writer::read_word(chunk, env, idx);
                 let x2 = Writer::read_word(chunk, env, idx);
-                ConstFunctionPointerINTEL(x0, x1, x2)
+                env.insert_id(x1);
+                env.insert_op(ConstFunctionPointerINTEL(x0, x1, x2))
             }
             5601 => {
                 let x0 = Writer::read_word(chunk, env, idx);
                 let x1 = Writer::read_word(chunk, env, idx);
                 let x2 = Writer::read_word(chunk, env, idx);
-                FunctionPointerCallINTEL(x0, x1, x2)
+                env.insert_id(x1);
+                env.insert_op(FunctionPointerCallINTEL(x0, x1, x2))
             }
             5609 => {
                 let x0 = Writer::read_word(chunk, env, idx);
                 let x1 = Writer::read_word(chunk, env, idx);
                 let x2 = Writer::read_word(chunk, env, idx);
-                AsmTargetINTEL(x0, x1, x2)
+                env.insert_id(x1);
+                env.insert_op(AsmTargetINTEL(x0, x1, x2))
             }
             5610 => {
                 let x0 = Writer::read_word(chunk, env, idx);
@@ -3803,14 +4306,16 @@ impl Opcode {
                 let x3 = Writer::read_word(chunk, env, idx);
                 let x4 = Writer::read_word(chunk, env, idx);
                 let x5 = Writer::read_word(chunk, env, idx);
-                AsmINTEL(x0, x1, x2, x3, x4, x5)
+                env.insert_id(x1);
+                env.insert_op(AsmINTEL(x0, x1, x2, x3, x4, x5))
             }
             5611 => {
                 let x0 = Writer::read_word(chunk, env, idx);
                 let x1 = Writer::read_word(chunk, env, idx);
                 let x2 = Writer::read_word(chunk, env, idx);
                 let x3 = Writer::read_word(chunk, env, idx);
-                AsmCallINTEL(x0, x1, x2, x3)
+                env.insert_id(x1);
+                env.insert_op(AsmCallINTEL(x0, x1, x2, x3))
             }
             5614 => {
                 let x0 = Writer::read_word(chunk, env, idx);
@@ -3819,7 +4324,8 @@ impl Opcode {
                 let x3 = Writer::read_word(chunk, env, idx);
                 let x4 = Writer::read_word(chunk, env, idx);
                 let x5 = Writer::read_word(chunk, env, idx);
-                AtomicFMinEXT(x0, x1, x2, x3, x4, x5)
+                env.insert_id(x1);
+                env.insert_op(AtomicFMinEXT(x0, x1, x2, x3, x4, x5))
             }
             5615 => {
                 let x0 = Writer::read_word(chunk, env, idx);
@@ -3828,149 +4334,199 @@ impl Opcode {
                 let x3 = Writer::read_word(chunk, env, idx);
                 let x4 = Writer::read_word(chunk, env, idx);
                 let x5 = Writer::read_word(chunk, env, idx);
-                AtomicFMaxEXT(x0, x1, x2, x3, x4, x5)
+                env.insert_id(x1);
+                env.insert_op(AtomicFMaxEXT(x0, x1, x2, x3, x4, x5))
+            }
+            5630 => {
+                let x0 = Writer::read_word(chunk, env, idx);
+                env.insert_op(AssumeTrueKHR(x0))
+            }
+            5631 => {
+                let x0 = Writer::read_word(chunk, env, idx);
+                let x1 = Writer::read_word(chunk, env, idx);
+                let x2 = Writer::read_word(chunk, env, idx);
+                let x3 = Writer::read_word(chunk, env, idx);
+                env.insert_id(x1);
+                env.insert_op(ExpectKHR(x0, x1, x2, x3))
             }
             5632 => {
                 let x0 = Writer::read_word(chunk, env, idx);
                 let x1 = Writer::read_word(chunk, env, idx);
-                DecorateString(x0, x1)
+                env.insert_op(DecorateString(x0, x1))
             }
             5633 => {
                 let x0 = Writer::read_word(chunk, env, idx);
                 let x1 = Writer::read_word(chunk, env, idx);
                 let x2 = Writer::read_word(chunk, env, idx);
-                MemberDecorateString(x0, x1, x2)
+                env.insert_op(MemberDecorateString(x0, x1, x2))
             }
             5699 => {
                 let x0 = Writer::read_word(chunk, env, idx);
                 let x1 = Writer::read_word(chunk, env, idx);
                 let x2 = Writer::read_word(chunk, env, idx);
                 let x3 = Writer::read_word(chunk, env, idx);
-                VmeImageINTEL(x0, x1, x2, x3)
+                env.insert_id(x1);
+                env.insert_op(VmeImageINTEL(x0, x1, x2, x3))
             }
             5700 => {
                 let x0 = Writer::read_word(chunk, env, idx);
                 let x1 = Writer::read_word(chunk, env, idx);
-                TypeVmeImageINTEL(x0, x1)
+                env.insert_id(x0);
+                env.insert_op(TypeVmeImageINTEL(x0, x1))
             }
             5701 => {
                 let x0 = Writer::read_word(chunk, env, idx);
-                TypeAvcImePayloadINTEL(x0)
+                env.insert_id(x0);
+                env.insert_op(TypeAvcImePayloadINTEL(x0))
             }
             5702 => {
                 let x0 = Writer::read_word(chunk, env, idx);
-                TypeAvcRefPayloadINTEL(x0)
+                env.insert_id(x0);
+                env.insert_op(TypeAvcRefPayloadINTEL(x0))
             }
             5703 => {
                 let x0 = Writer::read_word(chunk, env, idx);
-                TypeAvcSicPayloadINTEL(x0)
+                env.insert_id(x0);
+                env.insert_op(TypeAvcSicPayloadINTEL(x0))
             }
             5704 => {
                 let x0 = Writer::read_word(chunk, env, idx);
-                TypeAvcMcePayloadINTEL(x0)
+                env.insert_id(x0);
+                env.insert_op(TypeAvcMcePayloadINTEL(x0))
             }
             5705 => {
                 let x0 = Writer::read_word(chunk, env, idx);
-                TypeAvcMceResultINTEL(x0)
+                env.insert_id(x0);
+                env.insert_op(TypeAvcMceResultINTEL(x0))
             }
             5706 => {
                 let x0 = Writer::read_word(chunk, env, idx);
-                TypeAvcImeResultINTEL(x0)
+                env.insert_id(x0);
+                env.insert_op(TypeAvcImeResultINTEL(x0))
             }
             5707 => {
                 let x0 = Writer::read_word(chunk, env, idx);
-                TypeAvcImeResultSingleReferenceStreamoutINTEL(x0)
+                env.insert_id(x0);
+                env.insert_op(TypeAvcImeResultSingleReferenceStreamoutINTEL(x0))
             }
             5708 => {
                 let x0 = Writer::read_word(chunk, env, idx);
-                TypeAvcImeResultDualReferenceStreamoutINTEL(x0)
+                env.insert_id(x0);
+                env.insert_op(TypeAvcImeResultDualReferenceStreamoutINTEL(x0))
             }
             5709 => {
                 let x0 = Writer::read_word(chunk, env, idx);
-                TypeAvcImeSingleReferenceStreaminINTEL(x0)
+                env.insert_id(x0);
+                env.insert_op(TypeAvcImeSingleReferenceStreaminINTEL(x0))
             }
             5710 => {
                 let x0 = Writer::read_word(chunk, env, idx);
-                TypeAvcImeDualReferenceStreaminINTEL(x0)
+                env.insert_id(x0);
+                env.insert_op(TypeAvcImeDualReferenceStreaminINTEL(x0))
             }
             5711 => {
                 let x0 = Writer::read_word(chunk, env, idx);
-                TypeAvcRefResultINTEL(x0)
+                env.insert_id(x0);
+                env.insert_op(TypeAvcRefResultINTEL(x0))
             }
             5712 => {
                 let x0 = Writer::read_word(chunk, env, idx);
-                TypeAvcSicResultINTEL(x0)
+                env.insert_id(x0);
+                env.insert_op(TypeAvcSicResultINTEL(x0))
             }
             5713 => {
                 let x0 = Writer::read_word(chunk, env, idx);
                 let x1 = Writer::read_word(chunk, env, idx);
                 let x2 = Writer::read_word(chunk, env, idx);
                 let x3 = Writer::read_word(chunk, env, idx);
-                SubgroupAvcMceGetDefaultInterBaseMultiReferencePenaltyINTEL(x0, x1, x2, x3)
+                env.insert_id(x1);
+                env.insert_op(SubgroupAvcMceGetDefaultInterBaseMultiReferencePenaltyINTEL(
+                    x0, x1, x2, x3,
+                ))
             }
             5714 => {
                 let x0 = Writer::read_word(chunk, env, idx);
                 let x1 = Writer::read_word(chunk, env, idx);
                 let x2 = Writer::read_word(chunk, env, idx);
                 let x3 = Writer::read_word(chunk, env, idx);
-                SubgroupAvcMceSetInterBaseMultiReferencePenaltyINTEL(x0, x1, x2, x3)
+                env.insert_id(x1);
+                env.insert_op(SubgroupAvcMceSetInterBaseMultiReferencePenaltyINTEL(
+                    x0, x1, x2, x3,
+                ))
             }
             5715 => {
                 let x0 = Writer::read_word(chunk, env, idx);
                 let x1 = Writer::read_word(chunk, env, idx);
                 let x2 = Writer::read_word(chunk, env, idx);
                 let x3 = Writer::read_word(chunk, env, idx);
-                SubgroupAvcMceGetDefaultInterShapePenaltyINTEL(x0, x1, x2, x3)
+                env.insert_id(x1);
+                env.insert_op(SubgroupAvcMceGetDefaultInterShapePenaltyINTEL(
+                    x0, x1, x2, x3,
+                ))
             }
             5716 => {
                 let x0 = Writer::read_word(chunk, env, idx);
                 let x1 = Writer::read_word(chunk, env, idx);
                 let x2 = Writer::read_word(chunk, env, idx);
                 let x3 = Writer::read_word(chunk, env, idx);
-                SubgroupAvcMceSetInterShapePenaltyINTEL(x0, x1, x2, x3)
+                env.insert_id(x1);
+                env.insert_op(SubgroupAvcMceSetInterShapePenaltyINTEL(x0, x1, x2, x3))
             }
             5717 => {
                 let x0 = Writer::read_word(chunk, env, idx);
                 let x1 = Writer::read_word(chunk, env, idx);
                 let x2 = Writer::read_word(chunk, env, idx);
                 let x3 = Writer::read_word(chunk, env, idx);
-                SubgroupAvcMceGetDefaultInterDirectionPenaltyINTEL(x0, x1, x2, x3)
+                env.insert_id(x1);
+                env.insert_op(SubgroupAvcMceGetDefaultInterDirectionPenaltyINTEL(
+                    x0, x1, x2, x3,
+                ))
             }
             5718 => {
                 let x0 = Writer::read_word(chunk, env, idx);
                 let x1 = Writer::read_word(chunk, env, idx);
                 let x2 = Writer::read_word(chunk, env, idx);
                 let x3 = Writer::read_word(chunk, env, idx);
-                SubgroupAvcMceSetInterDirectionPenaltyINTEL(x0, x1, x2, x3)
+                env.insert_id(x1);
+                env.insert_op(SubgroupAvcMceSetInterDirectionPenaltyINTEL(x0, x1, x2, x3))
             }
             5719 => {
                 let x0 = Writer::read_word(chunk, env, idx);
                 let x1 = Writer::read_word(chunk, env, idx);
                 let x2 = Writer::read_word(chunk, env, idx);
                 let x3 = Writer::read_word(chunk, env, idx);
-                SubgroupAvcMceGetDefaultIntraLumaShapePenaltyINTEL(x0, x1, x2, x3)
+                env.insert_id(x1);
+                env.insert_op(SubgroupAvcMceGetDefaultIntraLumaShapePenaltyINTEL(
+                    x0, x1, x2, x3,
+                ))
             }
             5720 => {
                 let x0 = Writer::read_word(chunk, env, idx);
                 let x1 = Writer::read_word(chunk, env, idx);
                 let x2 = Writer::read_word(chunk, env, idx);
                 let x3 = Writer::read_word(chunk, env, idx);
-                SubgroupAvcMceGetDefaultInterMotionVectorCostTableINTEL(x0, x1, x2, x3)
+                env.insert_id(x1);
+                env.insert_op(SubgroupAvcMceGetDefaultInterMotionVectorCostTableINTEL(
+                    x0, x1, x2, x3,
+                ))
             }
             5721 => {
                 let x0 = Writer::read_word(chunk, env, idx);
                 let x1 = Writer::read_word(chunk, env, idx);
-                SubgroupAvcMceGetDefaultHighPenaltyCostTableINTEL(x0, x1)
+                env.insert_id(x1);
+                env.insert_op(SubgroupAvcMceGetDefaultHighPenaltyCostTableINTEL(x0, x1))
             }
             5722 => {
                 let x0 = Writer::read_word(chunk, env, idx);
                 let x1 = Writer::read_word(chunk, env, idx);
-                SubgroupAvcMceGetDefaultMediumPenaltyCostTableINTEL(x0, x1)
+                env.insert_id(x1);
+                env.insert_op(SubgroupAvcMceGetDefaultMediumPenaltyCostTableINTEL(x0, x1))
             }
             5723 => {
                 let x0 = Writer::read_word(chunk, env, idx);
                 let x1 = Writer::read_word(chunk, env, idx);
-                SubgroupAvcMceGetDefaultLowPenaltyCostTableINTEL(x0, x1)
+                env.insert_id(x1);
+                env.insert_op(SubgroupAvcMceGetDefaultLowPenaltyCostTableINTEL(x0, x1))
             }
             5724 => {
                 let x0 = Writer::read_word(chunk, env, idx);
@@ -3979,44 +4535,61 @@ impl Opcode {
                 let x3 = Writer::read_word(chunk, env, idx);
                 let x4 = Writer::read_word(chunk, env, idx);
                 let x5 = Writer::read_word(chunk, env, idx);
-                SubgroupAvcMceSetMotionVectorCostFunctionINTEL(x0, x1, x2, x3, x4, x5)
+                env.insert_id(x1);
+                env.insert_op(SubgroupAvcMceSetMotionVectorCostFunctionINTEL(
+                    x0, x1, x2, x3, x4, x5,
+                ))
             }
             5725 => {
                 let x0 = Writer::read_word(chunk, env, idx);
                 let x1 = Writer::read_word(chunk, env, idx);
                 let x2 = Writer::read_word(chunk, env, idx);
                 let x3 = Writer::read_word(chunk, env, idx);
-                SubgroupAvcMceGetDefaultIntraLumaModePenaltyINTEL(x0, x1, x2, x3)
+                env.insert_id(x1);
+                env.insert_op(SubgroupAvcMceGetDefaultIntraLumaModePenaltyINTEL(
+                    x0, x1, x2, x3,
+                ))
             }
             5726 => {
                 let x0 = Writer::read_word(chunk, env, idx);
                 let x1 = Writer::read_word(chunk, env, idx);
-                SubgroupAvcMceGetDefaultNonDcLumaIntraPenaltyINTEL(x0, x1)
+                env.insert_id(x1);
+                env.insert_op(SubgroupAvcMceGetDefaultNonDcLumaIntraPenaltyINTEL(x0, x1))
             }
             5727 => {
                 let x0 = Writer::read_word(chunk, env, idx);
                 let x1 = Writer::read_word(chunk, env, idx);
-                SubgroupAvcMceGetDefaultIntraChromaModeBasePenaltyINTEL(x0, x1)
+                env.insert_id(x1);
+                env.insert_op(SubgroupAvcMceGetDefaultIntraChromaModeBasePenaltyINTEL(
+                    x0, x1,
+                ))
             }
             5728 => {
                 let x0 = Writer::read_word(chunk, env, idx);
                 let x1 = Writer::read_word(chunk, env, idx);
                 let x2 = Writer::read_word(chunk, env, idx);
-                SubgroupAvcMceSetAcOnlyHaarINTEL(x0, x1, x2)
+                env.insert_id(x1);
+                env.insert_op(SubgroupAvcMceSetAcOnlyHaarINTEL(x0, x1, x2))
             }
             5729 => {
                 let x0 = Writer::read_word(chunk, env, idx);
                 let x1 = Writer::read_word(chunk, env, idx);
                 let x2 = Writer::read_word(chunk, env, idx);
                 let x3 = Writer::read_word(chunk, env, idx);
-                SubgroupAvcMceSetSourceInterlacedFieldPolarityINTEL(x0, x1, x2, x3)
+                env.insert_id(x1);
+                env.insert_op(SubgroupAvcMceSetSourceInterlacedFieldPolarityINTEL(
+                    x0, x1, x2, x3,
+                ))
             }
             5730 => {
                 let x0 = Writer::read_word(chunk, env, idx);
                 let x1 = Writer::read_word(chunk, env, idx);
                 let x2 = Writer::read_word(chunk, env, idx);
                 let x3 = Writer::read_word(chunk, env, idx);
-                SubgroupAvcMceSetSingleReferenceInterlacedFieldPolarityINTEL(x0, x1, x2, x3)
+                env.insert_id(x1);
+                env.insert_op(
+                    SubgroupAvcMceSetSingleReferenceInterlacedFieldPolarityINTEL(x0, x1, x2, x3),
+                )
             }
             5731 => {
                 let x0 = Writer::read_word(chunk, env, idx);
@@ -4024,91 +4597,110 @@ impl Opcode {
                 let x2 = Writer::read_word(chunk, env, idx);
                 let x3 = Writer::read_word(chunk, env, idx);
                 let x4 = Writer::read_word(chunk, env, idx);
-                SubgroupAvcMceSetDualReferenceInterlacedFieldPolaritiesINTEL(x0, x1, x2, x3, x4)
+                env.insert_id(x1);
+                env.insert_op(
+                    SubgroupAvcMceSetDualReferenceInterlacedFieldPolaritiesINTEL(
+                        x0, x1, x2, x3, x4,
+                    ),
+                )
             }
             5732 => {
                 let x0 = Writer::read_word(chunk, env, idx);
                 let x1 = Writer::read_word(chunk, env, idx);
                 let x2 = Writer::read_word(chunk, env, idx);
-                SubgroupAvcMceConvertToImePayloadINTEL(x0, x1, x2)
+                env.insert_id(x1);
+                env.insert_op(SubgroupAvcMceConvertToImePayloadINTEL(x0, x1, x2))
             }
             5733 => {
                 let x0 = Writer::read_word(chunk, env, idx);
                 let x1 = Writer::read_word(chunk, env, idx);
                 let x2 = Writer::read_word(chunk, env, idx);
-                SubgroupAvcMceConvertToImeResultINTEL(x0, x1, x2)
+                env.insert_id(x1);
+                env.insert_op(SubgroupAvcMceConvertToImeResultINTEL(x0, x1, x2))
             }
             5734 => {
                 let x0 = Writer::read_word(chunk, env, idx);
                 let x1 = Writer::read_word(chunk, env, idx);
                 let x2 = Writer::read_word(chunk, env, idx);
-                SubgroupAvcMceConvertToRefPayloadINTEL(x0, x1, x2)
+                env.insert_id(x1);
+                env.insert_op(SubgroupAvcMceConvertToRefPayloadINTEL(x0, x1, x2))
             }
             5735 => {
                 let x0 = Writer::read_word(chunk, env, idx);
                 let x1 = Writer::read_word(chunk, env, idx);
                 let x2 = Writer::read_word(chunk, env, idx);
-                SubgroupAvcMceConvertToRefResultINTEL(x0, x1, x2)
+                env.insert_id(x1);
+                env.insert_op(SubgroupAvcMceConvertToRefResultINTEL(x0, x1, x2))
             }
             5736 => {
                 let x0 = Writer::read_word(chunk, env, idx);
                 let x1 = Writer::read_word(chunk, env, idx);
                 let x2 = Writer::read_word(chunk, env, idx);
-                SubgroupAvcMceConvertToSicPayloadINTEL(x0, x1, x2)
+                env.insert_id(x1);
+                env.insert_op(SubgroupAvcMceConvertToSicPayloadINTEL(x0, x1, x2))
             }
             5737 => {
                 let x0 = Writer::read_word(chunk, env, idx);
                 let x1 = Writer::read_word(chunk, env, idx);
                 let x2 = Writer::read_word(chunk, env, idx);
-                SubgroupAvcMceConvertToSicResultINTEL(x0, x1, x2)
+                env.insert_id(x1);
+                env.insert_op(SubgroupAvcMceConvertToSicResultINTEL(x0, x1, x2))
             }
             5738 => {
                 let x0 = Writer::read_word(chunk, env, idx);
                 let x1 = Writer::read_word(chunk, env, idx);
                 let x2 = Writer::read_word(chunk, env, idx);
-                SubgroupAvcMceGetMotionVectorsINTEL(x0, x1, x2)
+                env.insert_id(x1);
+                env.insert_op(SubgroupAvcMceGetMotionVectorsINTEL(x0, x1, x2))
             }
             5739 => {
                 let x0 = Writer::read_word(chunk, env, idx);
                 let x1 = Writer::read_word(chunk, env, idx);
                 let x2 = Writer::read_word(chunk, env, idx);
-                SubgroupAvcMceGetInterDistortionsINTEL(x0, x1, x2)
+                env.insert_id(x1);
+                env.insert_op(SubgroupAvcMceGetInterDistortionsINTEL(x0, x1, x2))
             }
             5740 => {
                 let x0 = Writer::read_word(chunk, env, idx);
                 let x1 = Writer::read_word(chunk, env, idx);
                 let x2 = Writer::read_word(chunk, env, idx);
-                SubgroupAvcMceGetBestInterDistortionsINTEL(x0, x1, x2)
+                env.insert_id(x1);
+                env.insert_op(SubgroupAvcMceGetBestInterDistortionsINTEL(x0, x1, x2))
             }
             5741 => {
                 let x0 = Writer::read_word(chunk, env, idx);
                 let x1 = Writer::read_word(chunk, env, idx);
                 let x2 = Writer::read_word(chunk, env, idx);
-                SubgroupAvcMceGetInterMajorShapeINTEL(x0, x1, x2)
+                env.insert_id(x1);
+                env.insert_op(SubgroupAvcMceGetInterMajorShapeINTEL(x0, x1, x2))
             }
             5742 => {
                 let x0 = Writer::read_word(chunk, env, idx);
                 let x1 = Writer::read_word(chunk, env, idx);
                 let x2 = Writer::read_word(chunk, env, idx);
-                SubgroupAvcMceGetInterMinorShapeINTEL(x0, x1, x2)
+                env.insert_id(x1);
+                env.insert_op(SubgroupAvcMceGetInterMinorShapeINTEL(x0, x1, x2))
             }
             5743 => {
                 let x0 = Writer::read_word(chunk, env, idx);
                 let x1 = Writer::read_word(chunk, env, idx);
                 let x2 = Writer::read_word(chunk, env, idx);
-                SubgroupAvcMceGetInterDirectionsINTEL(x0, x1, x2)
+                env.insert_id(x1);
+                env.insert_op(SubgroupAvcMceGetInterDirectionsINTEL(x0, x1, x2))
             }
             5744 => {
                 let x0 = Writer::read_word(chunk, env, idx);
                 let x1 = Writer::read_word(chunk, env, idx);
                 let x2 = Writer::read_word(chunk, env, idx);
-                SubgroupAvcMceGetInterMotionVectorCountINTEL(x0, x1, x2)
+                env.insert_id(x1);
+                env.insert_op(SubgroupAvcMceGetInterMotionVectorCountINTEL(x0, x1, x2))
             }
             5745 => {
                 let x0 = Writer::read_word(chunk, env, idx);
                 let x1 = Writer::read_word(chunk, env, idx);
                 let x2 = Writer::read_word(chunk, env, idx);
-                SubgroupAvcMceGetInterReferenceIdsINTEL(x0, x1, x2)
+                env.insert_id(x1);
+                env.insert_op(SubgroupAvcMceGetInterReferenceIdsINTEL(x0, x1, x2))
             }
             5746 => {
                 let x0 = Writer::read_word(chunk, env, idx);
@@ -4116,7 +4708,12 @@ impl Opcode {
                 let x2 = Writer::read_word(chunk, env, idx);
                 let x3 = Writer::read_word(chunk, env, idx);
                 let x4 = Writer::read_word(chunk, env, idx);
-                SubgroupAvcMceGetInterReferenceInterlacedFieldPolaritiesINTEL(x0, x1, x2, x3, x4)
+                env.insert_id(x1);
+                env.insert_op(
+                    SubgroupAvcMceGetInterReferenceInterlacedFieldPolaritiesINTEL(
+                        x0, x1, x2, x3, x4,
+                    ),
+                )
             }
             5747 => {
                 let x0 = Writer::read_word(chunk, env, idx);
@@ -4124,7 +4721,8 @@ impl Opcode {
                 let x2 = Writer::read_word(chunk, env, idx);
                 let x3 = Writer::read_word(chunk, env, idx);
                 let x4 = Writer::read_word(chunk, env, idx);
-                SubgroupAvcImeInitializeINTEL(x0, x1, x2, x3, x4)
+                env.insert_id(x1);
+                env.insert_op(SubgroupAvcImeInitializeINTEL(x0, x1, x2, x3, x4))
             }
             5748 => {
                 let x0 = Writer::read_word(chunk, env, idx);
@@ -4132,7 +4730,8 @@ impl Opcode {
                 let x2 = Writer::read_word(chunk, env, idx);
                 let x3 = Writer::read_word(chunk, env, idx);
                 let x4 = Writer::read_word(chunk, env, idx);
-                SubgroupAvcImeSetSingleReferenceINTEL(x0, x1, x2, x3, x4)
+                env.insert_id(x1);
+                env.insert_op(SubgroupAvcImeSetSingleReferenceINTEL(x0, x1, x2, x3, x4))
             }
             5749 => {
                 let x0 = Writer::read_word(chunk, env, idx);
@@ -4141,14 +4740,16 @@ impl Opcode {
                 let x3 = Writer::read_word(chunk, env, idx);
                 let x4 = Writer::read_word(chunk, env, idx);
                 let x5 = Writer::read_word(chunk, env, idx);
-                SubgroupAvcImeSetDualReferenceINTEL(x0, x1, x2, x3, x4, x5)
+                env.insert_id(x1);
+                env.insert_op(SubgroupAvcImeSetDualReferenceINTEL(x0, x1, x2, x3, x4, x5))
             }
             5750 => {
                 let x0 = Writer::read_word(chunk, env, idx);
                 let x1 = Writer::read_word(chunk, env, idx);
                 let x2 = Writer::read_word(chunk, env, idx);
                 let x3 = Writer::read_word(chunk, env, idx);
-                SubgroupAvcImeRefWindowSizeINTEL(x0, x1, x2, x3)
+                env.insert_id(x1);
+                env.insert_op(SubgroupAvcImeRefWindowSizeINTEL(x0, x1, x2, x3))
             }
             5751 => {
                 let x0 = Writer::read_word(chunk, env, idx);
@@ -4157,40 +4758,48 @@ impl Opcode {
                 let x3 = Writer::read_word(chunk, env, idx);
                 let x4 = Writer::read_word(chunk, env, idx);
                 let x5 = Writer::read_word(chunk, env, idx);
-                SubgroupAvcImeAdjustRefOffsetINTEL(x0, x1, x2, x3, x4, x5)
+                env.insert_id(x1);
+                env.insert_op(SubgroupAvcImeAdjustRefOffsetINTEL(x0, x1, x2, x3, x4, x5))
             }
             5752 => {
                 let x0 = Writer::read_word(chunk, env, idx);
                 let x1 = Writer::read_word(chunk, env, idx);
                 let x2 = Writer::read_word(chunk, env, idx);
-                SubgroupAvcImeConvertToMcePayloadINTEL(x0, x1, x2)
+                env.insert_id(x1);
+                env.insert_op(SubgroupAvcImeConvertToMcePayloadINTEL(x0, x1, x2))
             }
             5753 => {
                 let x0 = Writer::read_word(chunk, env, idx);
                 let x1 = Writer::read_word(chunk, env, idx);
                 let x2 = Writer::read_word(chunk, env, idx);
                 let x3 = Writer::read_word(chunk, env, idx);
-                SubgroupAvcImeSetMaxMotionVectorCountINTEL(x0, x1, x2, x3)
+                env.insert_id(x1);
+                env.insert_op(SubgroupAvcImeSetMaxMotionVectorCountINTEL(x0, x1, x2, x3))
             }
             5754 => {
                 let x0 = Writer::read_word(chunk, env, idx);
                 let x1 = Writer::read_word(chunk, env, idx);
                 let x2 = Writer::read_word(chunk, env, idx);
-                SubgroupAvcImeSetUnidirectionalMixDisableINTEL(x0, x1, x2)
+                env.insert_id(x1);
+                env.insert_op(SubgroupAvcImeSetUnidirectionalMixDisableINTEL(x0, x1, x2))
             }
             5755 => {
                 let x0 = Writer::read_word(chunk, env, idx);
                 let x1 = Writer::read_word(chunk, env, idx);
                 let x2 = Writer::read_word(chunk, env, idx);
                 let x3 = Writer::read_word(chunk, env, idx);
-                SubgroupAvcImeSetEarlySearchTerminationThresholdINTEL(x0, x1, x2, x3)
+                env.insert_id(x1);
+                env.insert_op(SubgroupAvcImeSetEarlySearchTerminationThresholdINTEL(
+                    x0, x1, x2, x3,
+                ))
             }
             5756 => {
                 let x0 = Writer::read_word(chunk, env, idx);
                 let x1 = Writer::read_word(chunk, env, idx);
                 let x2 = Writer::read_word(chunk, env, idx);
                 let x3 = Writer::read_word(chunk, env, idx);
-                SubgroupAvcImeSetWeightedSadINTEL(x0, x1, x2, x3)
+                env.insert_id(x1);
+                env.insert_op(SubgroupAvcImeSetWeightedSadINTEL(x0, x1, x2, x3))
             }
             5757 => {
                 let x0 = Writer::read_word(chunk, env, idx);
@@ -4198,7 +4807,10 @@ impl Opcode {
                 let x2 = Writer::read_word(chunk, env, idx);
                 let x3 = Writer::read_word(chunk, env, idx);
                 let x4 = Writer::read_word(chunk, env, idx);
-                SubgroupAvcImeEvaluateWithSingleReferenceINTEL(x0, x1, x2, x3, x4)
+                env.insert_id(x1);
+                env.insert_op(SubgroupAvcImeEvaluateWithSingleReferenceINTEL(
+                    x0, x1, x2, x3, x4,
+                ))
             }
             5758 => {
                 let x0 = Writer::read_word(chunk, env, idx);
@@ -4207,7 +4819,10 @@ impl Opcode {
                 let x3 = Writer::read_word(chunk, env, idx);
                 let x4 = Writer::read_word(chunk, env, idx);
                 let x5 = Writer::read_word(chunk, env, idx);
-                SubgroupAvcImeEvaluateWithDualReferenceINTEL(x0, x1, x2, x3, x4, x5)
+                env.insert_id(x1);
+                env.insert_op(SubgroupAvcImeEvaluateWithDualReferenceINTEL(
+                    x0, x1, x2, x3, x4, x5,
+                ))
             }
             5759 => {
                 let x0 = Writer::read_word(chunk, env, idx);
@@ -4216,7 +4831,10 @@ impl Opcode {
                 let x3 = Writer::read_word(chunk, env, idx);
                 let x4 = Writer::read_word(chunk, env, idx);
                 let x5 = Writer::read_word(chunk, env, idx);
-                SubgroupAvcImeEvaluateWithSingleReferenceStreaminINTEL(x0, x1, x2, x3, x4, x5)
+                env.insert_id(x1);
+                env.insert_op(SubgroupAvcImeEvaluateWithSingleReferenceStreaminINTEL(
+                    x0, x1, x2, x3, x4, x5,
+                ))
             }
             5760 => {
                 let x0 = Writer::read_word(chunk, env, idx);
@@ -4226,7 +4844,10 @@ impl Opcode {
                 let x4 = Writer::read_word(chunk, env, idx);
                 let x5 = Writer::read_word(chunk, env, idx);
                 let x6 = Writer::read_word(chunk, env, idx);
-                SubgroupAvcImeEvaluateWithDualReferenceStreaminINTEL(x0, x1, x2, x3, x4, x5, x6)
+                env.insert_id(x1);
+                env.insert_op(SubgroupAvcImeEvaluateWithDualReferenceStreaminINTEL(
+                    x0, x1, x2, x3, x4, x5, x6,
+                ))
             }
             5761 => {
                 let x0 = Writer::read_word(chunk, env, idx);
@@ -4234,7 +4855,10 @@ impl Opcode {
                 let x2 = Writer::read_word(chunk, env, idx);
                 let x3 = Writer::read_word(chunk, env, idx);
                 let x4 = Writer::read_word(chunk, env, idx);
-                SubgroupAvcImeEvaluateWithSingleReferenceStreamoutINTEL(x0, x1, x2, x3, x4)
+                env.insert_id(x1);
+                env.insert_op(SubgroupAvcImeEvaluateWithSingleReferenceStreamoutINTEL(
+                    x0, x1, x2, x3, x4,
+                ))
             }
             5762 => {
                 let x0 = Writer::read_word(chunk, env, idx);
@@ -4243,7 +4867,10 @@ impl Opcode {
                 let x3 = Writer::read_word(chunk, env, idx);
                 let x4 = Writer::read_word(chunk, env, idx);
                 let x5 = Writer::read_word(chunk, env, idx);
-                SubgroupAvcImeEvaluateWithDualReferenceStreamoutINTEL(x0, x1, x2, x3, x4, x5)
+                env.insert_id(x1);
+                env.insert_op(SubgroupAvcImeEvaluateWithDualReferenceStreamoutINTEL(
+                    x0, x1, x2, x3, x4, x5,
+                ))
             }
             5763 => {
                 let x0 = Writer::read_word(chunk, env, idx);
@@ -4252,7 +4879,10 @@ impl Opcode {
                 let x3 = Writer::read_word(chunk, env, idx);
                 let x4 = Writer::read_word(chunk, env, idx);
                 let x5 = Writer::read_word(chunk, env, idx);
-                SubgroupAvcImeEvaluateWithSingleReferenceStreaminoutINTEL(x0, x1, x2, x3, x4, x5)
+                env.insert_id(x1);
+                env.insert_op(SubgroupAvcImeEvaluateWithSingleReferenceStreaminoutINTEL(
+                    x0, x1, x2, x3, x4, x5,
+                ))
             }
             5764 => {
                 let x0 = Writer::read_word(chunk, env, idx);
@@ -4262,45 +4892,56 @@ impl Opcode {
                 let x4 = Writer::read_word(chunk, env, idx);
                 let x5 = Writer::read_word(chunk, env, idx);
                 let x6 = Writer::read_word(chunk, env, idx);
-                SubgroupAvcImeEvaluateWithDualReferenceStreaminoutINTEL(x0, x1, x2, x3, x4, x5, x6)
+                env.insert_id(x1);
+                env.insert_op(SubgroupAvcImeEvaluateWithDualReferenceStreaminoutINTEL(
+                    x0, x1, x2, x3, x4, x5, x6,
+                ))
             }
             5765 => {
                 let x0 = Writer::read_word(chunk, env, idx);
                 let x1 = Writer::read_word(chunk, env, idx);
                 let x2 = Writer::read_word(chunk, env, idx);
-                SubgroupAvcImeConvertToMceResultINTEL(x0, x1, x2)
+                env.insert_id(x1);
+                env.insert_op(SubgroupAvcImeConvertToMceResultINTEL(x0, x1, x2))
             }
             5766 => {
                 let x0 = Writer::read_word(chunk, env, idx);
                 let x1 = Writer::read_word(chunk, env, idx);
                 let x2 = Writer::read_word(chunk, env, idx);
-                SubgroupAvcImeGetSingleReferenceStreaminINTEL(x0, x1, x2)
+                env.insert_id(x1);
+                env.insert_op(SubgroupAvcImeGetSingleReferenceStreaminINTEL(x0, x1, x2))
             }
             5767 => {
                 let x0 = Writer::read_word(chunk, env, idx);
                 let x1 = Writer::read_word(chunk, env, idx);
                 let x2 = Writer::read_word(chunk, env, idx);
-                SubgroupAvcImeGetDualReferenceStreaminINTEL(x0, x1, x2)
+                env.insert_id(x1);
+                env.insert_op(SubgroupAvcImeGetDualReferenceStreaminINTEL(x0, x1, x2))
             }
             5768 => {
                 let x0 = Writer::read_word(chunk, env, idx);
                 let x1 = Writer::read_word(chunk, env, idx);
                 let x2 = Writer::read_word(chunk, env, idx);
-                SubgroupAvcImeStripSingleReferenceStreamoutINTEL(x0, x1, x2)
+                env.insert_id(x1);
+                env.insert_op(SubgroupAvcImeStripSingleReferenceStreamoutINTEL(x0, x1, x2))
             }
             5769 => {
                 let x0 = Writer::read_word(chunk, env, idx);
                 let x1 = Writer::read_word(chunk, env, idx);
                 let x2 = Writer::read_word(chunk, env, idx);
-                SubgroupAvcImeStripDualReferenceStreamoutINTEL(x0, x1, x2)
+                env.insert_id(x1);
+                env.insert_op(SubgroupAvcImeStripDualReferenceStreamoutINTEL(x0, x1, x2))
             }
             5770 => {
                 let x0 = Writer::read_word(chunk, env, idx);
                 let x1 = Writer::read_word(chunk, env, idx);
                 let x2 = Writer::read_word(chunk, env, idx);
                 let x3 = Writer::read_word(chunk, env, idx);
-                SubgroupAvcImeGetStreamoutSingleReferenceMajorShapeMotionVectorsINTEL(
-                    x0, x1, x2, x3,
+                env.insert_id(x1);
+                env.insert_op(
+                    SubgroupAvcImeGetStreamoutSingleReferenceMajorShapeMotionVectorsINTEL(
+                        x0, x1, x2, x3,
+                    ),
                 )
             }
             5771 => {
@@ -4308,14 +4949,24 @@ impl Opcode {
                 let x1 = Writer::read_word(chunk, env, idx);
                 let x2 = Writer::read_word(chunk, env, idx);
                 let x3 = Writer::read_word(chunk, env, idx);
-                SubgroupAvcImeGetStreamoutSingleReferenceMajorShapeDistortionsINTEL(x0, x1, x2, x3)
+                env.insert_id(x1);
+                env.insert_op(
+                    SubgroupAvcImeGetStreamoutSingleReferenceMajorShapeDistortionsINTEL(
+                        x0, x1, x2, x3,
+                    ),
+                )
             }
             5772 => {
                 let x0 = Writer::read_word(chunk, env, idx);
                 let x1 = Writer::read_word(chunk, env, idx);
                 let x2 = Writer::read_word(chunk, env, idx);
                 let x3 = Writer::read_word(chunk, env, idx);
-                SubgroupAvcImeGetStreamoutSingleReferenceMajorShapeReferenceIdsINTEL(x0, x1, x2, x3)
+                env.insert_id(x1);
+                env.insert_op(
+                    SubgroupAvcImeGetStreamoutSingleReferenceMajorShapeReferenceIdsINTEL(
+                        x0, x1, x2, x3,
+                    ),
+                )
             }
             5773 => {
                 let x0 = Writer::read_word(chunk, env, idx);
@@ -4323,8 +4974,11 @@ impl Opcode {
                 let x2 = Writer::read_word(chunk, env, idx);
                 let x3 = Writer::read_word(chunk, env, idx);
                 let x4 = Writer::read_word(chunk, env, idx);
-                SubgroupAvcImeGetStreamoutDualReferenceMajorShapeMotionVectorsINTEL(
-                    x0, x1, x2, x3, x4,
+                env.insert_id(x1);
+                env.insert_op(
+                    SubgroupAvcImeGetStreamoutDualReferenceMajorShapeMotionVectorsINTEL(
+                        x0, x1, x2, x3, x4,
+                    ),
                 )
             }
             5774 => {
@@ -4333,8 +4987,11 @@ impl Opcode {
                 let x2 = Writer::read_word(chunk, env, idx);
                 let x3 = Writer::read_word(chunk, env, idx);
                 let x4 = Writer::read_word(chunk, env, idx);
-                SubgroupAvcImeGetStreamoutDualReferenceMajorShapeDistortionsINTEL(
-                    x0, x1, x2, x3, x4,
+                env.insert_id(x1);
+                env.insert_op(
+                    SubgroupAvcImeGetStreamoutDualReferenceMajorShapeDistortionsINTEL(
+                        x0, x1, x2, x3, x4,
+                    ),
                 )
             }
             5775 => {
@@ -4343,8 +5000,11 @@ impl Opcode {
                 let x2 = Writer::read_word(chunk, env, idx);
                 let x3 = Writer::read_word(chunk, env, idx);
                 let x4 = Writer::read_word(chunk, env, idx);
-                SubgroupAvcImeGetStreamoutDualReferenceMajorShapeReferenceIdsINTEL(
-                    x0, x1, x2, x3, x4,
+                env.insert_id(x1);
+                env.insert_op(
+                    SubgroupAvcImeGetStreamoutDualReferenceMajorShapeReferenceIdsINTEL(
+                        x0, x1, x2, x3, x4,
+                    ),
                 )
             }
             5776 => {
@@ -4352,31 +5012,42 @@ impl Opcode {
                 let x1 = Writer::read_word(chunk, env, idx);
                 let x2 = Writer::read_word(chunk, env, idx);
                 let x3 = Writer::read_word(chunk, env, idx);
-                SubgroupAvcImeGetBorderReachedINTEL(x0, x1, x2, x3)
+                env.insert_id(x1);
+                env.insert_op(SubgroupAvcImeGetBorderReachedINTEL(x0, x1, x2, x3))
             }
             5777 => {
                 let x0 = Writer::read_word(chunk, env, idx);
                 let x1 = Writer::read_word(chunk, env, idx);
                 let x2 = Writer::read_word(chunk, env, idx);
-                SubgroupAvcImeGetTruncatedSearchIndicationINTEL(x0, x1, x2)
+                env.insert_id(x1);
+                env.insert_op(SubgroupAvcImeGetTruncatedSearchIndicationINTEL(x0, x1, x2))
             }
             5778 => {
                 let x0 = Writer::read_word(chunk, env, idx);
                 let x1 = Writer::read_word(chunk, env, idx);
                 let x2 = Writer::read_word(chunk, env, idx);
-                SubgroupAvcImeGetUnidirectionalEarlySearchTerminationINTEL(x0, x1, x2)
+                env.insert_id(x1);
+                env.insert_op(SubgroupAvcImeGetUnidirectionalEarlySearchTerminationINTEL(
+                    x0, x1, x2,
+                ))
             }
             5779 => {
                 let x0 = Writer::read_word(chunk, env, idx);
                 let x1 = Writer::read_word(chunk, env, idx);
                 let x2 = Writer::read_word(chunk, env, idx);
-                SubgroupAvcImeGetWeightingPatternMinimumMotionVectorINTEL(x0, x1, x2)
+                env.insert_id(x1);
+                env.insert_op(SubgroupAvcImeGetWeightingPatternMinimumMotionVectorINTEL(
+                    x0, x1, x2,
+                ))
             }
             5780 => {
                 let x0 = Writer::read_word(chunk, env, idx);
                 let x1 = Writer::read_word(chunk, env, idx);
                 let x2 = Writer::read_word(chunk, env, idx);
-                SubgroupAvcImeGetWeightingPatternMinimumDistortionINTEL(x0, x1, x2)
+                env.insert_id(x1);
+                env.insert_op(SubgroupAvcImeGetWeightingPatternMinimumDistortionINTEL(
+                    x0, x1, x2,
+                ))
             }
             5781 => {
                 let x0 = Writer::read_word(chunk, env, idx);
@@ -4388,7 +5059,10 @@ impl Opcode {
                 let x6 = Writer::read_word(chunk, env, idx);
                 let x7 = Writer::read_word(chunk, env, idx);
                 let x8 = Writer::read_word(chunk, env, idx);
-                SubgroupAvcFmeInitializeINTEL(x0, x1, x2, x3, x4, x5, x6, x7, x8)
+                env.insert_id(x1);
+                env.insert_op(SubgroupAvcFmeInitializeINTEL(
+                    x0, x1, x2, x3, x4, x5, x6, x7, x8,
+                ))
             }
             5782 => {
                 let x0 = Writer::read_word(chunk, env, idx);
@@ -4401,25 +5075,31 @@ impl Opcode {
                 let x7 = Writer::read_word(chunk, env, idx);
                 let x8 = Writer::read_word(chunk, env, idx);
                 let x9 = Writer::read_word(chunk, env, idx);
-                SubgroupAvcBmeInitializeINTEL(x0, x1, x2, x3, x4, x5, x6, x7, x8, x9)
+                env.insert_id(x1);
+                env.insert_op(SubgroupAvcBmeInitializeINTEL(
+                    x0, x1, x2, x3, x4, x5, x6, x7, x8, x9,
+                ))
             }
             5783 => {
                 let x0 = Writer::read_word(chunk, env, idx);
                 let x1 = Writer::read_word(chunk, env, idx);
                 let x2 = Writer::read_word(chunk, env, idx);
-                SubgroupAvcRefConvertToMcePayloadINTEL(x0, x1, x2)
+                env.insert_id(x1);
+                env.insert_op(SubgroupAvcRefConvertToMcePayloadINTEL(x0, x1, x2))
             }
             5784 => {
                 let x0 = Writer::read_word(chunk, env, idx);
                 let x1 = Writer::read_word(chunk, env, idx);
                 let x2 = Writer::read_word(chunk, env, idx);
-                SubgroupAvcRefSetBidirectionalMixDisableINTEL(x0, x1, x2)
+                env.insert_id(x1);
+                env.insert_op(SubgroupAvcRefSetBidirectionalMixDisableINTEL(x0, x1, x2))
             }
             5785 => {
                 let x0 = Writer::read_word(chunk, env, idx);
                 let x1 = Writer::read_word(chunk, env, idx);
                 let x2 = Writer::read_word(chunk, env, idx);
-                SubgroupAvcRefSetBilinearFilterEnableINTEL(x0, x1, x2)
+                env.insert_id(x1);
+                env.insert_op(SubgroupAvcRefSetBilinearFilterEnableINTEL(x0, x1, x2))
             }
             5786 => {
                 let x0 = Writer::read_word(chunk, env, idx);
@@ -4427,7 +5107,10 @@ impl Opcode {
                 let x2 = Writer::read_word(chunk, env, idx);
                 let x3 = Writer::read_word(chunk, env, idx);
                 let x4 = Writer::read_word(chunk, env, idx);
-                SubgroupAvcRefEvaluateWithSingleReferenceINTEL(x0, x1, x2, x3, x4)
+                env.insert_id(x1);
+                env.insert_op(SubgroupAvcRefEvaluateWithSingleReferenceINTEL(
+                    x0, x1, x2, x3, x4,
+                ))
             }
             5787 => {
                 let x0 = Writer::read_word(chunk, env, idx);
@@ -4436,7 +5119,10 @@ impl Opcode {
                 let x3 = Writer::read_word(chunk, env, idx);
                 let x4 = Writer::read_word(chunk, env, idx);
                 let x5 = Writer::read_word(chunk, env, idx);
-                SubgroupAvcRefEvaluateWithDualReferenceINTEL(x0, x1, x2, x3, x4, x5)
+                env.insert_id(x1);
+                env.insert_op(SubgroupAvcRefEvaluateWithDualReferenceINTEL(
+                    x0, x1, x2, x3, x4, x5,
+                ))
             }
             5788 => {
                 let x0 = Writer::read_word(chunk, env, idx);
@@ -4444,7 +5130,10 @@ impl Opcode {
                 let x2 = Writer::read_word(chunk, env, idx);
                 let x3 = Writer::read_word(chunk, env, idx);
                 let x4 = Writer::read_word(chunk, env, idx);
-                SubgroupAvcRefEvaluateWithMultiReferenceINTEL(x0, x1, x2, x3, x4)
+                env.insert_id(x1);
+                env.insert_op(SubgroupAvcRefEvaluateWithMultiReferenceINTEL(
+                    x0, x1, x2, x3, x4,
+                ))
             }
             5789 => {
                 let x0 = Writer::read_word(chunk, env, idx);
@@ -4453,19 +5142,24 @@ impl Opcode {
                 let x3 = Writer::read_word(chunk, env, idx);
                 let x4 = Writer::read_word(chunk, env, idx);
                 let x5 = Writer::read_word(chunk, env, idx);
-                SubgroupAvcRefEvaluateWithMultiReferenceInterlacedINTEL(x0, x1, x2, x3, x4, x5)
+                env.insert_id(x1);
+                env.insert_op(SubgroupAvcRefEvaluateWithMultiReferenceInterlacedINTEL(
+                    x0, x1, x2, x3, x4, x5,
+                ))
             }
             5790 => {
                 let x0 = Writer::read_word(chunk, env, idx);
                 let x1 = Writer::read_word(chunk, env, idx);
                 let x2 = Writer::read_word(chunk, env, idx);
-                SubgroupAvcRefConvertToMceResultINTEL(x0, x1, x2)
+                env.insert_id(x1);
+                env.insert_op(SubgroupAvcRefConvertToMceResultINTEL(x0, x1, x2))
             }
             5791 => {
                 let x0 = Writer::read_word(chunk, env, idx);
                 let x1 = Writer::read_word(chunk, env, idx);
                 let x2 = Writer::read_word(chunk, env, idx);
-                SubgroupAvcSicInitializeINTEL(x0, x1, x2)
+                env.insert_id(x1);
+                env.insert_op(SubgroupAvcSicInitializeINTEL(x0, x1, x2))
             }
             5792 => {
                 let x0 = Writer::read_word(chunk, env, idx);
@@ -4476,7 +5170,10 @@ impl Opcode {
                 let x5 = Writer::read_word(chunk, env, idx);
                 let x6 = Writer::read_word(chunk, env, idx);
                 let x7 = Writer::read_word(chunk, env, idx);
-                SubgroupAvcSicConfigureSkcINTEL(x0, x1, x2, x3, x4, x5, x6, x7)
+                env.insert_id(x1);
+                env.insert_op(SubgroupAvcSicConfigureSkcINTEL(
+                    x0, x1, x2, x3, x4, x5, x6, x7,
+                ))
             }
             5793 => {
                 let x0 = Writer::read_word(chunk, env, idx);
@@ -4489,7 +5186,10 @@ impl Opcode {
                 let x7 = Writer::read_word(chunk, env, idx);
                 let x8 = Writer::read_word(chunk, env, idx);
                 let x9 = Writer::read_word(chunk, env, idx);
-                SubgroupAvcSicConfigureIpeLumaINTEL(x0, x1, x2, x3, x4, x5, x6, x7, x8, x9)
+                env.insert_id(x1);
+                env.insert_op(SubgroupAvcSicConfigureIpeLumaINTEL(
+                    x0, x1, x2, x3, x4, x5, x6, x7, x8, x9,
+                ))
             }
             5794 => {
                 let x0 = Writer::read_word(chunk, env, idx);
@@ -4505,29 +5205,33 @@ impl Opcode {
                 let x10 = Writer::read_word(chunk, env, idx);
                 let x11 = Writer::read_word(chunk, env, idx);
                 let x12 = Writer::read_word(chunk, env, idx);
-                SubgroupAvcSicConfigureIpeLumaChromaINTEL(
+                env.insert_id(x1);
+                env.insert_op(SubgroupAvcSicConfigureIpeLumaChromaINTEL(
                     x0, x1, x2, x3, x4, x5, x6, x7, x8, x9, x10, x11, x12,
-                )
+                ))
             }
             5795 => {
                 let x0 = Writer::read_word(chunk, env, idx);
                 let x1 = Writer::read_word(chunk, env, idx);
                 let x2 = Writer::read_word(chunk, env, idx);
                 let x3 = Writer::read_word(chunk, env, idx);
-                SubgroupAvcSicGetMotionVectorMaskINTEL(x0, x1, x2, x3)
+                env.insert_id(x1);
+                env.insert_op(SubgroupAvcSicGetMotionVectorMaskINTEL(x0, x1, x2, x3))
             }
             5796 => {
                 let x0 = Writer::read_word(chunk, env, idx);
                 let x1 = Writer::read_word(chunk, env, idx);
                 let x2 = Writer::read_word(chunk, env, idx);
-                SubgroupAvcSicConvertToMcePayloadINTEL(x0, x1, x2)
+                env.insert_id(x1);
+                env.insert_op(SubgroupAvcSicConvertToMcePayloadINTEL(x0, x1, x2))
             }
             5797 => {
                 let x0 = Writer::read_word(chunk, env, idx);
                 let x1 = Writer::read_word(chunk, env, idx);
                 let x2 = Writer::read_word(chunk, env, idx);
                 let x3 = Writer::read_word(chunk, env, idx);
-                SubgroupAvcSicSetIntraLumaShapePenaltyINTEL(x0, x1, x2, x3)
+                env.insert_id(x1);
+                env.insert_op(SubgroupAvcSicSetIntraLumaShapePenaltyINTEL(x0, x1, x2, x3))
             }
             5798 => {
                 let x0 = Writer::read_word(chunk, env, idx);
@@ -4536,41 +5240,53 @@ impl Opcode {
                 let x3 = Writer::read_word(chunk, env, idx);
                 let x4 = Writer::read_word(chunk, env, idx);
                 let x5 = Writer::read_word(chunk, env, idx);
-                SubgroupAvcSicSetIntraLumaModeCostFunctionINTEL(x0, x1, x2, x3, x4, x5)
+                env.insert_id(x1);
+                env.insert_op(SubgroupAvcSicSetIntraLumaModeCostFunctionINTEL(
+                    x0, x1, x2, x3, x4, x5,
+                ))
             }
             5799 => {
                 let x0 = Writer::read_word(chunk, env, idx);
                 let x1 = Writer::read_word(chunk, env, idx);
                 let x2 = Writer::read_word(chunk, env, idx);
                 let x3 = Writer::read_word(chunk, env, idx);
-                SubgroupAvcSicSetIntraChromaModeCostFunctionINTEL(x0, x1, x2, x3)
+                env.insert_id(x1);
+                env.insert_op(SubgroupAvcSicSetIntraChromaModeCostFunctionINTEL(
+                    x0, x1, x2, x3,
+                ))
             }
             5800 => {
                 let x0 = Writer::read_word(chunk, env, idx);
                 let x1 = Writer::read_word(chunk, env, idx);
                 let x2 = Writer::read_word(chunk, env, idx);
-                SubgroupAvcSicSetBilinearFilterEnableINTEL(x0, x1, x2)
+                env.insert_id(x1);
+                env.insert_op(SubgroupAvcSicSetBilinearFilterEnableINTEL(x0, x1, x2))
             }
             5801 => {
                 let x0 = Writer::read_word(chunk, env, idx);
                 let x1 = Writer::read_word(chunk, env, idx);
                 let x2 = Writer::read_word(chunk, env, idx);
                 let x3 = Writer::read_word(chunk, env, idx);
-                SubgroupAvcSicSetSkcForwardTransformEnableINTEL(x0, x1, x2, x3)
+                env.insert_id(x1);
+                env.insert_op(SubgroupAvcSicSetSkcForwardTransformEnableINTEL(
+                    x0, x1, x2, x3,
+                ))
             }
             5802 => {
                 let x0 = Writer::read_word(chunk, env, idx);
                 let x1 = Writer::read_word(chunk, env, idx);
                 let x2 = Writer::read_word(chunk, env, idx);
                 let x3 = Writer::read_word(chunk, env, idx);
-                SubgroupAvcSicSetBlockBasedRawSkipSadINTEL(x0, x1, x2, x3)
+                env.insert_id(x1);
+                env.insert_op(SubgroupAvcSicSetBlockBasedRawSkipSadINTEL(x0, x1, x2, x3))
             }
             5803 => {
                 let x0 = Writer::read_word(chunk, env, idx);
                 let x1 = Writer::read_word(chunk, env, idx);
                 let x2 = Writer::read_word(chunk, env, idx);
                 let x3 = Writer::read_word(chunk, env, idx);
-                SubgroupAvcSicEvaluateIpeINTEL(x0, x1, x2, x3)
+                env.insert_id(x1);
+                env.insert_op(SubgroupAvcSicEvaluateIpeINTEL(x0, x1, x2, x3))
             }
             5804 => {
                 let x0 = Writer::read_word(chunk, env, idx);
@@ -4578,7 +5294,10 @@ impl Opcode {
                 let x2 = Writer::read_word(chunk, env, idx);
                 let x3 = Writer::read_word(chunk, env, idx);
                 let x4 = Writer::read_word(chunk, env, idx);
-                SubgroupAvcSicEvaluateWithSingleReferenceINTEL(x0, x1, x2, x3, x4)
+                env.insert_id(x1);
+                env.insert_op(SubgroupAvcSicEvaluateWithSingleReferenceINTEL(
+                    x0, x1, x2, x3, x4,
+                ))
             }
             5805 => {
                 let x0 = Writer::read_word(chunk, env, idx);
@@ -4587,7 +5306,10 @@ impl Opcode {
                 let x3 = Writer::read_word(chunk, env, idx);
                 let x4 = Writer::read_word(chunk, env, idx);
                 let x5 = Writer::read_word(chunk, env, idx);
-                SubgroupAvcSicEvaluateWithDualReferenceINTEL(x0, x1, x2, x3, x4, x5)
+                env.insert_id(x1);
+                env.insert_op(SubgroupAvcSicEvaluateWithDualReferenceINTEL(
+                    x0, x1, x2, x3, x4, x5,
+                ))
             }
             5806 => {
                 let x0 = Writer::read_word(chunk, env, idx);
@@ -4595,7 +5317,10 @@ impl Opcode {
                 let x2 = Writer::read_word(chunk, env, idx);
                 let x3 = Writer::read_word(chunk, env, idx);
                 let x4 = Writer::read_word(chunk, env, idx);
-                SubgroupAvcSicEvaluateWithMultiReferenceINTEL(x0, x1, x2, x3, x4)
+                env.insert_id(x1);
+                env.insert_op(SubgroupAvcSicEvaluateWithMultiReferenceINTEL(
+                    x0, x1, x2, x3, x4,
+                ))
             }
             5807 => {
                 let x0 = Writer::read_word(chunk, env, idx);
@@ -4604,227 +5329,933 @@ impl Opcode {
                 let x3 = Writer::read_word(chunk, env, idx);
                 let x4 = Writer::read_word(chunk, env, idx);
                 let x5 = Writer::read_word(chunk, env, idx);
-                SubgroupAvcSicEvaluateWithMultiReferenceInterlacedINTEL(x0, x1, x2, x3, x4, x5)
+                env.insert_id(x1);
+                env.insert_op(SubgroupAvcSicEvaluateWithMultiReferenceInterlacedINTEL(
+                    x0, x1, x2, x3, x4, x5,
+                ))
             }
             5808 => {
                 let x0 = Writer::read_word(chunk, env, idx);
                 let x1 = Writer::read_word(chunk, env, idx);
                 let x2 = Writer::read_word(chunk, env, idx);
-                SubgroupAvcSicConvertToMceResultINTEL(x0, x1, x2)
+                env.insert_id(x1);
+                env.insert_op(SubgroupAvcSicConvertToMceResultINTEL(x0, x1, x2))
             }
             5809 => {
                 let x0 = Writer::read_word(chunk, env, idx);
                 let x1 = Writer::read_word(chunk, env, idx);
                 let x2 = Writer::read_word(chunk, env, idx);
-                SubgroupAvcSicGetIpeLumaShapeINTEL(x0, x1, x2)
+                env.insert_id(x1);
+                env.insert_op(SubgroupAvcSicGetIpeLumaShapeINTEL(x0, x1, x2))
             }
             5810 => {
                 let x0 = Writer::read_word(chunk, env, idx);
                 let x1 = Writer::read_word(chunk, env, idx);
                 let x2 = Writer::read_word(chunk, env, idx);
-                SubgroupAvcSicGetBestIpeLumaDistortionINTEL(x0, x1, x2)
+                env.insert_id(x1);
+                env.insert_op(SubgroupAvcSicGetBestIpeLumaDistortionINTEL(x0, x1, x2))
             }
             5811 => {
                 let x0 = Writer::read_word(chunk, env, idx);
                 let x1 = Writer::read_word(chunk, env, idx);
                 let x2 = Writer::read_word(chunk, env, idx);
-                SubgroupAvcSicGetBestIpeChromaDistortionINTEL(x0, x1, x2)
+                env.insert_id(x1);
+                env.insert_op(SubgroupAvcSicGetBestIpeChromaDistortionINTEL(x0, x1, x2))
             }
             5812 => {
                 let x0 = Writer::read_word(chunk, env, idx);
                 let x1 = Writer::read_word(chunk, env, idx);
                 let x2 = Writer::read_word(chunk, env, idx);
-                SubgroupAvcSicGetPackedIpeLumaModesINTEL(x0, x1, x2)
+                env.insert_id(x1);
+                env.insert_op(SubgroupAvcSicGetPackedIpeLumaModesINTEL(x0, x1, x2))
             }
             5813 => {
                 let x0 = Writer::read_word(chunk, env, idx);
                 let x1 = Writer::read_word(chunk, env, idx);
                 let x2 = Writer::read_word(chunk, env, idx);
-                SubgroupAvcSicGetIpeChromaModeINTEL(x0, x1, x2)
+                env.insert_id(x1);
+                env.insert_op(SubgroupAvcSicGetIpeChromaModeINTEL(x0, x1, x2))
             }
             5814 => {
                 let x0 = Writer::read_word(chunk, env, idx);
                 let x1 = Writer::read_word(chunk, env, idx);
                 let x2 = Writer::read_word(chunk, env, idx);
-                SubgroupAvcSicGetPackedSkcLumaCountThresholdINTEL(x0, x1, x2)
+                env.insert_id(x1);
+                env.insert_op(SubgroupAvcSicGetPackedSkcLumaCountThresholdINTEL(
+                    x0, x1, x2,
+                ))
             }
             5815 => {
                 let x0 = Writer::read_word(chunk, env, idx);
                 let x1 = Writer::read_word(chunk, env, idx);
                 let x2 = Writer::read_word(chunk, env, idx);
-                SubgroupAvcSicGetPackedSkcLumaSumThresholdINTEL(x0, x1, x2)
+                env.insert_id(x1);
+                env.insert_op(SubgroupAvcSicGetPackedSkcLumaSumThresholdINTEL(x0, x1, x2))
             }
             5816 => {
                 let x0 = Writer::read_word(chunk, env, idx);
                 let x1 = Writer::read_word(chunk, env, idx);
                 let x2 = Writer::read_word(chunk, env, idx);
-                SubgroupAvcSicGetInterRawSadsINTEL(x0, x1, x2)
+                env.insert_id(x1);
+                env.insert_op(SubgroupAvcSicGetInterRawSadsINTEL(x0, x1, x2))
             }
             5818 => {
                 let x0 = Writer::read_word(chunk, env, idx);
                 let x1 = Writer::read_word(chunk, env, idx);
                 let x2 = Writer::read_word(chunk, env, idx);
-                VariableLengthArrayINTEL(x0, x1, x2)
+                env.insert_id(x1);
+                env.insert_op(VariableLengthArrayINTEL(x0, x1, x2))
             }
             5819 => {
                 let x0 = Writer::read_word(chunk, env, idx);
                 let x1 = Writer::read_word(chunk, env, idx);
-                SaveMemoryINTEL(x0, x1)
+                env.insert_id(x1);
+                env.insert_op(SaveMemoryINTEL(x0, x1))
             }
             5820 => {
                 let x0 = Writer::read_word(chunk, env, idx);
-                RestoreMemoryINTEL(x0)
+                env.insert_op(RestoreMemoryINTEL(x0))
+            }
+            5840 => {
+                let x0 = Writer::read_word(chunk, env, idx);
+                let x1 = Writer::read_word(chunk, env, idx);
+                let x2 = Writer::read_word(chunk, env, idx);
+                let x3 = Writer::read_word(chunk, env, idx);
+                let x4 = Writer::read_word(chunk, env, idx);
+                let x5 = Writer::read_word(chunk, env, idx);
+                let x6 = Writer::read_word(chunk, env, idx);
+                let x7 = Writer::read_word(chunk, env, idx);
+                let x8 = Writer::read_word(chunk, env, idx);
+                env.insert_id(x1);
+                env.insert_op(ArbitraryFloatSinCosPiINTEL(
+                    x0, x1, x2, x3, x4, x5, x6, x7, x8,
+                ))
+            }
+            5841 => {
+                let x0 = Writer::read_word(chunk, env, idx);
+                let x1 = Writer::read_word(chunk, env, idx);
+                let x2 = Writer::read_word(chunk, env, idx);
+                let x3 = Writer::read_word(chunk, env, idx);
+                let x4 = Writer::read_word(chunk, env, idx);
+                let x5 = Writer::read_word(chunk, env, idx);
+                let x6 = Writer::read_word(chunk, env, idx);
+                let x7 = Writer::read_word(chunk, env, idx);
+                env.insert_id(x1);
+                env.insert_op(ArbitraryFloatCastINTEL(x0, x1, x2, x3, x4, x5, x6, x7))
+            }
+            5842 => {
+                let x0 = Writer::read_word(chunk, env, idx);
+                let x1 = Writer::read_word(chunk, env, idx);
+                let x2 = Writer::read_word(chunk, env, idx);
+                let x3 = Writer::read_word(chunk, env, idx);
+                let x4 = Writer::read_word(chunk, env, idx);
+                let x5 = Writer::read_word(chunk, env, idx);
+                let x6 = Writer::read_word(chunk, env, idx);
+                let x7 = Writer::read_word(chunk, env, idx);
+                env.insert_id(x1);
+                env.insert_op(ArbitraryFloatCastFromIntINTEL(
+                    x0, x1, x2, x3, x4, x5, x6, x7,
+                ))
+            }
+            5843 => {
+                let x0 = Writer::read_word(chunk, env, idx);
+                let x1 = Writer::read_word(chunk, env, idx);
+                let x2 = Writer::read_word(chunk, env, idx);
+                let x3 = Writer::read_word(chunk, env, idx);
+                let x4 = Writer::read_word(chunk, env, idx);
+                let x5 = Writer::read_word(chunk, env, idx);
+                let x6 = Writer::read_word(chunk, env, idx);
+                env.insert_id(x1);
+                env.insert_op(ArbitraryFloatCastToIntINTEL(x0, x1, x2, x3, x4, x5, x6))
+            }
+            5846 => {
+                let x0 = Writer::read_word(chunk, env, idx);
+                let x1 = Writer::read_word(chunk, env, idx);
+                let x2 = Writer::read_word(chunk, env, idx);
+                let x3 = Writer::read_word(chunk, env, idx);
+                let x4 = Writer::read_word(chunk, env, idx);
+                let x5 = Writer::read_word(chunk, env, idx);
+                let x6 = Writer::read_word(chunk, env, idx);
+                let x7 = Writer::read_word(chunk, env, idx);
+                let x8 = Writer::read_word(chunk, env, idx);
+                let x9 = Writer::read_word(chunk, env, idx);
+                env.insert_id(x1);
+                env.insert_op(ArbitraryFloatAddINTEL(
+                    x0, x1, x2, x3, x4, x5, x6, x7, x8, x9,
+                ))
+            }
+            5847 => {
+                let x0 = Writer::read_word(chunk, env, idx);
+                let x1 = Writer::read_word(chunk, env, idx);
+                let x2 = Writer::read_word(chunk, env, idx);
+                let x3 = Writer::read_word(chunk, env, idx);
+                let x4 = Writer::read_word(chunk, env, idx);
+                let x5 = Writer::read_word(chunk, env, idx);
+                let x6 = Writer::read_word(chunk, env, idx);
+                let x7 = Writer::read_word(chunk, env, idx);
+                let x8 = Writer::read_word(chunk, env, idx);
+                let x9 = Writer::read_word(chunk, env, idx);
+                env.insert_id(x1);
+                env.insert_op(ArbitraryFloatSubINTEL(
+                    x0, x1, x2, x3, x4, x5, x6, x7, x8, x9,
+                ))
+            }
+            5848 => {
+                let x0 = Writer::read_word(chunk, env, idx);
+                let x1 = Writer::read_word(chunk, env, idx);
+                let x2 = Writer::read_word(chunk, env, idx);
+                let x3 = Writer::read_word(chunk, env, idx);
+                let x4 = Writer::read_word(chunk, env, idx);
+                let x5 = Writer::read_word(chunk, env, idx);
+                let x6 = Writer::read_word(chunk, env, idx);
+                let x7 = Writer::read_word(chunk, env, idx);
+                let x8 = Writer::read_word(chunk, env, idx);
+                let x9 = Writer::read_word(chunk, env, idx);
+                env.insert_id(x1);
+                env.insert_op(ArbitraryFloatMulINTEL(
+                    x0, x1, x2, x3, x4, x5, x6, x7, x8, x9,
+                ))
+            }
+            5849 => {
+                let x0 = Writer::read_word(chunk, env, idx);
+                let x1 = Writer::read_word(chunk, env, idx);
+                let x2 = Writer::read_word(chunk, env, idx);
+                let x3 = Writer::read_word(chunk, env, idx);
+                let x4 = Writer::read_word(chunk, env, idx);
+                let x5 = Writer::read_word(chunk, env, idx);
+                let x6 = Writer::read_word(chunk, env, idx);
+                let x7 = Writer::read_word(chunk, env, idx);
+                let x8 = Writer::read_word(chunk, env, idx);
+                let x9 = Writer::read_word(chunk, env, idx);
+                env.insert_id(x1);
+                env.insert_op(ArbitraryFloatDivINTEL(
+                    x0, x1, x2, x3, x4, x5, x6, x7, x8, x9,
+                ))
+            }
+            5850 => {
+                let x0 = Writer::read_word(chunk, env, idx);
+                let x1 = Writer::read_word(chunk, env, idx);
+                let x2 = Writer::read_word(chunk, env, idx);
+                let x3 = Writer::read_word(chunk, env, idx);
+                let x4 = Writer::read_word(chunk, env, idx);
+                let x5 = Writer::read_word(chunk, env, idx);
+                env.insert_id(x1);
+                env.insert_op(ArbitraryFloatGTINTEL(x0, x1, x2, x3, x4, x5))
+            }
+            5851 => {
+                let x0 = Writer::read_word(chunk, env, idx);
+                let x1 = Writer::read_word(chunk, env, idx);
+                let x2 = Writer::read_word(chunk, env, idx);
+                let x3 = Writer::read_word(chunk, env, idx);
+                let x4 = Writer::read_word(chunk, env, idx);
+                let x5 = Writer::read_word(chunk, env, idx);
+                env.insert_id(x1);
+                env.insert_op(ArbitraryFloatGEINTEL(x0, x1, x2, x3, x4, x5))
+            }
+            5852 => {
+                let x0 = Writer::read_word(chunk, env, idx);
+                let x1 = Writer::read_word(chunk, env, idx);
+                let x2 = Writer::read_word(chunk, env, idx);
+                let x3 = Writer::read_word(chunk, env, idx);
+                let x4 = Writer::read_word(chunk, env, idx);
+                let x5 = Writer::read_word(chunk, env, idx);
+                env.insert_id(x1);
+                env.insert_op(ArbitraryFloatLTINTEL(x0, x1, x2, x3, x4, x5))
+            }
+            5853 => {
+                let x0 = Writer::read_word(chunk, env, idx);
+                let x1 = Writer::read_word(chunk, env, idx);
+                let x2 = Writer::read_word(chunk, env, idx);
+                let x3 = Writer::read_word(chunk, env, idx);
+                let x4 = Writer::read_word(chunk, env, idx);
+                let x5 = Writer::read_word(chunk, env, idx);
+                env.insert_id(x1);
+                env.insert_op(ArbitraryFloatLEINTEL(x0, x1, x2, x3, x4, x5))
+            }
+            5854 => {
+                let x0 = Writer::read_word(chunk, env, idx);
+                let x1 = Writer::read_word(chunk, env, idx);
+                let x2 = Writer::read_word(chunk, env, idx);
+                let x3 = Writer::read_word(chunk, env, idx);
+                let x4 = Writer::read_word(chunk, env, idx);
+                let x5 = Writer::read_word(chunk, env, idx);
+                env.insert_id(x1);
+                env.insert_op(ArbitraryFloatEQINTEL(x0, x1, x2, x3, x4, x5))
+            }
+            5855 => {
+                let x0 = Writer::read_word(chunk, env, idx);
+                let x1 = Writer::read_word(chunk, env, idx);
+                let x2 = Writer::read_word(chunk, env, idx);
+                let x3 = Writer::read_word(chunk, env, idx);
+                let x4 = Writer::read_word(chunk, env, idx);
+                let x5 = Writer::read_word(chunk, env, idx);
+                let x6 = Writer::read_word(chunk, env, idx);
+                let x7 = Writer::read_word(chunk, env, idx);
+                env.insert_id(x1);
+                env.insert_op(ArbitraryFloatRecipINTEL(x0, x1, x2, x3, x4, x5, x6, x7))
+            }
+            5856 => {
+                let x0 = Writer::read_word(chunk, env, idx);
+                let x1 = Writer::read_word(chunk, env, idx);
+                let x2 = Writer::read_word(chunk, env, idx);
+                let x3 = Writer::read_word(chunk, env, idx);
+                let x4 = Writer::read_word(chunk, env, idx);
+                let x5 = Writer::read_word(chunk, env, idx);
+                let x6 = Writer::read_word(chunk, env, idx);
+                let x7 = Writer::read_word(chunk, env, idx);
+                env.insert_id(x1);
+                env.insert_op(ArbitraryFloatRSqrtINTEL(x0, x1, x2, x3, x4, x5, x6, x7))
+            }
+            5857 => {
+                let x0 = Writer::read_word(chunk, env, idx);
+                let x1 = Writer::read_word(chunk, env, idx);
+                let x2 = Writer::read_word(chunk, env, idx);
+                let x3 = Writer::read_word(chunk, env, idx);
+                let x4 = Writer::read_word(chunk, env, idx);
+                let x5 = Writer::read_word(chunk, env, idx);
+                let x6 = Writer::read_word(chunk, env, idx);
+                let x7 = Writer::read_word(chunk, env, idx);
+                env.insert_id(x1);
+                env.insert_op(ArbitraryFloatCbrtINTEL(x0, x1, x2, x3, x4, x5, x6, x7))
+            }
+            5858 => {
+                let x0 = Writer::read_word(chunk, env, idx);
+                let x1 = Writer::read_word(chunk, env, idx);
+                let x2 = Writer::read_word(chunk, env, idx);
+                let x3 = Writer::read_word(chunk, env, idx);
+                let x4 = Writer::read_word(chunk, env, idx);
+                let x5 = Writer::read_word(chunk, env, idx);
+                let x6 = Writer::read_word(chunk, env, idx);
+                let x7 = Writer::read_word(chunk, env, idx);
+                let x8 = Writer::read_word(chunk, env, idx);
+                let x9 = Writer::read_word(chunk, env, idx);
+                env.insert_id(x1);
+                env.insert_op(ArbitraryFloatHypotINTEL(
+                    x0, x1, x2, x3, x4, x5, x6, x7, x8, x9,
+                ))
+            }
+            5859 => {
+                let x0 = Writer::read_word(chunk, env, idx);
+                let x1 = Writer::read_word(chunk, env, idx);
+                let x2 = Writer::read_word(chunk, env, idx);
+                let x3 = Writer::read_word(chunk, env, idx);
+                let x4 = Writer::read_word(chunk, env, idx);
+                let x5 = Writer::read_word(chunk, env, idx);
+                let x6 = Writer::read_word(chunk, env, idx);
+                let x7 = Writer::read_word(chunk, env, idx);
+                env.insert_id(x1);
+                env.insert_op(ArbitraryFloatSqrtINTEL(x0, x1, x2, x3, x4, x5, x6, x7))
+            }
+            5860 => {
+                let x0 = Writer::read_word(chunk, env, idx);
+                let x1 = Writer::read_word(chunk, env, idx);
+                let x2 = Writer::read_word(chunk, env, idx);
+                let x3 = Writer::read_word(chunk, env, idx);
+                let x4 = Writer::read_word(chunk, env, idx);
+                let x5 = Writer::read_word(chunk, env, idx);
+                let x6 = Writer::read_word(chunk, env, idx);
+                let x7 = Writer::read_word(chunk, env, idx);
+                env.insert_id(x1);
+                env.insert_op(ArbitraryFloatLogINTEL(x0, x1, x2, x3, x4, x5, x6, x7))
+            }
+            5861 => {
+                let x0 = Writer::read_word(chunk, env, idx);
+                let x1 = Writer::read_word(chunk, env, idx);
+                let x2 = Writer::read_word(chunk, env, idx);
+                let x3 = Writer::read_word(chunk, env, idx);
+                let x4 = Writer::read_word(chunk, env, idx);
+                let x5 = Writer::read_word(chunk, env, idx);
+                let x6 = Writer::read_word(chunk, env, idx);
+                let x7 = Writer::read_word(chunk, env, idx);
+                env.insert_id(x1);
+                env.insert_op(ArbitraryFloatLog2INTEL(x0, x1, x2, x3, x4, x5, x6, x7))
+            }
+            5862 => {
+                let x0 = Writer::read_word(chunk, env, idx);
+                let x1 = Writer::read_word(chunk, env, idx);
+                let x2 = Writer::read_word(chunk, env, idx);
+                let x3 = Writer::read_word(chunk, env, idx);
+                let x4 = Writer::read_word(chunk, env, idx);
+                let x5 = Writer::read_word(chunk, env, idx);
+                let x6 = Writer::read_word(chunk, env, idx);
+                let x7 = Writer::read_word(chunk, env, idx);
+                env.insert_id(x1);
+                env.insert_op(ArbitraryFloatLog10INTEL(x0, x1, x2, x3, x4, x5, x6, x7))
+            }
+            5863 => {
+                let x0 = Writer::read_word(chunk, env, idx);
+                let x1 = Writer::read_word(chunk, env, idx);
+                let x2 = Writer::read_word(chunk, env, idx);
+                let x3 = Writer::read_word(chunk, env, idx);
+                let x4 = Writer::read_word(chunk, env, idx);
+                let x5 = Writer::read_word(chunk, env, idx);
+                let x6 = Writer::read_word(chunk, env, idx);
+                let x7 = Writer::read_word(chunk, env, idx);
+                env.insert_id(x1);
+                env.insert_op(ArbitraryFloatLog1pINTEL(x0, x1, x2, x3, x4, x5, x6, x7))
+            }
+            5864 => {
+                let x0 = Writer::read_word(chunk, env, idx);
+                let x1 = Writer::read_word(chunk, env, idx);
+                let x2 = Writer::read_word(chunk, env, idx);
+                let x3 = Writer::read_word(chunk, env, idx);
+                let x4 = Writer::read_word(chunk, env, idx);
+                let x5 = Writer::read_word(chunk, env, idx);
+                let x6 = Writer::read_word(chunk, env, idx);
+                let x7 = Writer::read_word(chunk, env, idx);
+                env.insert_id(x1);
+                env.insert_op(ArbitraryFloatExpINTEL(x0, x1, x2, x3, x4, x5, x6, x7))
+            }
+            5865 => {
+                let x0 = Writer::read_word(chunk, env, idx);
+                let x1 = Writer::read_word(chunk, env, idx);
+                let x2 = Writer::read_word(chunk, env, idx);
+                let x3 = Writer::read_word(chunk, env, idx);
+                let x4 = Writer::read_word(chunk, env, idx);
+                let x5 = Writer::read_word(chunk, env, idx);
+                let x6 = Writer::read_word(chunk, env, idx);
+                let x7 = Writer::read_word(chunk, env, idx);
+                env.insert_id(x1);
+                env.insert_op(ArbitraryFloatExp2INTEL(x0, x1, x2, x3, x4, x5, x6, x7))
+            }
+            5866 => {
+                let x0 = Writer::read_word(chunk, env, idx);
+                let x1 = Writer::read_word(chunk, env, idx);
+                let x2 = Writer::read_word(chunk, env, idx);
+                let x3 = Writer::read_word(chunk, env, idx);
+                let x4 = Writer::read_word(chunk, env, idx);
+                let x5 = Writer::read_word(chunk, env, idx);
+                let x6 = Writer::read_word(chunk, env, idx);
+                let x7 = Writer::read_word(chunk, env, idx);
+                env.insert_id(x1);
+                env.insert_op(ArbitraryFloatExp10INTEL(x0, x1, x2, x3, x4, x5, x6, x7))
+            }
+            5867 => {
+                let x0 = Writer::read_word(chunk, env, idx);
+                let x1 = Writer::read_word(chunk, env, idx);
+                let x2 = Writer::read_word(chunk, env, idx);
+                let x3 = Writer::read_word(chunk, env, idx);
+                let x4 = Writer::read_word(chunk, env, idx);
+                let x5 = Writer::read_word(chunk, env, idx);
+                let x6 = Writer::read_word(chunk, env, idx);
+                let x7 = Writer::read_word(chunk, env, idx);
+                env.insert_id(x1);
+                env.insert_op(ArbitraryFloatExpm1INTEL(x0, x1, x2, x3, x4, x5, x6, x7))
+            }
+            5868 => {
+                let x0 = Writer::read_word(chunk, env, idx);
+                let x1 = Writer::read_word(chunk, env, idx);
+                let x2 = Writer::read_word(chunk, env, idx);
+                let x3 = Writer::read_word(chunk, env, idx);
+                let x4 = Writer::read_word(chunk, env, idx);
+                let x5 = Writer::read_word(chunk, env, idx);
+                let x6 = Writer::read_word(chunk, env, idx);
+                let x7 = Writer::read_word(chunk, env, idx);
+                env.insert_id(x1);
+                env.insert_op(ArbitraryFloatSinINTEL(x0, x1, x2, x3, x4, x5, x6, x7))
+            }
+            5869 => {
+                let x0 = Writer::read_word(chunk, env, idx);
+                let x1 = Writer::read_word(chunk, env, idx);
+                let x2 = Writer::read_word(chunk, env, idx);
+                let x3 = Writer::read_word(chunk, env, idx);
+                let x4 = Writer::read_word(chunk, env, idx);
+                let x5 = Writer::read_word(chunk, env, idx);
+                let x6 = Writer::read_word(chunk, env, idx);
+                let x7 = Writer::read_word(chunk, env, idx);
+                env.insert_id(x1);
+                env.insert_op(ArbitraryFloatCosINTEL(x0, x1, x2, x3, x4, x5, x6, x7))
+            }
+            5870 => {
+                let x0 = Writer::read_word(chunk, env, idx);
+                let x1 = Writer::read_word(chunk, env, idx);
+                let x2 = Writer::read_word(chunk, env, idx);
+                let x3 = Writer::read_word(chunk, env, idx);
+                let x4 = Writer::read_word(chunk, env, idx);
+                let x5 = Writer::read_word(chunk, env, idx);
+                let x6 = Writer::read_word(chunk, env, idx);
+                let x7 = Writer::read_word(chunk, env, idx);
+                env.insert_id(x1);
+                env.insert_op(ArbitraryFloatSinCosINTEL(x0, x1, x2, x3, x4, x5, x6, x7))
+            }
+            5871 => {
+                let x0 = Writer::read_word(chunk, env, idx);
+                let x1 = Writer::read_word(chunk, env, idx);
+                let x2 = Writer::read_word(chunk, env, idx);
+                let x3 = Writer::read_word(chunk, env, idx);
+                let x4 = Writer::read_word(chunk, env, idx);
+                let x5 = Writer::read_word(chunk, env, idx);
+                let x6 = Writer::read_word(chunk, env, idx);
+                let x7 = Writer::read_word(chunk, env, idx);
+                env.insert_id(x1);
+                env.insert_op(ArbitraryFloatSinPiINTEL(x0, x1, x2, x3, x4, x5, x6, x7))
+            }
+            5872 => {
+                let x0 = Writer::read_word(chunk, env, idx);
+                let x1 = Writer::read_word(chunk, env, idx);
+                let x2 = Writer::read_word(chunk, env, idx);
+                let x3 = Writer::read_word(chunk, env, idx);
+                let x4 = Writer::read_word(chunk, env, idx);
+                let x5 = Writer::read_word(chunk, env, idx);
+                let x6 = Writer::read_word(chunk, env, idx);
+                let x7 = Writer::read_word(chunk, env, idx);
+                env.insert_id(x1);
+                env.insert_op(ArbitraryFloatCosPiINTEL(x0, x1, x2, x3, x4, x5, x6, x7))
+            }
+            5873 => {
+                let x0 = Writer::read_word(chunk, env, idx);
+                let x1 = Writer::read_word(chunk, env, idx);
+                let x2 = Writer::read_word(chunk, env, idx);
+                let x3 = Writer::read_word(chunk, env, idx);
+                let x4 = Writer::read_word(chunk, env, idx);
+                let x5 = Writer::read_word(chunk, env, idx);
+                let x6 = Writer::read_word(chunk, env, idx);
+                let x7 = Writer::read_word(chunk, env, idx);
+                env.insert_id(x1);
+                env.insert_op(ArbitraryFloatASinINTEL(x0, x1, x2, x3, x4, x5, x6, x7))
+            }
+            5874 => {
+                let x0 = Writer::read_word(chunk, env, idx);
+                let x1 = Writer::read_word(chunk, env, idx);
+                let x2 = Writer::read_word(chunk, env, idx);
+                let x3 = Writer::read_word(chunk, env, idx);
+                let x4 = Writer::read_word(chunk, env, idx);
+                let x5 = Writer::read_word(chunk, env, idx);
+                let x6 = Writer::read_word(chunk, env, idx);
+                let x7 = Writer::read_word(chunk, env, idx);
+                env.insert_id(x1);
+                env.insert_op(ArbitraryFloatASinPiINTEL(x0, x1, x2, x3, x4, x5, x6, x7))
+            }
+            5875 => {
+                let x0 = Writer::read_word(chunk, env, idx);
+                let x1 = Writer::read_word(chunk, env, idx);
+                let x2 = Writer::read_word(chunk, env, idx);
+                let x3 = Writer::read_word(chunk, env, idx);
+                let x4 = Writer::read_word(chunk, env, idx);
+                let x5 = Writer::read_word(chunk, env, idx);
+                let x6 = Writer::read_word(chunk, env, idx);
+                let x7 = Writer::read_word(chunk, env, idx);
+                env.insert_id(x1);
+                env.insert_op(ArbitraryFloatACosINTEL(x0, x1, x2, x3, x4, x5, x6, x7))
+            }
+            5876 => {
+                let x0 = Writer::read_word(chunk, env, idx);
+                let x1 = Writer::read_word(chunk, env, idx);
+                let x2 = Writer::read_word(chunk, env, idx);
+                let x3 = Writer::read_word(chunk, env, idx);
+                let x4 = Writer::read_word(chunk, env, idx);
+                let x5 = Writer::read_word(chunk, env, idx);
+                let x6 = Writer::read_word(chunk, env, idx);
+                let x7 = Writer::read_word(chunk, env, idx);
+                env.insert_id(x1);
+                env.insert_op(ArbitraryFloatACosPiINTEL(x0, x1, x2, x3, x4, x5, x6, x7))
+            }
+            5877 => {
+                let x0 = Writer::read_word(chunk, env, idx);
+                let x1 = Writer::read_word(chunk, env, idx);
+                let x2 = Writer::read_word(chunk, env, idx);
+                let x3 = Writer::read_word(chunk, env, idx);
+                let x4 = Writer::read_word(chunk, env, idx);
+                let x5 = Writer::read_word(chunk, env, idx);
+                let x6 = Writer::read_word(chunk, env, idx);
+                let x7 = Writer::read_word(chunk, env, idx);
+                env.insert_id(x1);
+                env.insert_op(ArbitraryFloatATanINTEL(x0, x1, x2, x3, x4, x5, x6, x7))
+            }
+            5878 => {
+                let x0 = Writer::read_word(chunk, env, idx);
+                let x1 = Writer::read_word(chunk, env, idx);
+                let x2 = Writer::read_word(chunk, env, idx);
+                let x3 = Writer::read_word(chunk, env, idx);
+                let x4 = Writer::read_word(chunk, env, idx);
+                let x5 = Writer::read_word(chunk, env, idx);
+                let x6 = Writer::read_word(chunk, env, idx);
+                let x7 = Writer::read_word(chunk, env, idx);
+                env.insert_id(x1);
+                env.insert_op(ArbitraryFloatATanPiINTEL(x0, x1, x2, x3, x4, x5, x6, x7))
+            }
+            5879 => {
+                let x0 = Writer::read_word(chunk, env, idx);
+                let x1 = Writer::read_word(chunk, env, idx);
+                let x2 = Writer::read_word(chunk, env, idx);
+                let x3 = Writer::read_word(chunk, env, idx);
+                let x4 = Writer::read_word(chunk, env, idx);
+                let x5 = Writer::read_word(chunk, env, idx);
+                let x6 = Writer::read_word(chunk, env, idx);
+                let x7 = Writer::read_word(chunk, env, idx);
+                let x8 = Writer::read_word(chunk, env, idx);
+                let x9 = Writer::read_word(chunk, env, idx);
+                env.insert_id(x1);
+                env.insert_op(ArbitraryFloatATan2INTEL(
+                    x0, x1, x2, x3, x4, x5, x6, x7, x8, x9,
+                ))
+            }
+            5880 => {
+                let x0 = Writer::read_word(chunk, env, idx);
+                let x1 = Writer::read_word(chunk, env, idx);
+                let x2 = Writer::read_word(chunk, env, idx);
+                let x3 = Writer::read_word(chunk, env, idx);
+                let x4 = Writer::read_word(chunk, env, idx);
+                let x5 = Writer::read_word(chunk, env, idx);
+                let x6 = Writer::read_word(chunk, env, idx);
+                let x7 = Writer::read_word(chunk, env, idx);
+                let x8 = Writer::read_word(chunk, env, idx);
+                let x9 = Writer::read_word(chunk, env, idx);
+                env.insert_id(x1);
+                env.insert_op(ArbitraryFloatPowINTEL(
+                    x0, x1, x2, x3, x4, x5, x6, x7, x8, x9,
+                ))
+            }
+            5881 => {
+                let x0 = Writer::read_word(chunk, env, idx);
+                let x1 = Writer::read_word(chunk, env, idx);
+                let x2 = Writer::read_word(chunk, env, idx);
+                let x3 = Writer::read_word(chunk, env, idx);
+                let x4 = Writer::read_word(chunk, env, idx);
+                let x5 = Writer::read_word(chunk, env, idx);
+                let x6 = Writer::read_word(chunk, env, idx);
+                let x7 = Writer::read_word(chunk, env, idx);
+                let x8 = Writer::read_word(chunk, env, idx);
+                let x9 = Writer::read_word(chunk, env, idx);
+                env.insert_id(x1);
+                env.insert_op(ArbitraryFloatPowRINTEL(
+                    x0, x1, x2, x3, x4, x5, x6, x7, x8, x9,
+                ))
+            }
+            5882 => {
+                let x0 = Writer::read_word(chunk, env, idx);
+                let x1 = Writer::read_word(chunk, env, idx);
+                let x2 = Writer::read_word(chunk, env, idx);
+                let x3 = Writer::read_word(chunk, env, idx);
+                let x4 = Writer::read_word(chunk, env, idx);
+                let x5 = Writer::read_word(chunk, env, idx);
+                let x6 = Writer::read_word(chunk, env, idx);
+                let x7 = Writer::read_word(chunk, env, idx);
+                let x8 = Writer::read_word(chunk, env, idx);
+                env.insert_id(x1);
+                env.insert_op(ArbitraryFloatPowNINTEL(x0, x1, x2, x3, x4, x5, x6, x7, x8))
             }
             5887 => {
                 let x0 = Writer::read_word(chunk, env, idx);
-                LoopControlINTEL(x0)
+                env.insert_op(LoopControlINTEL(x0))
+            }
+            5923 => {
+                let x0 = Writer::read_word(chunk, env, idx);
+                let x1 = Writer::read_word(chunk, env, idx);
+                let x2 = Writer::read_word(chunk, env, idx);
+                let x3 = Writer::read_word(chunk, env, idx);
+                let x4 = Writer::read_word(chunk, env, idx);
+                let x5 = Writer::read_word(chunk, env, idx);
+                let x6 = Writer::read_word(chunk, env, idx);
+                let x7 = Writer::read_word(chunk, env, idx);
+                let x8 = Writer::read_word(chunk, env, idx);
+                env.insert_id(x1);
+                env.insert_op(FixedSqrtINTEL(x0, x1, x2, x3, x4, x5, x6, x7, x8))
+            }
+            5924 => {
+                let x0 = Writer::read_word(chunk, env, idx);
+                let x1 = Writer::read_word(chunk, env, idx);
+                let x2 = Writer::read_word(chunk, env, idx);
+                let x3 = Writer::read_word(chunk, env, idx);
+                let x4 = Writer::read_word(chunk, env, idx);
+                let x5 = Writer::read_word(chunk, env, idx);
+                let x6 = Writer::read_word(chunk, env, idx);
+                let x7 = Writer::read_word(chunk, env, idx);
+                let x8 = Writer::read_word(chunk, env, idx);
+                env.insert_id(x1);
+                env.insert_op(FixedRecipINTEL(x0, x1, x2, x3, x4, x5, x6, x7, x8))
+            }
+            5925 => {
+                let x0 = Writer::read_word(chunk, env, idx);
+                let x1 = Writer::read_word(chunk, env, idx);
+                let x2 = Writer::read_word(chunk, env, idx);
+                let x3 = Writer::read_word(chunk, env, idx);
+                let x4 = Writer::read_word(chunk, env, idx);
+                let x5 = Writer::read_word(chunk, env, idx);
+                let x6 = Writer::read_word(chunk, env, idx);
+                let x7 = Writer::read_word(chunk, env, idx);
+                let x8 = Writer::read_word(chunk, env, idx);
+                env.insert_id(x1);
+                env.insert_op(FixedRsqrtINTEL(x0, x1, x2, x3, x4, x5, x6, x7, x8))
+            }
+            5926 => {
+                let x0 = Writer::read_word(chunk, env, idx);
+                let x1 = Writer::read_word(chunk, env, idx);
+                let x2 = Writer::read_word(chunk, env, idx);
+                let x3 = Writer::read_word(chunk, env, idx);
+                let x4 = Writer::read_word(chunk, env, idx);
+                let x5 = Writer::read_word(chunk, env, idx);
+                let x6 = Writer::read_word(chunk, env, idx);
+                let x7 = Writer::read_word(chunk, env, idx);
+                let x8 = Writer::read_word(chunk, env, idx);
+                env.insert_id(x1);
+                env.insert_op(FixedSinINTEL(x0, x1, x2, x3, x4, x5, x6, x7, x8))
+            }
+            5927 => {
+                let x0 = Writer::read_word(chunk, env, idx);
+                let x1 = Writer::read_word(chunk, env, idx);
+                let x2 = Writer::read_word(chunk, env, idx);
+                let x3 = Writer::read_word(chunk, env, idx);
+                let x4 = Writer::read_word(chunk, env, idx);
+                let x5 = Writer::read_word(chunk, env, idx);
+                let x6 = Writer::read_word(chunk, env, idx);
+                let x7 = Writer::read_word(chunk, env, idx);
+                let x8 = Writer::read_word(chunk, env, idx);
+                env.insert_id(x1);
+                env.insert_op(FixedCosINTEL(x0, x1, x2, x3, x4, x5, x6, x7, x8))
+            }
+            5928 => {
+                let x0 = Writer::read_word(chunk, env, idx);
+                let x1 = Writer::read_word(chunk, env, idx);
+                let x2 = Writer::read_word(chunk, env, idx);
+                let x3 = Writer::read_word(chunk, env, idx);
+                let x4 = Writer::read_word(chunk, env, idx);
+                let x5 = Writer::read_word(chunk, env, idx);
+                let x6 = Writer::read_word(chunk, env, idx);
+                let x7 = Writer::read_word(chunk, env, idx);
+                let x8 = Writer::read_word(chunk, env, idx);
+                env.insert_id(x1);
+                env.insert_op(FixedSinCosINTEL(x0, x1, x2, x3, x4, x5, x6, x7, x8))
+            }
+            5929 => {
+                let x0 = Writer::read_word(chunk, env, idx);
+                let x1 = Writer::read_word(chunk, env, idx);
+                let x2 = Writer::read_word(chunk, env, idx);
+                let x3 = Writer::read_word(chunk, env, idx);
+                let x4 = Writer::read_word(chunk, env, idx);
+                let x5 = Writer::read_word(chunk, env, idx);
+                let x6 = Writer::read_word(chunk, env, idx);
+                let x7 = Writer::read_word(chunk, env, idx);
+                let x8 = Writer::read_word(chunk, env, idx);
+                env.insert_id(x1);
+                env.insert_op(FixedSinPiINTEL(x0, x1, x2, x3, x4, x5, x6, x7, x8))
+            }
+            5930 => {
+                let x0 = Writer::read_word(chunk, env, idx);
+                let x1 = Writer::read_word(chunk, env, idx);
+                let x2 = Writer::read_word(chunk, env, idx);
+                let x3 = Writer::read_word(chunk, env, idx);
+                let x4 = Writer::read_word(chunk, env, idx);
+                let x5 = Writer::read_word(chunk, env, idx);
+                let x6 = Writer::read_word(chunk, env, idx);
+                let x7 = Writer::read_word(chunk, env, idx);
+                let x8 = Writer::read_word(chunk, env, idx);
+                env.insert_id(x1);
+                env.insert_op(FixedCosPiINTEL(x0, x1, x2, x3, x4, x5, x6, x7, x8))
+            }
+            5931 => {
+                let x0 = Writer::read_word(chunk, env, idx);
+                let x1 = Writer::read_word(chunk, env, idx);
+                let x2 = Writer::read_word(chunk, env, idx);
+                let x3 = Writer::read_word(chunk, env, idx);
+                let x4 = Writer::read_word(chunk, env, idx);
+                let x5 = Writer::read_word(chunk, env, idx);
+                let x6 = Writer::read_word(chunk, env, idx);
+                let x7 = Writer::read_word(chunk, env, idx);
+                let x8 = Writer::read_word(chunk, env, idx);
+                env.insert_id(x1);
+                env.insert_op(FixedSinCosPiINTEL(x0, x1, x2, x3, x4, x5, x6, x7, x8))
+            }
+            5932 => {
+                let x0 = Writer::read_word(chunk, env, idx);
+                let x1 = Writer::read_word(chunk, env, idx);
+                let x2 = Writer::read_word(chunk, env, idx);
+                let x3 = Writer::read_word(chunk, env, idx);
+                let x4 = Writer::read_word(chunk, env, idx);
+                let x5 = Writer::read_word(chunk, env, idx);
+                let x6 = Writer::read_word(chunk, env, idx);
+                let x7 = Writer::read_word(chunk, env, idx);
+                let x8 = Writer::read_word(chunk, env, idx);
+                env.insert_id(x1);
+                env.insert_op(FixedLogINTEL(x0, x1, x2, x3, x4, x5, x6, x7, x8))
+            }
+            5933 => {
+                let x0 = Writer::read_word(chunk, env, idx);
+                let x1 = Writer::read_word(chunk, env, idx);
+                let x2 = Writer::read_word(chunk, env, idx);
+                let x3 = Writer::read_word(chunk, env, idx);
+                let x4 = Writer::read_word(chunk, env, idx);
+                let x5 = Writer::read_word(chunk, env, idx);
+                let x6 = Writer::read_word(chunk, env, idx);
+                let x7 = Writer::read_word(chunk, env, idx);
+                let x8 = Writer::read_word(chunk, env, idx);
+                env.insert_id(x1);
+                env.insert_op(FixedExpINTEL(x0, x1, x2, x3, x4, x5, x6, x7, x8))
             }
             5934 => {
                 let x0 = Writer::read_word(chunk, env, idx);
                 let x1 = Writer::read_word(chunk, env, idx);
                 let x2 = Writer::read_word(chunk, env, idx);
-                PtrCastToCrossWorkgroupINTEL(x0, x1, x2)
+                env.insert_id(x1);
+                env.insert_op(PtrCastToCrossWorkgroupINTEL(x0, x1, x2))
             }
             5938 => {
                 let x0 = Writer::read_word(chunk, env, idx);
                 let x1 = Writer::read_word(chunk, env, idx);
                 let x2 = Writer::read_word(chunk, env, idx);
-                CrossWorkgroupCastToPtrINTEL(x0, x1, x2)
+                env.insert_id(x1);
+                env.insert_op(CrossWorkgroupCastToPtrINTEL(x0, x1, x2))
             }
             5946 => {
                 let x0 = Writer::read_word(chunk, env, idx);
                 let x1 = Writer::read_word(chunk, env, idx);
                 let x2 = Writer::read_word(chunk, env, idx);
                 let x3 = Writer::read_word(chunk, env, idx);
-                ReadPipeBlockingINTEL(x0, x1, x2, x3)
+                env.insert_id(x1);
+                env.insert_op(ReadPipeBlockingINTEL(x0, x1, x2, x3))
             }
             5947 => {
                 let x0 = Writer::read_word(chunk, env, idx);
                 let x1 = Writer::read_word(chunk, env, idx);
                 let x2 = Writer::read_word(chunk, env, idx);
                 let x3 = Writer::read_word(chunk, env, idx);
-                WritePipeBlockingINTEL(x0, x1, x2, x3)
+                env.insert_id(x1);
+                env.insert_op(WritePipeBlockingINTEL(x0, x1, x2, x3))
             }
             5949 => {
                 let x0 = Writer::read_word(chunk, env, idx);
                 let x1 = Writer::read_word(chunk, env, idx);
                 let x2 = Writer::read_word(chunk, env, idx);
                 let x3 = Writer::read_word(chunk, env, idx);
-                FPGARegINTEL(x0, x1, x2, x3)
+                env.insert_id(x1);
+                env.insert_op(FPGARegINTEL(x0, x1, x2, x3))
             }
             6016 => {
                 let x0 = Writer::read_word(chunk, env, idx);
                 let x1 = Writer::read_word(chunk, env, idx);
                 let x2 = Writer::read_word(chunk, env, idx);
-                RayQueryGetRayTMinKHR(x0, x1, x2)
+                env.insert_id(x1);
+                env.insert_op(RayQueryGetRayTMinKHR(x0, x1, x2))
             }
             6017 => {
                 let x0 = Writer::read_word(chunk, env, idx);
                 let x1 = Writer::read_word(chunk, env, idx);
                 let x2 = Writer::read_word(chunk, env, idx);
-                RayQueryGetRayFlagsKHR(x0, x1, x2)
+                env.insert_id(x1);
+                env.insert_op(RayQueryGetRayFlagsKHR(x0, x1, x2))
             }
             6018 => {
                 let x0 = Writer::read_word(chunk, env, idx);
                 let x1 = Writer::read_word(chunk, env, idx);
                 let x2 = Writer::read_word(chunk, env, idx);
                 let x3 = Writer::read_word(chunk, env, idx);
-                RayQueryGetIntersectionTKHR(x0, x1, x2, x3)
+                env.insert_id(x1);
+                env.insert_op(RayQueryGetIntersectionTKHR(x0, x1, x2, x3))
             }
             6019 => {
                 let x0 = Writer::read_word(chunk, env, idx);
                 let x1 = Writer::read_word(chunk, env, idx);
                 let x2 = Writer::read_word(chunk, env, idx);
                 let x3 = Writer::read_word(chunk, env, idx);
-                RayQueryGetIntersectionInstanceCustomIndexKHR(x0, x1, x2, x3)
+                env.insert_id(x1);
+                env.insert_op(RayQueryGetIntersectionInstanceCustomIndexKHR(
+                    x0, x1, x2, x3,
+                ))
             }
             6020 => {
                 let x0 = Writer::read_word(chunk, env, idx);
                 let x1 = Writer::read_word(chunk, env, idx);
                 let x2 = Writer::read_word(chunk, env, idx);
                 let x3 = Writer::read_word(chunk, env, idx);
-                RayQueryGetIntersectionInstanceIdKHR(x0, x1, x2, x3)
+                env.insert_id(x1);
+                env.insert_op(RayQueryGetIntersectionInstanceIdKHR(x0, x1, x2, x3))
             }
             6021 => {
                 let x0 = Writer::read_word(chunk, env, idx);
                 let x1 = Writer::read_word(chunk, env, idx);
                 let x2 = Writer::read_word(chunk, env, idx);
                 let x3 = Writer::read_word(chunk, env, idx);
-                RayQueryGetIntersectionInstanceShaderBindingTableRecordOffsetKHR(x0, x1, x2, x3)
+                env.insert_id(x1);
+                env.insert_op(
+                    RayQueryGetIntersectionInstanceShaderBindingTableRecordOffsetKHR(
+                        x0, x1, x2, x3,
+                    ),
+                )
             }
             6022 => {
                 let x0 = Writer::read_word(chunk, env, idx);
                 let x1 = Writer::read_word(chunk, env, idx);
                 let x2 = Writer::read_word(chunk, env, idx);
                 let x3 = Writer::read_word(chunk, env, idx);
-                RayQueryGetIntersectionGeometryIndexKHR(x0, x1, x2, x3)
+                env.insert_id(x1);
+                env.insert_op(RayQueryGetIntersectionGeometryIndexKHR(x0, x1, x2, x3))
             }
             6023 => {
                 let x0 = Writer::read_word(chunk, env, idx);
                 let x1 = Writer::read_word(chunk, env, idx);
                 let x2 = Writer::read_word(chunk, env, idx);
                 let x3 = Writer::read_word(chunk, env, idx);
-                RayQueryGetIntersectionPrimitiveIndexKHR(x0, x1, x2, x3)
+                env.insert_id(x1);
+                env.insert_op(RayQueryGetIntersectionPrimitiveIndexKHR(x0, x1, x2, x3))
             }
             6024 => {
                 let x0 = Writer::read_word(chunk, env, idx);
                 let x1 = Writer::read_word(chunk, env, idx);
                 let x2 = Writer::read_word(chunk, env, idx);
                 let x3 = Writer::read_word(chunk, env, idx);
-                RayQueryGetIntersectionBarycentricsKHR(x0, x1, x2, x3)
+                env.insert_id(x1);
+                env.insert_op(RayQueryGetIntersectionBarycentricsKHR(x0, x1, x2, x3))
             }
             6025 => {
                 let x0 = Writer::read_word(chunk, env, idx);
                 let x1 = Writer::read_word(chunk, env, idx);
                 let x2 = Writer::read_word(chunk, env, idx);
                 let x3 = Writer::read_word(chunk, env, idx);
-                RayQueryGetIntersectionFrontFaceKHR(x0, x1, x2, x3)
+                env.insert_id(x1);
+                env.insert_op(RayQueryGetIntersectionFrontFaceKHR(x0, x1, x2, x3))
             }
             6026 => {
                 let x0 = Writer::read_word(chunk, env, idx);
                 let x1 = Writer::read_word(chunk, env, idx);
                 let x2 = Writer::read_word(chunk, env, idx);
-                RayQueryGetIntersectionCandidateAABBOpaqueKHR(x0, x1, x2)
+                env.insert_id(x1);
+                env.insert_op(RayQueryGetIntersectionCandidateAABBOpaqueKHR(x0, x1, x2))
             }
             6027 => {
                 let x0 = Writer::read_word(chunk, env, idx);
                 let x1 = Writer::read_word(chunk, env, idx);
                 let x2 = Writer::read_word(chunk, env, idx);
                 let x3 = Writer::read_word(chunk, env, idx);
-                RayQueryGetIntersectionObjectRayDirectionKHR(x0, x1, x2, x3)
+                env.insert_id(x1);
+                env.insert_op(RayQueryGetIntersectionObjectRayDirectionKHR(x0, x1, x2, x3))
             }
             6028 => {
                 let x0 = Writer::read_word(chunk, env, idx);
                 let x1 = Writer::read_word(chunk, env, idx);
                 let x2 = Writer::read_word(chunk, env, idx);
                 let x3 = Writer::read_word(chunk, env, idx);
-                RayQueryGetIntersectionObjectRayOriginKHR(x0, x1, x2, x3)
+                env.insert_id(x1);
+                env.insert_op(RayQueryGetIntersectionObjectRayOriginKHR(x0, x1, x2, x3))
             }
             6029 => {
                 let x0 = Writer::read_word(chunk, env, idx);
                 let x1 = Writer::read_word(chunk, env, idx);
                 let x2 = Writer::read_word(chunk, env, idx);
-                RayQueryGetWorldRayDirectionKHR(x0, x1, x2)
+                env.insert_id(x1);
+                env.insert_op(RayQueryGetWorldRayDirectionKHR(x0, x1, x2))
             }
             6030 => {
                 let x0 = Writer::read_word(chunk, env, idx);
                 let x1 = Writer::read_word(chunk, env, idx);
                 let x2 = Writer::read_word(chunk, env, idx);
-                RayQueryGetWorldRayOriginKHR(x0, x1, x2)
+                env.insert_id(x1);
+                env.insert_op(RayQueryGetWorldRayOriginKHR(x0, x1, x2))
             }
             6031 => {
                 let x0 = Writer::read_word(chunk, env, idx);
                 let x1 = Writer::read_word(chunk, env, idx);
                 let x2 = Writer::read_word(chunk, env, idx);
                 let x3 = Writer::read_word(chunk, env, idx);
-                RayQueryGetIntersectionObjectToWorldKHR(x0, x1, x2, x3)
+                env.insert_id(x1);
+                env.insert_op(RayQueryGetIntersectionObjectToWorldKHR(x0, x1, x2, x3))
             }
             6032 => {
                 let x0 = Writer::read_word(chunk, env, idx);
                 let x1 = Writer::read_word(chunk, env, idx);
                 let x2 = Writer::read_word(chunk, env, idx);
                 let x3 = Writer::read_word(chunk, env, idx);
-                RayQueryGetIntersectionWorldToObjectKHR(x0, x1, x2, x3)
+                env.insert_id(x1);
+                env.insert_op(RayQueryGetIntersectionWorldToObjectKHR(x0, x1, x2, x3))
             }
             6035 => {
                 let x0 = Writer::read_word(chunk, env, idx);
@@ -4833,33 +6264,36 @@ impl Opcode {
                 let x3 = Writer::read_word(chunk, env, idx);
                 let x4 = Writer::read_word(chunk, env, idx);
                 let x5 = Writer::read_word(chunk, env, idx);
-                AtomicFAddEXT(x0, x1, x2, x3, x4, x5)
+                env.insert_id(x1);
+                env.insert_op(AtomicFAddEXT(x0, x1, x2, x3, x4, x5))
             }
             6086 => {
                 let x0 = Writer::read_word(chunk, env, idx);
-                TypeBufferSurfaceINTEL(x0)
+                let x1 = Writer::read_word(chunk, env, idx);
+                env.insert_id(x0);
+                env.insert_op(TypeBufferSurfaceINTEL(x0, x1))
             }
             6090 => {
                 let x0 = Writer::read_word(chunk, env, idx);
-                TypeStructContinuedINTEL(x0)
+                env.insert_op(TypeStructContinuedINTEL(x0))
             }
             6091 => {
                 let x0 = Writer::read_word(chunk, env, idx);
-                ConstantCompositeContinuedINTEL(x0)
+                env.insert_op(ConstantCompositeContinuedINTEL(x0))
             }
             6092 => {
                 let x0 = Writer::read_word(chunk, env, idx);
-                SpecConstantCompositeContinuedINTEL(x0)
+                env.insert_op(SpecConstantCompositeContinuedINTEL(x0))
             }
             52 => {
                 let x0 = Writer::read_word(chunk, env, idx);
                 let x1 = Writer::read_word(chunk, env, idx);
                 let x2 = Opcode::read_as_spec_op(x0, x1, chunk, env, idx);
-                SpecConstantOp(x0, x1, Box::new(x2))
+                env.insert_op(SpecConstantOp(x0, x1, Box::new(x2)))
             }
             wtf => panic!("{}", wtf),
         };
-        assert_eq!(*idx - mark, len);
+        assert_eq!(*idx - mark, len, "{:?}", env);
         re
     }
     pub fn write_as_spec_op<Env: Environ>(&self, env: &Env, sink: &mut Vec<u32>) {
@@ -7163,6 +8597,51 @@ impl Opcode {
             }
             IgnoreIntersectionKHR() => {}
             TerminateRayKHR() => {}
+            SDotKHR(x0, x1, x2, x3, x4) => {
+                x0.write_word(env, sink);
+                x1.write_word(env, sink);
+                x2.write_word(env, sink);
+                x3.write_word(env, sink);
+                x4.write_word(env, sink);
+            }
+            UDotKHR(x0, x1, x2, x3, x4) => {
+                x0.write_word(env, sink);
+                x1.write_word(env, sink);
+                x2.write_word(env, sink);
+                x3.write_word(env, sink);
+                x4.write_word(env, sink);
+            }
+            SUDotKHR(x0, x1, x2, x3, x4) => {
+                x0.write_word(env, sink);
+                x1.write_word(env, sink);
+                x2.write_word(env, sink);
+                x3.write_word(env, sink);
+                x4.write_word(env, sink);
+            }
+            SDotAccSatKHR(x0, x1, x2, x3, x4, x5) => {
+                x0.write_word(env, sink);
+                x1.write_word(env, sink);
+                x2.write_word(env, sink);
+                x3.write_word(env, sink);
+                x4.write_word(env, sink);
+                x5.write_word(env, sink);
+            }
+            UDotAccSatKHR(x0, x1, x2, x3, x4, x5) => {
+                x0.write_word(env, sink);
+                x1.write_word(env, sink);
+                x2.write_word(env, sink);
+                x3.write_word(env, sink);
+                x4.write_word(env, sink);
+                x5.write_word(env, sink);
+            }
+            SUDotAccSatKHR(x0, x1, x2, x3, x4, x5) => {
+                x0.write_word(env, sink);
+                x1.write_word(env, sink);
+                x2.write_word(env, sink);
+                x3.write_word(env, sink);
+                x4.write_word(env, sink);
+                x5.write_word(env, sink);
+            }
             TypeRayQueryKHR(x0) => {
                 x0.write_word(env, sink);
             }
@@ -7309,6 +8788,34 @@ impl Opcode {
                 x8.write_word(env, sink);
                 x9.write_word(env, sink);
                 x10.write_word(env, sink);
+            }
+            TraceMotionNV(x0, x1, x2, x3, x4, x5, x6, x7, x8, x9, x10, x11) => {
+                x0.write_word(env, sink);
+                x1.write_word(env, sink);
+                x2.write_word(env, sink);
+                x3.write_word(env, sink);
+                x4.write_word(env, sink);
+                x5.write_word(env, sink);
+                x6.write_word(env, sink);
+                x7.write_word(env, sink);
+                x8.write_word(env, sink);
+                x9.write_word(env, sink);
+                x10.write_word(env, sink);
+                x11.write_word(env, sink);
+            }
+            TraceRayMotionNV(x0, x1, x2, x3, x4, x5, x6, x7, x8, x9, x10, x11) => {
+                x0.write_word(env, sink);
+                x1.write_word(env, sink);
+                x2.write_word(env, sink);
+                x3.write_word(env, sink);
+                x4.write_word(env, sink);
+                x5.write_word(env, sink);
+                x6.write_word(env, sink);
+                x7.write_word(env, sink);
+                x8.write_word(env, sink);
+                x9.write_word(env, sink);
+                x10.write_word(env, sink);
+                x11.write_word(env, sink);
             }
             TypeAccelerationStructureNV(x0) => {
                 x0.write_word(env, sink);
@@ -7545,6 +9052,15 @@ impl Opcode {
                 x3.write_word(env, sink);
                 x4.write_word(env, sink);
                 x5.write_word(env, sink);
+            }
+            AssumeTrueKHR(x0) => {
+                x0.write_word(env, sink);
+            }
+            ExpectKHR(x0, x1, x2, x3) => {
+                x0.write_word(env, sink);
+                x1.write_word(env, sink);
+                x2.write_word(env, sink);
+                x3.write_word(env, sink);
             }
             DecorateString(x0, x1) => {
                 x0.write_word(env, sink);
@@ -8300,8 +9816,546 @@ impl Opcode {
             RestoreMemoryINTEL(x0) => {
                 x0.write_word(env, sink);
             }
+            ArbitraryFloatSinCosPiINTEL(x0, x1, x2, x3, x4, x5, x6, x7, x8) => {
+                x0.write_word(env, sink);
+                x1.write_word(env, sink);
+                x2.write_word(env, sink);
+                x3.write_word(env, sink);
+                x4.write_word(env, sink);
+                x5.write_word(env, sink);
+                x6.write_word(env, sink);
+                x7.write_word(env, sink);
+                x8.write_word(env, sink);
+            }
+            ArbitraryFloatCastINTEL(x0, x1, x2, x3, x4, x5, x6, x7) => {
+                x0.write_word(env, sink);
+                x1.write_word(env, sink);
+                x2.write_word(env, sink);
+                x3.write_word(env, sink);
+                x4.write_word(env, sink);
+                x5.write_word(env, sink);
+                x6.write_word(env, sink);
+                x7.write_word(env, sink);
+            }
+            ArbitraryFloatCastFromIntINTEL(x0, x1, x2, x3, x4, x5, x6, x7) => {
+                x0.write_word(env, sink);
+                x1.write_word(env, sink);
+                x2.write_word(env, sink);
+                x3.write_word(env, sink);
+                x4.write_word(env, sink);
+                x5.write_word(env, sink);
+                x6.write_word(env, sink);
+                x7.write_word(env, sink);
+            }
+            ArbitraryFloatCastToIntINTEL(x0, x1, x2, x3, x4, x5, x6) => {
+                x0.write_word(env, sink);
+                x1.write_word(env, sink);
+                x2.write_word(env, sink);
+                x3.write_word(env, sink);
+                x4.write_word(env, sink);
+                x5.write_word(env, sink);
+                x6.write_word(env, sink);
+            }
+            ArbitraryFloatAddINTEL(x0, x1, x2, x3, x4, x5, x6, x7, x8, x9) => {
+                x0.write_word(env, sink);
+                x1.write_word(env, sink);
+                x2.write_word(env, sink);
+                x3.write_word(env, sink);
+                x4.write_word(env, sink);
+                x5.write_word(env, sink);
+                x6.write_word(env, sink);
+                x7.write_word(env, sink);
+                x8.write_word(env, sink);
+                x9.write_word(env, sink);
+            }
+            ArbitraryFloatSubINTEL(x0, x1, x2, x3, x4, x5, x6, x7, x8, x9) => {
+                x0.write_word(env, sink);
+                x1.write_word(env, sink);
+                x2.write_word(env, sink);
+                x3.write_word(env, sink);
+                x4.write_word(env, sink);
+                x5.write_word(env, sink);
+                x6.write_word(env, sink);
+                x7.write_word(env, sink);
+                x8.write_word(env, sink);
+                x9.write_word(env, sink);
+            }
+            ArbitraryFloatMulINTEL(x0, x1, x2, x3, x4, x5, x6, x7, x8, x9) => {
+                x0.write_word(env, sink);
+                x1.write_word(env, sink);
+                x2.write_word(env, sink);
+                x3.write_word(env, sink);
+                x4.write_word(env, sink);
+                x5.write_word(env, sink);
+                x6.write_word(env, sink);
+                x7.write_word(env, sink);
+                x8.write_word(env, sink);
+                x9.write_word(env, sink);
+            }
+            ArbitraryFloatDivINTEL(x0, x1, x2, x3, x4, x5, x6, x7, x8, x9) => {
+                x0.write_word(env, sink);
+                x1.write_word(env, sink);
+                x2.write_word(env, sink);
+                x3.write_word(env, sink);
+                x4.write_word(env, sink);
+                x5.write_word(env, sink);
+                x6.write_word(env, sink);
+                x7.write_word(env, sink);
+                x8.write_word(env, sink);
+                x9.write_word(env, sink);
+            }
+            ArbitraryFloatGTINTEL(x0, x1, x2, x3, x4, x5) => {
+                x0.write_word(env, sink);
+                x1.write_word(env, sink);
+                x2.write_word(env, sink);
+                x3.write_word(env, sink);
+                x4.write_word(env, sink);
+                x5.write_word(env, sink);
+            }
+            ArbitraryFloatGEINTEL(x0, x1, x2, x3, x4, x5) => {
+                x0.write_word(env, sink);
+                x1.write_word(env, sink);
+                x2.write_word(env, sink);
+                x3.write_word(env, sink);
+                x4.write_word(env, sink);
+                x5.write_word(env, sink);
+            }
+            ArbitraryFloatLTINTEL(x0, x1, x2, x3, x4, x5) => {
+                x0.write_word(env, sink);
+                x1.write_word(env, sink);
+                x2.write_word(env, sink);
+                x3.write_word(env, sink);
+                x4.write_word(env, sink);
+                x5.write_word(env, sink);
+            }
+            ArbitraryFloatLEINTEL(x0, x1, x2, x3, x4, x5) => {
+                x0.write_word(env, sink);
+                x1.write_word(env, sink);
+                x2.write_word(env, sink);
+                x3.write_word(env, sink);
+                x4.write_word(env, sink);
+                x5.write_word(env, sink);
+            }
+            ArbitraryFloatEQINTEL(x0, x1, x2, x3, x4, x5) => {
+                x0.write_word(env, sink);
+                x1.write_word(env, sink);
+                x2.write_word(env, sink);
+                x3.write_word(env, sink);
+                x4.write_word(env, sink);
+                x5.write_word(env, sink);
+            }
+            ArbitraryFloatRecipINTEL(x0, x1, x2, x3, x4, x5, x6, x7) => {
+                x0.write_word(env, sink);
+                x1.write_word(env, sink);
+                x2.write_word(env, sink);
+                x3.write_word(env, sink);
+                x4.write_word(env, sink);
+                x5.write_word(env, sink);
+                x6.write_word(env, sink);
+                x7.write_word(env, sink);
+            }
+            ArbitraryFloatRSqrtINTEL(x0, x1, x2, x3, x4, x5, x6, x7) => {
+                x0.write_word(env, sink);
+                x1.write_word(env, sink);
+                x2.write_word(env, sink);
+                x3.write_word(env, sink);
+                x4.write_word(env, sink);
+                x5.write_word(env, sink);
+                x6.write_word(env, sink);
+                x7.write_word(env, sink);
+            }
+            ArbitraryFloatCbrtINTEL(x0, x1, x2, x3, x4, x5, x6, x7) => {
+                x0.write_word(env, sink);
+                x1.write_word(env, sink);
+                x2.write_word(env, sink);
+                x3.write_word(env, sink);
+                x4.write_word(env, sink);
+                x5.write_word(env, sink);
+                x6.write_word(env, sink);
+                x7.write_word(env, sink);
+            }
+            ArbitraryFloatHypotINTEL(x0, x1, x2, x3, x4, x5, x6, x7, x8, x9) => {
+                x0.write_word(env, sink);
+                x1.write_word(env, sink);
+                x2.write_word(env, sink);
+                x3.write_word(env, sink);
+                x4.write_word(env, sink);
+                x5.write_word(env, sink);
+                x6.write_word(env, sink);
+                x7.write_word(env, sink);
+                x8.write_word(env, sink);
+                x9.write_word(env, sink);
+            }
+            ArbitraryFloatSqrtINTEL(x0, x1, x2, x3, x4, x5, x6, x7) => {
+                x0.write_word(env, sink);
+                x1.write_word(env, sink);
+                x2.write_word(env, sink);
+                x3.write_word(env, sink);
+                x4.write_word(env, sink);
+                x5.write_word(env, sink);
+                x6.write_word(env, sink);
+                x7.write_word(env, sink);
+            }
+            ArbitraryFloatLogINTEL(x0, x1, x2, x3, x4, x5, x6, x7) => {
+                x0.write_word(env, sink);
+                x1.write_word(env, sink);
+                x2.write_word(env, sink);
+                x3.write_word(env, sink);
+                x4.write_word(env, sink);
+                x5.write_word(env, sink);
+                x6.write_word(env, sink);
+                x7.write_word(env, sink);
+            }
+            ArbitraryFloatLog2INTEL(x0, x1, x2, x3, x4, x5, x6, x7) => {
+                x0.write_word(env, sink);
+                x1.write_word(env, sink);
+                x2.write_word(env, sink);
+                x3.write_word(env, sink);
+                x4.write_word(env, sink);
+                x5.write_word(env, sink);
+                x6.write_word(env, sink);
+                x7.write_word(env, sink);
+            }
+            ArbitraryFloatLog10INTEL(x0, x1, x2, x3, x4, x5, x6, x7) => {
+                x0.write_word(env, sink);
+                x1.write_word(env, sink);
+                x2.write_word(env, sink);
+                x3.write_word(env, sink);
+                x4.write_word(env, sink);
+                x5.write_word(env, sink);
+                x6.write_word(env, sink);
+                x7.write_word(env, sink);
+            }
+            ArbitraryFloatLog1pINTEL(x0, x1, x2, x3, x4, x5, x6, x7) => {
+                x0.write_word(env, sink);
+                x1.write_word(env, sink);
+                x2.write_word(env, sink);
+                x3.write_word(env, sink);
+                x4.write_word(env, sink);
+                x5.write_word(env, sink);
+                x6.write_word(env, sink);
+                x7.write_word(env, sink);
+            }
+            ArbitraryFloatExpINTEL(x0, x1, x2, x3, x4, x5, x6, x7) => {
+                x0.write_word(env, sink);
+                x1.write_word(env, sink);
+                x2.write_word(env, sink);
+                x3.write_word(env, sink);
+                x4.write_word(env, sink);
+                x5.write_word(env, sink);
+                x6.write_word(env, sink);
+                x7.write_word(env, sink);
+            }
+            ArbitraryFloatExp2INTEL(x0, x1, x2, x3, x4, x5, x6, x7) => {
+                x0.write_word(env, sink);
+                x1.write_word(env, sink);
+                x2.write_word(env, sink);
+                x3.write_word(env, sink);
+                x4.write_word(env, sink);
+                x5.write_word(env, sink);
+                x6.write_word(env, sink);
+                x7.write_word(env, sink);
+            }
+            ArbitraryFloatExp10INTEL(x0, x1, x2, x3, x4, x5, x6, x7) => {
+                x0.write_word(env, sink);
+                x1.write_word(env, sink);
+                x2.write_word(env, sink);
+                x3.write_word(env, sink);
+                x4.write_word(env, sink);
+                x5.write_word(env, sink);
+                x6.write_word(env, sink);
+                x7.write_word(env, sink);
+            }
+            ArbitraryFloatExpm1INTEL(x0, x1, x2, x3, x4, x5, x6, x7) => {
+                x0.write_word(env, sink);
+                x1.write_word(env, sink);
+                x2.write_word(env, sink);
+                x3.write_word(env, sink);
+                x4.write_word(env, sink);
+                x5.write_word(env, sink);
+                x6.write_word(env, sink);
+                x7.write_word(env, sink);
+            }
+            ArbitraryFloatSinINTEL(x0, x1, x2, x3, x4, x5, x6, x7) => {
+                x0.write_word(env, sink);
+                x1.write_word(env, sink);
+                x2.write_word(env, sink);
+                x3.write_word(env, sink);
+                x4.write_word(env, sink);
+                x5.write_word(env, sink);
+                x6.write_word(env, sink);
+                x7.write_word(env, sink);
+            }
+            ArbitraryFloatCosINTEL(x0, x1, x2, x3, x4, x5, x6, x7) => {
+                x0.write_word(env, sink);
+                x1.write_word(env, sink);
+                x2.write_word(env, sink);
+                x3.write_word(env, sink);
+                x4.write_word(env, sink);
+                x5.write_word(env, sink);
+                x6.write_word(env, sink);
+                x7.write_word(env, sink);
+            }
+            ArbitraryFloatSinCosINTEL(x0, x1, x2, x3, x4, x5, x6, x7) => {
+                x0.write_word(env, sink);
+                x1.write_word(env, sink);
+                x2.write_word(env, sink);
+                x3.write_word(env, sink);
+                x4.write_word(env, sink);
+                x5.write_word(env, sink);
+                x6.write_word(env, sink);
+                x7.write_word(env, sink);
+            }
+            ArbitraryFloatSinPiINTEL(x0, x1, x2, x3, x4, x5, x6, x7) => {
+                x0.write_word(env, sink);
+                x1.write_word(env, sink);
+                x2.write_word(env, sink);
+                x3.write_word(env, sink);
+                x4.write_word(env, sink);
+                x5.write_word(env, sink);
+                x6.write_word(env, sink);
+                x7.write_word(env, sink);
+            }
+            ArbitraryFloatCosPiINTEL(x0, x1, x2, x3, x4, x5, x6, x7) => {
+                x0.write_word(env, sink);
+                x1.write_word(env, sink);
+                x2.write_word(env, sink);
+                x3.write_word(env, sink);
+                x4.write_word(env, sink);
+                x5.write_word(env, sink);
+                x6.write_word(env, sink);
+                x7.write_word(env, sink);
+            }
+            ArbitraryFloatASinINTEL(x0, x1, x2, x3, x4, x5, x6, x7) => {
+                x0.write_word(env, sink);
+                x1.write_word(env, sink);
+                x2.write_word(env, sink);
+                x3.write_word(env, sink);
+                x4.write_word(env, sink);
+                x5.write_word(env, sink);
+                x6.write_word(env, sink);
+                x7.write_word(env, sink);
+            }
+            ArbitraryFloatASinPiINTEL(x0, x1, x2, x3, x4, x5, x6, x7) => {
+                x0.write_word(env, sink);
+                x1.write_word(env, sink);
+                x2.write_word(env, sink);
+                x3.write_word(env, sink);
+                x4.write_word(env, sink);
+                x5.write_word(env, sink);
+                x6.write_word(env, sink);
+                x7.write_word(env, sink);
+            }
+            ArbitraryFloatACosINTEL(x0, x1, x2, x3, x4, x5, x6, x7) => {
+                x0.write_word(env, sink);
+                x1.write_word(env, sink);
+                x2.write_word(env, sink);
+                x3.write_word(env, sink);
+                x4.write_word(env, sink);
+                x5.write_word(env, sink);
+                x6.write_word(env, sink);
+                x7.write_word(env, sink);
+            }
+            ArbitraryFloatACosPiINTEL(x0, x1, x2, x3, x4, x5, x6, x7) => {
+                x0.write_word(env, sink);
+                x1.write_word(env, sink);
+                x2.write_word(env, sink);
+                x3.write_word(env, sink);
+                x4.write_word(env, sink);
+                x5.write_word(env, sink);
+                x6.write_word(env, sink);
+                x7.write_word(env, sink);
+            }
+            ArbitraryFloatATanINTEL(x0, x1, x2, x3, x4, x5, x6, x7) => {
+                x0.write_word(env, sink);
+                x1.write_word(env, sink);
+                x2.write_word(env, sink);
+                x3.write_word(env, sink);
+                x4.write_word(env, sink);
+                x5.write_word(env, sink);
+                x6.write_word(env, sink);
+                x7.write_word(env, sink);
+            }
+            ArbitraryFloatATanPiINTEL(x0, x1, x2, x3, x4, x5, x6, x7) => {
+                x0.write_word(env, sink);
+                x1.write_word(env, sink);
+                x2.write_word(env, sink);
+                x3.write_word(env, sink);
+                x4.write_word(env, sink);
+                x5.write_word(env, sink);
+                x6.write_word(env, sink);
+                x7.write_word(env, sink);
+            }
+            ArbitraryFloatATan2INTEL(x0, x1, x2, x3, x4, x5, x6, x7, x8, x9) => {
+                x0.write_word(env, sink);
+                x1.write_word(env, sink);
+                x2.write_word(env, sink);
+                x3.write_word(env, sink);
+                x4.write_word(env, sink);
+                x5.write_word(env, sink);
+                x6.write_word(env, sink);
+                x7.write_word(env, sink);
+                x8.write_word(env, sink);
+                x9.write_word(env, sink);
+            }
+            ArbitraryFloatPowINTEL(x0, x1, x2, x3, x4, x5, x6, x7, x8, x9) => {
+                x0.write_word(env, sink);
+                x1.write_word(env, sink);
+                x2.write_word(env, sink);
+                x3.write_word(env, sink);
+                x4.write_word(env, sink);
+                x5.write_word(env, sink);
+                x6.write_word(env, sink);
+                x7.write_word(env, sink);
+                x8.write_word(env, sink);
+                x9.write_word(env, sink);
+            }
+            ArbitraryFloatPowRINTEL(x0, x1, x2, x3, x4, x5, x6, x7, x8, x9) => {
+                x0.write_word(env, sink);
+                x1.write_word(env, sink);
+                x2.write_word(env, sink);
+                x3.write_word(env, sink);
+                x4.write_word(env, sink);
+                x5.write_word(env, sink);
+                x6.write_word(env, sink);
+                x7.write_word(env, sink);
+                x8.write_word(env, sink);
+                x9.write_word(env, sink);
+            }
+            ArbitraryFloatPowNINTEL(x0, x1, x2, x3, x4, x5, x6, x7, x8) => {
+                x0.write_word(env, sink);
+                x1.write_word(env, sink);
+                x2.write_word(env, sink);
+                x3.write_word(env, sink);
+                x4.write_word(env, sink);
+                x5.write_word(env, sink);
+                x6.write_word(env, sink);
+                x7.write_word(env, sink);
+                x8.write_word(env, sink);
+            }
             LoopControlINTEL(x0) => {
                 x0.write_word(env, sink);
+            }
+            FixedSqrtINTEL(x0, x1, x2, x3, x4, x5, x6, x7, x8) => {
+                x0.write_word(env, sink);
+                x1.write_word(env, sink);
+                x2.write_word(env, sink);
+                x3.write_word(env, sink);
+                x4.write_word(env, sink);
+                x5.write_word(env, sink);
+                x6.write_word(env, sink);
+                x7.write_word(env, sink);
+                x8.write_word(env, sink);
+            }
+            FixedRecipINTEL(x0, x1, x2, x3, x4, x5, x6, x7, x8) => {
+                x0.write_word(env, sink);
+                x1.write_word(env, sink);
+                x2.write_word(env, sink);
+                x3.write_word(env, sink);
+                x4.write_word(env, sink);
+                x5.write_word(env, sink);
+                x6.write_word(env, sink);
+                x7.write_word(env, sink);
+                x8.write_word(env, sink);
+            }
+            FixedRsqrtINTEL(x0, x1, x2, x3, x4, x5, x6, x7, x8) => {
+                x0.write_word(env, sink);
+                x1.write_word(env, sink);
+                x2.write_word(env, sink);
+                x3.write_word(env, sink);
+                x4.write_word(env, sink);
+                x5.write_word(env, sink);
+                x6.write_word(env, sink);
+                x7.write_word(env, sink);
+                x8.write_word(env, sink);
+            }
+            FixedSinINTEL(x0, x1, x2, x3, x4, x5, x6, x7, x8) => {
+                x0.write_word(env, sink);
+                x1.write_word(env, sink);
+                x2.write_word(env, sink);
+                x3.write_word(env, sink);
+                x4.write_word(env, sink);
+                x5.write_word(env, sink);
+                x6.write_word(env, sink);
+                x7.write_word(env, sink);
+                x8.write_word(env, sink);
+            }
+            FixedCosINTEL(x0, x1, x2, x3, x4, x5, x6, x7, x8) => {
+                x0.write_word(env, sink);
+                x1.write_word(env, sink);
+                x2.write_word(env, sink);
+                x3.write_word(env, sink);
+                x4.write_word(env, sink);
+                x5.write_word(env, sink);
+                x6.write_word(env, sink);
+                x7.write_word(env, sink);
+                x8.write_word(env, sink);
+            }
+            FixedSinCosINTEL(x0, x1, x2, x3, x4, x5, x6, x7, x8) => {
+                x0.write_word(env, sink);
+                x1.write_word(env, sink);
+                x2.write_word(env, sink);
+                x3.write_word(env, sink);
+                x4.write_word(env, sink);
+                x5.write_word(env, sink);
+                x6.write_word(env, sink);
+                x7.write_word(env, sink);
+                x8.write_word(env, sink);
+            }
+            FixedSinPiINTEL(x0, x1, x2, x3, x4, x5, x6, x7, x8) => {
+                x0.write_word(env, sink);
+                x1.write_word(env, sink);
+                x2.write_word(env, sink);
+                x3.write_word(env, sink);
+                x4.write_word(env, sink);
+                x5.write_word(env, sink);
+                x6.write_word(env, sink);
+                x7.write_word(env, sink);
+                x8.write_word(env, sink);
+            }
+            FixedCosPiINTEL(x0, x1, x2, x3, x4, x5, x6, x7, x8) => {
+                x0.write_word(env, sink);
+                x1.write_word(env, sink);
+                x2.write_word(env, sink);
+                x3.write_word(env, sink);
+                x4.write_word(env, sink);
+                x5.write_word(env, sink);
+                x6.write_word(env, sink);
+                x7.write_word(env, sink);
+                x8.write_word(env, sink);
+            }
+            FixedSinCosPiINTEL(x0, x1, x2, x3, x4, x5, x6, x7, x8) => {
+                x0.write_word(env, sink);
+                x1.write_word(env, sink);
+                x2.write_word(env, sink);
+                x3.write_word(env, sink);
+                x4.write_word(env, sink);
+                x5.write_word(env, sink);
+                x6.write_word(env, sink);
+                x7.write_word(env, sink);
+                x8.write_word(env, sink);
+            }
+            FixedLogINTEL(x0, x1, x2, x3, x4, x5, x6, x7, x8) => {
+                x0.write_word(env, sink);
+                x1.write_word(env, sink);
+                x2.write_word(env, sink);
+                x3.write_word(env, sink);
+                x4.write_word(env, sink);
+                x5.write_word(env, sink);
+                x6.write_word(env, sink);
+                x7.write_word(env, sink);
+                x8.write_word(env, sink);
+            }
+            FixedExpINTEL(x0, x1, x2, x3, x4, x5, x6, x7, x8) => {
+                x0.write_word(env, sink);
+                x1.write_word(env, sink);
+                x2.write_word(env, sink);
+                x3.write_word(env, sink);
+                x4.write_word(env, sink);
+                x5.write_word(env, sink);
+                x6.write_word(env, sink);
+                x7.write_word(env, sink);
+                x8.write_word(env, sink);
             }
             PtrCastToCrossWorkgroupINTEL(x0, x1, x2) => {
                 x0.write_word(env, sink);
@@ -8436,8 +10490,9 @@ impl Opcode {
                 x4.write_word(env, sink);
                 x5.write_word(env, sink);
             }
-            TypeBufferSurfaceINTEL(x0) => {
+            TypeBufferSurfaceINTEL(x0, x1) => {
                 x0.write_word(env, sink);
+                x1.write_word(env, sink);
             }
             TypeStructContinuedINTEL(x0) => {
                 x0.write_word(env, sink);
@@ -8458,7 +10513,7 @@ impl Opcode {
     }
 }
 #[repr(u32)]
-#[derive(Debug, Copy, Clone, Eq, PartialEq)]
+#[derive(Debug, Clone, Eq, PartialEq)]
 pub enum ImageOperands {
     None() = 0,
     Bias(ID) = 1,
@@ -8520,7 +10575,7 @@ impl<Env: Environ> Writer<Env> for ImageOperands {
             _ => (),
         }
     }
-    fn read_word(chunk: &[u32], env: &mut Env, idx: &mut u32) -> Self {
+    fn read_word(chunk: &[u32], env: &mut Env, idx: &mut usize) -> Self {
         use ImageOperands::*;
         *idx += 1;
         match chunk[*idx as usize - 1] {
@@ -8575,7 +10630,7 @@ impl<Env: Environ> Writer<Env> for ImageOperands {
     }
 }
 #[repr(u32)]
-#[derive(Debug, Copy, Clone, Eq, PartialEq)]
+#[derive(Debug, Clone, Eq, PartialEq)]
 pub enum FPFastMathMode {
     None() = 0,
     NotNaN() = 1,
@@ -8599,7 +10654,7 @@ impl<Env: Environ> Writer<Env> for FPFastMathMode {
             _ => (),
         }
     }
-    fn read_word(chunk: &[u32], env: &mut Env, idx: &mut u32) -> Self {
+    fn read_word(chunk: &[u32], env: &mut Env, idx: &mut usize) -> Self {
         use FPFastMathMode::*;
         *idx += 1;
         match chunk[*idx as usize - 1] {
@@ -8616,7 +10671,7 @@ impl<Env: Environ> Writer<Env> for FPFastMathMode {
     }
 }
 #[repr(u32)]
-#[derive(Debug, Copy, Clone, Eq, PartialEq)]
+#[derive(Debug, Clone, Eq, PartialEq)]
 pub enum SelectionControl {
     None() = 0,
     Flatten() = 1,
@@ -8635,7 +10690,7 @@ impl<Env: Environ> Writer<Env> for SelectionControl {
             _ => (),
         }
     }
-    fn read_word(chunk: &[u32], env: &mut Env, idx: &mut u32) -> Self {
+    fn read_word(chunk: &[u32], env: &mut Env, idx: &mut usize) -> Self {
         use SelectionControl::*;
         *idx += 1;
         match chunk[*idx as usize - 1] {
@@ -8647,7 +10702,7 @@ impl<Env: Environ> Writer<Env> for SelectionControl {
     }
 }
 #[repr(u32)]
-#[derive(Debug, Copy, Clone, Eq, PartialEq)]
+#[derive(Debug, Clone, Eq, PartialEq)]
 pub enum LoopControl {
     None() = 0,
     Unroll() = 1,
@@ -8723,7 +10778,7 @@ impl<Env: Environ> Writer<Env> for LoopControl {
             _ => (),
         }
     }
-    fn read_word(chunk: &[u32], env: &mut Env, idx: &mut u32) -> Self {
+    fn read_word(chunk: &[u32], env: &mut Env, idx: &mut usize) -> Self {
         use LoopControl::*;
         *idx += 1;
         match chunk[*idx as usize - 1] {
@@ -8792,13 +10847,14 @@ impl<Env: Environ> Writer<Env> for LoopControl {
     }
 }
 #[repr(u32)]
-#[derive(Debug, Copy, Clone, Eq, PartialEq)]
+#[derive(Debug, Clone, Eq, PartialEq)]
 pub enum FunctionControl {
     None() = 0,
     Inline() = 1,
     DontInline() = 2,
     Pure() = 4,
     Const() = 8,
+    OptNoneINTEL() = 65536,
 }
 impl FunctionControl {
     pub fn opcode(&self) -> u32 {
@@ -8813,7 +10869,7 @@ impl<Env: Environ> Writer<Env> for FunctionControl {
             _ => (),
         }
     }
-    fn read_word(chunk: &[u32], env: &mut Env, idx: &mut u32) -> Self {
+    fn read_word(chunk: &[u32], env: &mut Env, idx: &mut usize) -> Self {
         use FunctionControl::*;
         *idx += 1;
         match chunk[*idx as usize - 1] {
@@ -8822,12 +10878,13 @@ impl<Env: Environ> Writer<Env> for FunctionControl {
             2 => DontInline(),
             4 => Pure(),
             8 => Const(),
+            65536 => OptNoneINTEL(),
             _ => panic!(),
         }
     }
 }
 #[repr(u32)]
-#[derive(Debug, Copy, Clone, Eq, PartialEq)]
+#[derive(Debug, Clone, Eq, PartialEq)]
 pub enum MemorySemantics {
     Relaxed() = 0,
     Acquire() = 2,
@@ -8858,7 +10915,7 @@ impl<Env: Environ> Writer<Env> for MemorySemantics {
             _ => (),
         }
     }
-    fn read_word(chunk: &[u32], env: &mut Env, idx: &mut u32) -> Self {
+    fn read_word(chunk: &[u32], env: &mut Env, idx: &mut usize) -> Self {
         use MemorySemantics::*;
         *idx += 1;
         match chunk[*idx as usize - 1] {
@@ -8882,7 +10939,7 @@ impl<Env: Environ> Writer<Env> for MemorySemantics {
     }
 }
 #[repr(u32)]
-#[derive(Debug, Copy, Clone, Eq, PartialEq)]
+#[derive(Debug, Clone, Eq, PartialEq)]
 pub enum MemoryAccess {
     None() = 0,
     Volatile() = 1,
@@ -8914,7 +10971,7 @@ impl<Env: Environ> Writer<Env> for MemoryAccess {
             _ => (),
         }
     }
-    fn read_word(chunk: &[u32], env: &mut Env, idx: &mut u32) -> Self {
+    fn read_word(chunk: &[u32], env: &mut Env, idx: &mut usize) -> Self {
         use MemoryAccess::*;
         *idx += 1;
         match chunk[*idx as usize - 1] {
@@ -8939,7 +10996,7 @@ impl<Env: Environ> Writer<Env> for MemoryAccess {
     }
 }
 #[repr(u32)]
-#[derive(Debug, Copy, Clone, Eq, PartialEq)]
+#[derive(Debug, Clone, Eq, PartialEq)]
 pub enum KernelProfilingInfo {
     None() = 0,
     CmdExecTime() = 1,
@@ -8957,7 +11014,7 @@ impl<Env: Environ> Writer<Env> for KernelProfilingInfo {
             _ => (),
         }
     }
-    fn read_word(chunk: &[u32], env: &mut Env, idx: &mut u32) -> Self {
+    fn read_word(chunk: &[u32], env: &mut Env, idx: &mut usize) -> Self {
         use KernelProfilingInfo::*;
         *idx += 1;
         match chunk[*idx as usize - 1] {
@@ -8968,7 +11025,7 @@ impl<Env: Environ> Writer<Env> for KernelProfilingInfo {
     }
 }
 #[repr(u32)]
-#[derive(Debug, Copy, Clone, Eq, PartialEq)]
+#[derive(Debug, Clone, Eq, PartialEq)]
 pub enum RayFlags {
     NoneKHR() = 0,
     OpaqueKHR() = 1,
@@ -8995,7 +11052,7 @@ impl<Env: Environ> Writer<Env> for RayFlags {
             _ => (),
         }
     }
-    fn read_word(chunk: &[u32], env: &mut Env, idx: &mut u32) -> Self {
+    fn read_word(chunk: &[u32], env: &mut Env, idx: &mut usize) -> Self {
         use RayFlags::*;
         *idx += 1;
         match chunk[*idx as usize - 1] {
@@ -9015,7 +11072,7 @@ impl<Env: Environ> Writer<Env> for RayFlags {
     }
 }
 #[repr(u32)]
-#[derive(Debug, Copy, Clone, Eq, PartialEq)]
+#[derive(Debug, Clone, Eq, PartialEq)]
 pub enum FragmentShadingRate {
     Vertical2Pixels() = 1,
     Vertical4Pixels() = 2,
@@ -9035,7 +11092,7 @@ impl<Env: Environ> Writer<Env> for FragmentShadingRate {
             _ => (),
         }
     }
-    fn read_word(chunk: &[u32], env: &mut Env, idx: &mut u32) -> Self {
+    fn read_word(chunk: &[u32], env: &mut Env, idx: &mut usize) -> Self {
         use FragmentShadingRate::*;
         *idx += 1;
         match chunk[*idx as usize - 1] {
@@ -9048,7 +11105,7 @@ impl<Env: Environ> Writer<Env> for FragmentShadingRate {
     }
 }
 #[repr(u32)]
-#[derive(Debug, Copy, Clone, Eq, PartialEq)]
+#[derive(Debug, Clone, Eq, PartialEq)]
 pub enum SourceLanguage {
     Unknown() = 0,
     ESSL() = 1,
@@ -9056,6 +11113,7 @@ pub enum SourceLanguage {
     OpenCL_C() = 3,
     OpenCL_CPP() = 4,
     HLSL() = 5,
+    CPP_for_OpenCL() = 6,
 }
 impl SourceLanguage {
     pub fn opcode(&self) -> u32 {
@@ -9070,7 +11128,7 @@ impl<Env: Environ> Writer<Env> for SourceLanguage {
             _ => (),
         }
     }
-    fn read_word(chunk: &[u32], env: &mut Env, idx: &mut u32) -> Self {
+    fn read_word(chunk: &[u32], env: &mut Env, idx: &mut usize) -> Self {
         use SourceLanguage::*;
         *idx += 1;
         match chunk[*idx as usize - 1] {
@@ -9080,12 +11138,13 @@ impl<Env: Environ> Writer<Env> for SourceLanguage {
             3 => OpenCL_C(),
             4 => OpenCL_CPP(),
             5 => HLSL(),
+            6 => CPP_for_OpenCL(),
             _ => panic!(),
         }
     }
 }
 #[repr(u32)]
-#[derive(Debug, Copy, Clone, Eq, PartialEq)]
+#[derive(Debug, Clone, Eq, PartialEq)]
 pub enum ExecutionModel {
     Vertex() = 0,
     TessellationControl() = 1,
@@ -9116,7 +11175,7 @@ impl<Env: Environ> Writer<Env> for ExecutionModel {
             _ => (),
         }
     }
-    fn read_word(chunk: &[u32], env: &mut Env, idx: &mut u32) -> Self {
+    fn read_word(chunk: &[u32], env: &mut Env, idx: &mut usize) -> Self {
         use ExecutionModel::*;
         *idx += 1;
         match chunk[*idx as usize - 1] {
@@ -9140,7 +11199,7 @@ impl<Env: Environ> Writer<Env> for ExecutionModel {
     }
 }
 #[repr(u32)]
-#[derive(Debug, Copy, Clone, Eq, PartialEq)]
+#[derive(Debug, Clone, Eq, PartialEq)]
 pub enum AddressingModel {
     Logical() = 0,
     Physical32() = 1,
@@ -9160,7 +11219,7 @@ impl<Env: Environ> Writer<Env> for AddressingModel {
             _ => (),
         }
     }
-    fn read_word(chunk: &[u32], env: &mut Env, idx: &mut u32) -> Self {
+    fn read_word(chunk: &[u32], env: &mut Env, idx: &mut usize) -> Self {
         use AddressingModel::*;
         *idx += 1;
         match chunk[*idx as usize - 1] {
@@ -9173,7 +11232,7 @@ impl<Env: Environ> Writer<Env> for AddressingModel {
     }
 }
 #[repr(u32)]
-#[derive(Debug, Copy, Clone, Eq, PartialEq)]
+#[derive(Debug, Clone, Eq, PartialEq)]
 pub enum MemoryModel {
     Simple() = 0,
     GLSL450() = 1,
@@ -9193,7 +11252,7 @@ impl<Env: Environ> Writer<Env> for MemoryModel {
             _ => (),
         }
     }
-    fn read_word(chunk: &[u32], env: &mut Env, idx: &mut u32) -> Self {
+    fn read_word(chunk: &[u32], env: &mut Env, idx: &mut usize) -> Self {
         use MemoryModel::*;
         *idx += 1;
         match chunk[*idx as usize - 1] {
@@ -9206,7 +11265,7 @@ impl<Env: Environ> Writer<Env> for MemoryModel {
     }
 }
 #[repr(u32)]
-#[derive(Debug, Copy, Clone, Eq, PartialEq)]
+#[derive(Debug, Clone, Eq, PartialEq)]
 pub enum ExecutionMode {
     Invocations(u32) = 0,
     SpacingEqual() = 1,
@@ -9245,7 +11304,8 @@ pub enum ExecutionMode {
     SubgroupsPerWorkgroup(u32) = 36,
     SubgroupsPerWorkgroupId(ID) = 37,
     LocalSizeId(ID, ID, ID) = 38,
-    LocalSizeHintId(ID) = 39,
+    LocalSizeHintId(ID, ID, ID) = 39,
+    SubgroupUniformControlFlowKHR() = 4421,
     PostDepthCoverage() = 4446,
     DenormPreserve(u32) = 4459,
     DenormFlushToZero(u32) = 4460,
@@ -9318,8 +11378,10 @@ impl<Env: Environ> Writer<Env> for ExecutionMode {
                 x1.write_word(env, sink);
                 x2.write_word(env, sink);
             }
-            LocalSizeHintId(x0) => {
+            LocalSizeHintId(x0, x1, x2) => {
                 x0.write_word(env, sink);
+                x1.write_word(env, sink);
+                x2.write_word(env, sink);
             }
             DenormPreserve(x0) => {
                 x0.write_word(env, sink);
@@ -9371,7 +11433,7 @@ impl<Env: Environ> Writer<Env> for ExecutionMode {
             _ => (),
         }
     }
-    fn read_word(chunk: &[u32], env: &mut Env, idx: &mut u32) -> Self {
+    fn read_word(chunk: &[u32], env: &mut Env, idx: &mut usize) -> Self {
         use ExecutionMode::*;
         *idx += 1;
         match chunk[*idx as usize - 1] {
@@ -9447,8 +11509,11 @@ impl<Env: Environ> Writer<Env> for ExecutionMode {
             }
             39 => {
                 let x0 = Writer::read_word(chunk, env, idx);
-                LocalSizeHintId(x0)
+                let x1 = Writer::read_word(chunk, env, idx);
+                let x2 = Writer::read_word(chunk, env, idx);
+                LocalSizeHintId(x0, x1, x2)
             }
+            4421 => SubgroupUniformControlFlowKHR(),
             4446 => PostDepthCoverage(),
             4459 => {
                 let x0 = Writer::read_word(chunk, env, idx);
@@ -9529,7 +11594,7 @@ impl<Env: Environ> Writer<Env> for ExecutionMode {
     }
 }
 #[repr(u32)]
-#[derive(Debug, Copy, Clone, Eq, PartialEq)]
+#[derive(Debug, Clone, Eq, PartialEq)]
 pub enum StorageClass {
     UniformConstant() = 0,
     Input() = 1,
@@ -9568,7 +11633,7 @@ impl<Env: Environ> Writer<Env> for StorageClass {
             _ => (),
         }
     }
-    fn read_word(chunk: &[u32], env: &mut Env, idx: &mut u32) -> Self {
+    fn read_word(chunk: &[u32], env: &mut Env, idx: &mut usize) -> Self {
         use StorageClass::*;
         *idx += 1;
         match chunk[*idx as usize - 1] {
@@ -9600,7 +11665,7 @@ impl<Env: Environ> Writer<Env> for StorageClass {
     }
 }
 #[repr(u32)]
-#[derive(Debug, Copy, Clone, Eq, PartialEq)]
+#[derive(Debug, Clone, Eq, PartialEq)]
 pub enum Dim {
     _1D() = 0,
     _2D() = 1,
@@ -9623,7 +11688,7 @@ impl<Env: Environ> Writer<Env> for Dim {
             _ => (),
         }
     }
-    fn read_word(chunk: &[u32], env: &mut Env, idx: &mut u32) -> Self {
+    fn read_word(chunk: &[u32], env: &mut Env, idx: &mut usize) -> Self {
         use Dim::*;
         *idx += 1;
         match chunk[*idx as usize - 1] {
@@ -9639,7 +11704,7 @@ impl<Env: Environ> Writer<Env> for Dim {
     }
 }
 #[repr(u32)]
-#[derive(Debug, Copy, Clone, Eq, PartialEq)]
+#[derive(Debug, Clone, Eq, PartialEq)]
 pub enum SamplerAddressingMode {
     None() = 0,
     ClampToEdge() = 1,
@@ -9660,7 +11725,7 @@ impl<Env: Environ> Writer<Env> for SamplerAddressingMode {
             _ => (),
         }
     }
-    fn read_word(chunk: &[u32], env: &mut Env, idx: &mut u32) -> Self {
+    fn read_word(chunk: &[u32], env: &mut Env, idx: &mut usize) -> Self {
         use SamplerAddressingMode::*;
         *idx += 1;
         match chunk[*idx as usize - 1] {
@@ -9674,7 +11739,7 @@ impl<Env: Environ> Writer<Env> for SamplerAddressingMode {
     }
 }
 #[repr(u32)]
-#[derive(Debug, Copy, Clone, Eq, PartialEq)]
+#[derive(Debug, Clone, Eq, PartialEq)]
 pub enum SamplerFilterMode {
     Nearest() = 0,
     Linear() = 1,
@@ -9692,7 +11757,7 @@ impl<Env: Environ> Writer<Env> for SamplerFilterMode {
             _ => (),
         }
     }
-    fn read_word(chunk: &[u32], env: &mut Env, idx: &mut u32) -> Self {
+    fn read_word(chunk: &[u32], env: &mut Env, idx: &mut usize) -> Self {
         use SamplerFilterMode::*;
         *idx += 1;
         match chunk[*idx as usize - 1] {
@@ -9703,7 +11768,7 @@ impl<Env: Environ> Writer<Env> for SamplerFilterMode {
     }
 }
 #[repr(u32)]
-#[derive(Debug, Copy, Clone, Eq, PartialEq)]
+#[derive(Debug, Clone, Eq, PartialEq)]
 pub enum ImageFormat {
     Unknown() = 0,
     Rgba32f() = 1,
@@ -9761,7 +11826,7 @@ impl<Env: Environ> Writer<Env> for ImageFormat {
             _ => (),
         }
     }
-    fn read_word(chunk: &[u32], env: &mut Env, idx: &mut u32) -> Self {
+    fn read_word(chunk: &[u32], env: &mut Env, idx: &mut usize) -> Self {
         use ImageFormat::*;
         *idx += 1;
         match chunk[*idx as usize - 1] {
@@ -9812,7 +11877,7 @@ impl<Env: Environ> Writer<Env> for ImageFormat {
     }
 }
 #[repr(u32)]
-#[derive(Debug, Copy, Clone, Eq, PartialEq)]
+#[derive(Debug, Clone, Eq, PartialEq)]
 pub enum ImageChannelOrder {
     R() = 0,
     A() = 1,
@@ -9848,7 +11913,7 @@ impl<Env: Environ> Writer<Env> for ImageChannelOrder {
             _ => (),
         }
     }
-    fn read_word(chunk: &[u32], env: &mut Env, idx: &mut u32) -> Self {
+    fn read_word(chunk: &[u32], env: &mut Env, idx: &mut usize) -> Self {
         use ImageChannelOrder::*;
         *idx += 1;
         match chunk[*idx as usize - 1] {
@@ -9877,7 +11942,7 @@ impl<Env: Environ> Writer<Env> for ImageChannelOrder {
     }
 }
 #[repr(u32)]
-#[derive(Debug, Copy, Clone, Eq, PartialEq)]
+#[derive(Debug, Clone, Eq, PartialEq)]
 pub enum ImageChannelDataType {
     SnormInt8() = 0,
     SnormInt16() = 1,
@@ -9910,7 +11975,7 @@ impl<Env: Environ> Writer<Env> for ImageChannelDataType {
             _ => (),
         }
     }
-    fn read_word(chunk: &[u32], env: &mut Env, idx: &mut u32) -> Self {
+    fn read_word(chunk: &[u32], env: &mut Env, idx: &mut usize) -> Self {
         use ImageChannelDataType::*;
         *idx += 1;
         match chunk[*idx as usize - 1] {
@@ -9936,7 +12001,7 @@ impl<Env: Environ> Writer<Env> for ImageChannelDataType {
     }
 }
 #[repr(u32)]
-#[derive(Debug, Copy, Clone, Eq, PartialEq)]
+#[derive(Debug, Clone, Eq, PartialEq)]
 pub enum FPRoundingMode {
     RTE() = 0,
     RTZ() = 1,
@@ -9956,7 +12021,7 @@ impl<Env: Environ> Writer<Env> for FPRoundingMode {
             _ => (),
         }
     }
-    fn read_word(chunk: &[u32], env: &mut Env, idx: &mut u32) -> Self {
+    fn read_word(chunk: &[u32], env: &mut Env, idx: &mut usize) -> Self {
         use FPRoundingMode::*;
         *idx += 1;
         match chunk[*idx as usize - 1] {
@@ -9969,7 +12034,7 @@ impl<Env: Environ> Writer<Env> for FPRoundingMode {
     }
 }
 #[repr(u32)]
-#[derive(Debug, Copy, Clone, Eq, PartialEq)]
+#[derive(Debug, Clone, Eq, PartialEq)]
 pub enum FPDenormMode {
     Preserve() = 0,
     FlushToZero() = 1,
@@ -9987,7 +12052,7 @@ impl<Env: Environ> Writer<Env> for FPDenormMode {
             _ => (),
         }
     }
-    fn read_word(chunk: &[u32], env: &mut Env, idx: &mut u32) -> Self {
+    fn read_word(chunk: &[u32], env: &mut Env, idx: &mut usize) -> Self {
         use FPDenormMode::*;
         *idx += 1;
         match chunk[*idx as usize - 1] {
@@ -9998,7 +12063,48 @@ impl<Env: Environ> Writer<Env> for FPDenormMode {
     }
 }
 #[repr(u32)]
-#[derive(Debug, Copy, Clone, Eq, PartialEq)]
+#[derive(Debug, Clone, Eq, PartialEq)]
+pub enum QuantizationModes {
+    TRN() = 0,
+    TRN_ZERO() = 1,
+    RND() = 2,
+    RND_ZERO() = 3,
+    RND_INF() = 4,
+    RND_MIN_INF() = 5,
+    RND_CONV() = 6,
+    RND_CONV_ODD() = 7,
+}
+impl QuantizationModes {
+    pub fn opcode(&self) -> u32 {
+        unsafe { std::mem::transmute_copy(self) }
+    }
+}
+impl<Env: Environ> Writer<Env> for QuantizationModes {
+    fn write_word(&self, env: &Env, sink: &mut Vec<u32>) {
+        use QuantizationModes::*;
+        sink.push(self.opcode());
+        match self {
+            _ => (),
+        }
+    }
+    fn read_word(chunk: &[u32], env: &mut Env, idx: &mut usize) -> Self {
+        use QuantizationModes::*;
+        *idx += 1;
+        match chunk[*idx as usize - 1] {
+            0 => TRN(),
+            1 => TRN_ZERO(),
+            2 => RND(),
+            3 => RND_ZERO(),
+            4 => RND_INF(),
+            5 => RND_MIN_INF(),
+            6 => RND_CONV(),
+            7 => RND_CONV_ODD(),
+            _ => panic!(),
+        }
+    }
+}
+#[repr(u32)]
+#[derive(Debug, Clone, Eq, PartialEq)]
 pub enum FPOperationMode {
     IEEE() = 0,
     ALT() = 1,
@@ -10016,7 +12122,7 @@ impl<Env: Environ> Writer<Env> for FPOperationMode {
             _ => (),
         }
     }
-    fn read_word(chunk: &[u32], env: &mut Env, idx: &mut u32) -> Self {
+    fn read_word(chunk: &[u32], env: &mut Env, idx: &mut usize) -> Self {
         use FPOperationMode::*;
         *idx += 1;
         match chunk[*idx as usize - 1] {
@@ -10027,10 +12133,44 @@ impl<Env: Environ> Writer<Env> for FPOperationMode {
     }
 }
 #[repr(u32)]
-#[derive(Debug, Copy, Clone, Eq, PartialEq)]
+#[derive(Debug, Clone, Eq, PartialEq)]
+pub enum OverflowModes {
+    WRAP() = 0,
+    SAT() = 1,
+    SAT_ZERO() = 2,
+    SAT_SYM() = 3,
+}
+impl OverflowModes {
+    pub fn opcode(&self) -> u32 {
+        unsafe { std::mem::transmute_copy(self) }
+    }
+}
+impl<Env: Environ> Writer<Env> for OverflowModes {
+    fn write_word(&self, env: &Env, sink: &mut Vec<u32>) {
+        use OverflowModes::*;
+        sink.push(self.opcode());
+        match self {
+            _ => (),
+        }
+    }
+    fn read_word(chunk: &[u32], env: &mut Env, idx: &mut usize) -> Self {
+        use OverflowModes::*;
+        *idx += 1;
+        match chunk[*idx as usize - 1] {
+            0 => WRAP(),
+            1 => SAT(),
+            2 => SAT_ZERO(),
+            3 => SAT_SYM(),
+            _ => panic!(),
+        }
+    }
+}
+#[repr(u32)]
+#[derive(Debug, Clone, Eq, PartialEq)]
 pub enum LinkageType {
     Export() = 0,
     Import() = 1,
+    LinkOnceODR() = 2,
 }
 impl LinkageType {
     pub fn opcode(&self) -> u32 {
@@ -10045,18 +12185,19 @@ impl<Env: Environ> Writer<Env> for LinkageType {
             _ => (),
         }
     }
-    fn read_word(chunk: &[u32], env: &mut Env, idx: &mut u32) -> Self {
+    fn read_word(chunk: &[u32], env: &mut Env, idx: &mut usize) -> Self {
         use LinkageType::*;
         *idx += 1;
         match chunk[*idx as usize - 1] {
             0 => Export(),
             1 => Import(),
+            2 => LinkOnceODR(),
             _ => panic!(),
         }
     }
 }
 #[repr(u32)]
-#[derive(Debug, Copy, Clone, Eq, PartialEq)]
+#[derive(Debug, Clone, Eq, PartialEq)]
 pub enum AccessQualifier {
     ReadOnly() = 0,
     WriteOnly() = 1,
@@ -10075,7 +12216,7 @@ impl<Env: Environ> Writer<Env> for AccessQualifier {
             _ => (),
         }
     }
-    fn read_word(chunk: &[u32], env: &mut Env, idx: &mut u32) -> Self {
+    fn read_word(chunk: &[u32], env: &mut Env, idx: &mut usize) -> Self {
         use AccessQualifier::*;
         *idx += 1;
         match chunk[*idx as usize - 1] {
@@ -10087,7 +12228,7 @@ impl<Env: Environ> Writer<Env> for AccessQualifier {
     }
 }
 #[repr(u32)]
-#[derive(Debug, Copy, Clone, Eq, PartialEq)]
+#[derive(Debug, Clone, Eq, PartialEq)]
 pub enum FunctionParameterAttribute {
     Zext() = 0,
     Sext() = 1,
@@ -10111,7 +12252,7 @@ impl<Env: Environ> Writer<Env> for FunctionParameterAttribute {
             _ => (),
         }
     }
-    fn read_word(chunk: &[u32], env: &mut Env, idx: &mut u32) -> Self {
+    fn read_word(chunk: &[u32], env: &mut Env, idx: &mut usize) -> Self {
         use FunctionParameterAttribute::*;
         *idx += 1;
         match chunk[*idx as usize - 1] {
@@ -10128,7 +12269,7 @@ impl<Env: Environ> Writer<Env> for FunctionParameterAttribute {
     }
 }
 #[repr(u32)]
-#[derive(Debug, Copy, Clone, Eq, PartialEq)]
+#[derive(Debug, Clone, Eq, PartialEq)]
 pub enum Decoration {
     RelaxedPrecision() = 0,
     SpecId(u32) = 1,
@@ -10170,7 +12311,7 @@ pub enum Decoration {
     FuncParamAttr(FunctionParameterAttribute) = 38,
     FPRoundingMode(FPRoundingMode) = 39,
     FPFastMathMode(FPFastMathMode) = 40,
-    LinkageAttributes(Sstr, LinkageType) = 41,
+    LinkageAttributes(String, LinkageType) = 41,
     NoContraction() = 42,
     InputAttachmentIndex(u32) = 43,
     Alignment(u32) = 44,
@@ -10193,7 +12334,7 @@ pub enum Decoration {
     AliasedPointer() = 5356,
     SIMTCallINTEL(u32) = 5599,
     ReferencedIndirectlyINTEL() = 5602,
-    ClobberINTEL(Sstr) = 5607,
+    ClobberINTEL(String) = 5607,
     SideEffectsINTEL() = 5608,
     VectorComputeVariableINTEL() = 5624,
     FuncParamIOKindINTEL(u32) = 5625,
@@ -10201,12 +12342,12 @@ pub enum Decoration {
     StackCallINTEL() = 5627,
     GlobalVariableOffsetINTEL(u32) = 5628,
     CounterBuffer(ID) = 5634,
-    UserSemantic(Sstr) = 5635,
-    UserTypeGOOGLE(Sstr) = 5636,
+    UserSemantic(String) = 5635,
+    UserTypeGOOGLE(String) = 5636,
     FunctionRoundingModeINTEL(u32, FPRoundingMode) = 5822,
     FunctionDenormModeINTEL(u32, FPDenormMode) = 5823,
     RegisterINTEL() = 5825,
-    MemoryINTEL(Sstr) = 5826,
+    MemoryINTEL(String) = 5826,
     NumbanksINTEL(u32) = 5827,
     BankwidthINTEL(u32) = 5828,
     MaxPrivateCopiesINTEL(u32) = 5829,
@@ -10214,7 +12355,7 @@ pub enum Decoration {
     DoublepumpINTEL() = 5831,
     MaxReplicatesINTEL(u32) = 5832,
     SimpleDualPortINTEL() = 5833,
-    MergeINTEL(Sstr, Sstr) = 5834,
+    MergeINTEL(String, String) = 5834,
     BankBitsINTEL(u32) = 5835,
     ForcePow2DepthINTEL(u32) = 5836,
     BurstCoalesceINTEL() = 5899,
@@ -10385,7 +12526,7 @@ impl<Env: Environ> Writer<Env> for Decoration {
             _ => (),
         }
     }
-    fn read_word(chunk: &[u32], env: &mut Env, idx: &mut u32) -> Self {
+    fn read_word(chunk: &[u32], env: &mut Env, idx: &mut usize) -> Self {
         use Decoration::*;
         *idx += 1;
         match chunk[*idx as usize - 1] {
@@ -10635,7 +12776,7 @@ impl<Env: Environ> Writer<Env> for Decoration {
     }
 }
 #[repr(u32)]
-#[derive(Debug, Copy, Clone, Eq, PartialEq)]
+#[derive(Debug, Clone, Eq, PartialEq)]
 pub enum BuiltIn {
     Position() = 0,
     PointSize() = 1,
@@ -10729,6 +12870,7 @@ pub enum BuiltIn {
     WorldToObjectNV() = 5331,
     HitTNV() = 5332,
     HitKindNV() = 5333,
+    CurrentRayTimeNV() = 5334,
     IncomingRayFlagsNV() = 5351,
     RayGeometryIndexKHR() = 5352,
     WarpsPerSMNV() = 5374,
@@ -10749,7 +12891,7 @@ impl<Env: Environ> Writer<Env> for BuiltIn {
             _ => (),
         }
     }
-    fn read_word(chunk: &[u32], env: &mut Env, idx: &mut u32) -> Self {
+    fn read_word(chunk: &[u32], env: &mut Env, idx: &mut usize) -> Self {
         use BuiltIn::*;
         *idx += 1;
         match chunk[*idx as usize - 1] {
@@ -10845,6 +12987,7 @@ impl<Env: Environ> Writer<Env> for BuiltIn {
             5331 => WorldToObjectNV(),
             5332 => HitTNV(),
             5333 => HitKindNV(),
+            5334 => CurrentRayTimeNV(),
             5351 => IncomingRayFlagsNV(),
             5352 => RayGeometryIndexKHR(),
             5374 => WarpsPerSMNV(),
@@ -10856,7 +12999,7 @@ impl<Env: Environ> Writer<Env> for BuiltIn {
     }
 }
 #[repr(u32)]
-#[derive(Debug, Copy, Clone, Eq, PartialEq)]
+#[derive(Debug, Clone, Eq, PartialEq)]
 pub enum Scope {
     CrossDevice() = 0,
     Device() = 1,
@@ -10879,7 +13022,7 @@ impl<Env: Environ> Writer<Env> for Scope {
             _ => (),
         }
     }
-    fn read_word(chunk: &[u32], env: &mut Env, idx: &mut u32) -> Self {
+    fn read_word(chunk: &[u32], env: &mut Env, idx: &mut usize) -> Self {
         use Scope::*;
         *idx += 1;
         match chunk[*idx as usize - 1] {
@@ -10895,7 +13038,7 @@ impl<Env: Environ> Writer<Env> for Scope {
     }
 }
 #[repr(u32)]
-#[derive(Debug, Copy, Clone, Eq, PartialEq)]
+#[derive(Debug, Clone, Eq, PartialEq)]
 pub enum GroupOperation {
     Reduce() = 0,
     InclusiveScan() = 1,
@@ -10918,7 +13061,7 @@ impl<Env: Environ> Writer<Env> for GroupOperation {
             _ => (),
         }
     }
-    fn read_word(chunk: &[u32], env: &mut Env, idx: &mut u32) -> Self {
+    fn read_word(chunk: &[u32], env: &mut Env, idx: &mut usize) -> Self {
         use GroupOperation::*;
         *idx += 1;
         match chunk[*idx as usize - 1] {
@@ -10934,7 +13077,7 @@ impl<Env: Environ> Writer<Env> for GroupOperation {
     }
 }
 #[repr(u32)]
-#[derive(Debug, Copy, Clone, Eq, PartialEq)]
+#[derive(Debug, Clone, Eq, PartialEq)]
 pub enum KernelEnqueueFlags {
     NoWait() = 0,
     WaitKernel() = 1,
@@ -10953,7 +13096,7 @@ impl<Env: Environ> Writer<Env> for KernelEnqueueFlags {
             _ => (),
         }
     }
-    fn read_word(chunk: &[u32], env: &mut Env, idx: &mut u32) -> Self {
+    fn read_word(chunk: &[u32], env: &mut Env, idx: &mut usize) -> Self {
         use KernelEnqueueFlags::*;
         *idx += 1;
         match chunk[*idx as usize - 1] {
@@ -10965,7 +13108,7 @@ impl<Env: Environ> Writer<Env> for KernelEnqueueFlags {
     }
 }
 #[repr(u32)]
-#[derive(Debug, Copy, Clone, Eq, PartialEq)]
+#[derive(Debug, Clone, Eq, PartialEq)]
 pub enum Capability {
     Matrix() = 0,
     Shader() = 1,
@@ -11098,6 +13241,7 @@ pub enum Capability {
     UniformTexelBufferArrayNonUniformIndexing() = 5311,
     StorageTexelBufferArrayNonUniformIndexing() = 5312,
     RayTracingNV() = 5340,
+    RayTracingMotionBlurNV() = 5341,
     VulkanMemoryModel() = 5345,
     VulkanMemoryModelDeviceScope() = 5346,
     PhysicalStorageBufferAddresses() = 5347,
@@ -11124,6 +13268,7 @@ pub enum Capability {
     AtomicFloat16MinMaxEXT() = 5616,
     VectorComputeINTEL() = 5617,
     VectorAnyINTEL() = 5619,
+    ExpectAssumeKHR() = 5629,
     SubgroupAvcMotionEstimationINTEL() = 5696,
     SubgroupAvcMotionEstimationIntraINTEL() = 5697,
     SubgroupAvcMotionEstimationChromaINTEL() = 5698,
@@ -11132,6 +13277,7 @@ pub enum Capability {
     FPGAMemoryAttributesINTEL() = 5824,
     FPFastMathModeINTEL() = 5837,
     ArbitraryPrecisionIntegersINTEL() = 5844,
+    ArbitraryPrecisionFloatingPointINTEL() = 5845,
     UnstructuredLoopControlsINTEL() = 5886,
     FPGALoopControlsINTEL() = 5888,
     KernelAttributesINTEL() = 5892,
@@ -11140,13 +13286,22 @@ pub enum Capability {
     FPGAClusterAttributesINTEL() = 5904,
     LoopFuseINTEL() = 5906,
     FPGABufferLocationINTEL() = 5920,
+    ArbitraryPrecisionFixedPointINTEL() = 5922,
     USMStorageClassesINTEL() = 5935,
     IOPipesINTEL() = 5943,
     BlockingPipesINTEL() = 5945,
     FPGARegINTEL() = 5948,
+    DotProductInputAllKHR() = 6016,
+    DotProductInput4x8BitKHR() = 6017,
+    DotProductInput4x8BitPackedKHR() = 6018,
+    DotProductKHR() = 6019,
+    BitInstructions() = 6025,
     AtomicFloat32AddEXT() = 6033,
     AtomicFloat64AddEXT() = 6034,
     LongConstantCompositeINTEL() = 6089,
+    OptNoneINTEL() = 6094,
+    AtomicFloat16AddEXT() = 6095,
+    DebugInfoModuleINTEL() = 6114,
 }
 impl Capability {
     pub fn opcode(&self) -> u32 {
@@ -11161,7 +13316,7 @@ impl<Env: Environ> Writer<Env> for Capability {
             _ => (),
         }
     }
-    fn read_word(chunk: &[u32], env: &mut Env, idx: &mut u32) -> Self {
+    fn read_word(chunk: &[u32], env: &mut Env, idx: &mut usize) -> Self {
         use Capability::*;
         *idx += 1;
         match chunk[*idx as usize - 1] {
@@ -11296,6 +13451,7 @@ impl<Env: Environ> Writer<Env> for Capability {
             5311 => UniformTexelBufferArrayNonUniformIndexing(),
             5312 => StorageTexelBufferArrayNonUniformIndexing(),
             5340 => RayTracingNV(),
+            5341 => RayTracingMotionBlurNV(),
             5345 => VulkanMemoryModel(),
             5346 => VulkanMemoryModelDeviceScope(),
             5347 => PhysicalStorageBufferAddresses(),
@@ -11322,6 +13478,7 @@ impl<Env: Environ> Writer<Env> for Capability {
             5616 => AtomicFloat16MinMaxEXT(),
             5617 => VectorComputeINTEL(),
             5619 => VectorAnyINTEL(),
+            5629 => ExpectAssumeKHR(),
             5696 => SubgroupAvcMotionEstimationINTEL(),
             5697 => SubgroupAvcMotionEstimationIntraINTEL(),
             5698 => SubgroupAvcMotionEstimationChromaINTEL(),
@@ -11330,6 +13487,7 @@ impl<Env: Environ> Writer<Env> for Capability {
             5824 => FPGAMemoryAttributesINTEL(),
             5837 => FPFastMathModeINTEL(),
             5844 => ArbitraryPrecisionIntegersINTEL(),
+            5845 => ArbitraryPrecisionFloatingPointINTEL(),
             5886 => UnstructuredLoopControlsINTEL(),
             5888 => FPGALoopControlsINTEL(),
             5892 => KernelAttributesINTEL(),
@@ -11338,19 +13496,28 @@ impl<Env: Environ> Writer<Env> for Capability {
             5904 => FPGAClusterAttributesINTEL(),
             5906 => LoopFuseINTEL(),
             5920 => FPGABufferLocationINTEL(),
+            5922 => ArbitraryPrecisionFixedPointINTEL(),
             5935 => USMStorageClassesINTEL(),
             5943 => IOPipesINTEL(),
             5945 => BlockingPipesINTEL(),
             5948 => FPGARegINTEL(),
+            6016 => DotProductInputAllKHR(),
+            6017 => DotProductInput4x8BitKHR(),
+            6018 => DotProductInput4x8BitPackedKHR(),
+            6019 => DotProductKHR(),
+            6025 => BitInstructions(),
             6033 => AtomicFloat32AddEXT(),
             6034 => AtomicFloat64AddEXT(),
             6089 => LongConstantCompositeINTEL(),
+            6094 => OptNoneINTEL(),
+            6095 => AtomicFloat16AddEXT(),
+            6114 => DebugInfoModuleINTEL(),
             _ => panic!(),
         }
     }
 }
 #[repr(u32)]
-#[derive(Debug, Copy, Clone, Eq, PartialEq)]
+#[derive(Debug, Clone, Eq, PartialEq)]
 pub enum RayQueryIntersection {
     RayQueryCandidateIntersectionKHR() = 0,
     RayQueryCommittedIntersectionKHR() = 1,
@@ -11368,7 +13535,7 @@ impl<Env: Environ> Writer<Env> for RayQueryIntersection {
             _ => (),
         }
     }
-    fn read_word(chunk: &[u32], env: &mut Env, idx: &mut u32) -> Self {
+    fn read_word(chunk: &[u32], env: &mut Env, idx: &mut usize) -> Self {
         use RayQueryIntersection::*;
         *idx += 1;
         match chunk[*idx as usize - 1] {
@@ -11379,7 +13546,7 @@ impl<Env: Environ> Writer<Env> for RayQueryIntersection {
     }
 }
 #[repr(u32)]
-#[derive(Debug, Copy, Clone, Eq, PartialEq)]
+#[derive(Debug, Clone, Eq, PartialEq)]
 pub enum RayQueryCommittedIntersectionType {
     RayQueryCommittedIntersectionNoneKHR() = 0,
     RayQueryCommittedIntersectionTriangleKHR() = 1,
@@ -11398,7 +13565,7 @@ impl<Env: Environ> Writer<Env> for RayQueryCommittedIntersectionType {
             _ => (),
         }
     }
-    fn read_word(chunk: &[u32], env: &mut Env, idx: &mut u32) -> Self {
+    fn read_word(chunk: &[u32], env: &mut Env, idx: &mut usize) -> Self {
         use RayQueryCommittedIntersectionType::*;
         *idx += 1;
         match chunk[*idx as usize - 1] {
@@ -11410,7 +13577,7 @@ impl<Env: Environ> Writer<Env> for RayQueryCommittedIntersectionType {
     }
 }
 #[repr(u32)]
-#[derive(Debug, Copy, Clone, Eq, PartialEq)]
+#[derive(Debug, Clone, Eq, PartialEq)]
 pub enum RayQueryCandidateIntersectionType {
     RayQueryCandidateIntersectionTriangleKHR() = 0,
     RayQueryCandidateIntersectionAABBKHR() = 1,
@@ -11428,7 +13595,7 @@ impl<Env: Environ> Writer<Env> for RayQueryCandidateIntersectionType {
             _ => (),
         }
     }
-    fn read_word(chunk: &[u32], env: &mut Env, idx: &mut u32) -> Self {
+    fn read_word(chunk: &[u32], env: &mut Env, idx: &mut usize) -> Self {
         use RayQueryCandidateIntersectionType::*;
         *idx += 1;
         match chunk[*idx as usize - 1] {
@@ -11438,20 +13605,47 @@ impl<Env: Environ> Writer<Env> for RayQueryCandidateIntersectionType {
         }
     }
 }
+#[repr(u32)]
+#[derive(Debug, Clone, Eq, PartialEq)]
+pub enum PackedVectorFormat {
+    PackedVectorFormat4x8BitKHR() = 0,
+}
+impl PackedVectorFormat {
+    pub fn opcode(&self) -> u32 {
+        unsafe { std::mem::transmute_copy(self) }
+    }
+}
+impl<Env: Environ> Writer<Env> for PackedVectorFormat {
+    fn write_word(&self, env: &Env, sink: &mut Vec<u32>) {
+        use PackedVectorFormat::*;
+        sink.push(self.opcode());
+        match self {
+            _ => (),
+        }
+    }
+    fn read_word(chunk: &[u32], env: &mut Env, idx: &mut usize) -> Self {
+        use PackedVectorFormat::*;
+        *idx += 1;
+        match chunk[*idx as usize - 1] {
+            0 => PackedVectorFormat4x8BitKHR(),
+            _ => panic!(),
+        }
+    }
+}
 pub trait Environ {
-    fn get_id_word(&self, id: ID) -> u32;
-    fn insert_id(&mut self, i: u32) -> u32;
+    fn insert_id(&mut self, i: ResultID);
+    fn insert_op(&mut self, opc: Opcode) -> Opcode;
 }
 pub trait Writer<Env: Environ> {
     fn write_word(&self, env: &Env, sink: &mut Vec<u32>) {}
-    fn read_word(chunk: &[u32], env: &mut Env, idx: &mut u32) -> Self;
+    fn read_word(chunk: &[u32], env: &mut Env, idx: &mut usize) -> Self;
 }
 impl<Env: Environ, T: Writer<Env>> Writer<Env> for Option<T> {
     fn write_word(&self, env: &Env, sink: &mut Vec<u32>) {
         self.as_ref().map(|t| t.write_word(env, sink));
     }
-    fn read_word(chunk: &[u32], env: &mut Env, idx: &mut u32) -> Self {
-        if *idx < chunk.len() as u32 {
+    fn read_word(chunk: &[u32], env: &mut Env, idx: &mut usize) -> Self {
+        if *idx < chunk.len() {
             Some(T::read_word(chunk, env, idx))
         } else {
             None
@@ -11463,7 +13657,7 @@ impl<Env: Environ, T: Writer<Env>, U: Writer<Env>> Writer<Env> for (T, U) {
         self.0.write_word(env, sink);
         self.1.write_word(env, sink);
     }
-    fn read_word(chunk: &[u32], env: &mut Env, idx: &mut u32) -> Self {
+    fn read_word(chunk: &[u32], env: &mut Env, idx: &mut usize) -> Self {
         let t = T::read_word(chunk, env, idx);
         let u = U::read_word(chunk, env, idx);
         (t, u)
@@ -11473,9 +13667,9 @@ impl<Env: Environ, T: Writer<Env>> Writer<Env> for Vec<T> {
     fn write_word(&self, env: &Env, sink: &mut Vec<u32>) {
         self.iter().for_each(|t| t.write_word(env, sink));
     }
-    fn read_word(chunk: &[u32], env: &mut Env, idx: &mut u32) -> Self {
+    fn read_word(chunk: &[u32], env: &mut Env, idx: &mut usize) -> Self {
         let mut re = vec![];
-        while *idx < chunk.len() as u32 {
+        while *idx < chunk.len() {
             re.push(T::read_word(chunk, env, idx));
         }
         re
@@ -11485,12 +13679,12 @@ impl<Env: Environ> Writer<Env> for u32 {
     fn write_word(&self, env: &Env, sink: &mut Vec<u32>) {
         sink.push(*self);
     }
-    fn read_word(chunk: &[u32], env: &mut Env, idx: &mut u32) -> Self {
+    fn read_word(chunk: &[u32], env: &mut Env, idx: &mut usize) -> Self {
         *idx += 1;
         chunk[*idx as usize - 1]
     }
 }
-impl<Env: Environ> Writer<Env> for Sstr {
+impl<Env: Environ> Writer<Env> for String {
     fn write_word(&self, env: &Env, sink: &mut Vec<u32>) {
         let mark = sink.len();
         let strlen = (self.len() >> 2) + 1;
@@ -11503,7 +13697,7 @@ impl<Env: Environ> Writer<Env> for Sstr {
             );
         }
     }
-    fn read_word(chunk: &[u32], env: &mut Env, idx: &mut u32) -> Self {
+    fn read_word(chunk: &[u32], env: &mut Env, idx: &mut usize) -> Self {
         let chunk = &chunk[*idx as usize..];
         let mut len = 0;
         'outer: for u in chunk {
@@ -11518,19 +13712,19 @@ impl<Env: Environ> Writer<Env> for Sstr {
         *idx += offset;
         unsafe {
             let s = std::slice::from_raw_parts((chunk.as_ptr() as *const u8), len as usize);
-            std::mem::transmute(std::str::from_utf8(s).unwrap())
+            std::str::from_utf8(s).unwrap().to_owned()
         }
     }
 }
 impl<Env: Environ, T: From<ID> + Into<ID> + Copy> Writer<Env> for T {
     fn write_word(&self, env: &Env, sink: &mut Vec<u32>) {
-        let word = env.get_id_word((*self).into());
-        sink.push(word);
+        let word: ID = (*self).into();
+        sink.push(word.0);
     }
-    fn read_word(chunk: &[u32], env: &mut Env, idx: &mut u32) -> Self {
-        let id = env.insert_id(chunk[*idx as usize]);
+    fn read_word(chunk: &[u32], env: &mut Env, idx: &mut usize) -> Self {
+        let id = ID(chunk[*idx as usize]);
         *idx += 1;
-        Self::from(ID::Int(id))
+        Self::from(id)
     }
 }
 impl From<ID> for ResultID {
@@ -11573,16 +13767,13 @@ impl Into<ID> for MemorySemanticsID {
         self.0
     }
 }
-#[derive(Debug, Copy, Clone, Eq, PartialEq)]
-pub enum ID {
-    Str(Sstr),
-    Int(u32),
-}
-#[derive(Debug, Copy, Clone, Eq, PartialEq)]
+#[derive(Debug, Copy, Clone, Eq, PartialEq, Hash, Default, Ord, PartialOrd)]
+pub struct ID(u32);
+#[derive(Debug, Copy, Clone, Eq, PartialEq, Hash, Default, Ord, PartialOrd)]
 pub struct ScopeID(ID);
-#[derive(Debug, Copy, Clone, Eq, PartialEq)]
+#[derive(Debug, Copy, Clone, Eq, PartialEq, Hash, Default, Ord, PartialOrd)]
 pub struct MemorySemanticsID(ID);
-#[derive(Debug, Copy, Clone, Eq, PartialEq)]
+#[derive(Debug, Copy, Clone, Eq, PartialEq, Hash, Default, Ord, PartialOrd)]
 pub struct TypeID(ID);
-#[derive(Debug, Copy, Clone, Eq, PartialEq)]
+#[derive(Debug, Copy, Clone, Eq, PartialEq, Hash, Default, Ord, PartialOrd)]
 pub struct ResultID(ID);
